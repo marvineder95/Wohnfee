@@ -5,8 +5,17 @@ const open = ref(false)
 
 // Sprachpaare aus den Seitendaten (Feld „alternate" kennzeichnet die jeweils
 // andere Sprachversion einer Seite)
+// Eigene App-Seiten (nicht in den Seitendaten) mit festem Sprach-Gegenstück
+const APP_PAIRS: Record<string, string> = {
+  '/furniture-leasing/checkout': '/en/furniture-leasing/checkout'
+}
+
 const langPairs = computed(() => {
   const m: Record<string, string> = {}
+  for (const [de, en] of Object.entries(APP_PAIRS)) {
+    m[de] = en
+    m[en] = de
+  }
   for (const p of Object.values(pages as Record<string, any>)) {
     if (p.route && p.alternate) {
       m[p.route] = p.alternate
@@ -20,7 +29,7 @@ const langPairs = computed(() => {
 // sowohl Seiten- als auch News-Artikel (DE/EN)
 const currentLang = computed(() => {
   const entry = resolveRoute(route.path)
-  if (!entry) return 'de'
+  if (!entry) return route.path.startsWith('/en/') ? 'en' : 'de'
   if (entry.type === 'news') {
     const src: any = route.path.startsWith('/en/') ? newsEn : news
     return (src as Record<string, any>)[entry.id]?.lang === 'en' ? 'en' : 'de'
