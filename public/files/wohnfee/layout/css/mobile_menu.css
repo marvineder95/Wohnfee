@@ -1,0 +1,150 @@
+@media screen and (max-width:767px) {
+	
+	
+
+.mod_mobile_menu {
+		display:flex;
+		padding-bottom: 1em;
+		align-self:stretch;
+		flex-basis:calc(100% - 20em);
+		justify-content:flex-end;
+		align-items:flex-end;
+		margin: 3.5em 0 2.5em 0;
+		
+	}
+.sticky .mod_mobile_menu, .home .mod_mobile_menu {
+	margin:0;
+}
+	
+}
+	
+.mobile_menu_trigger {
+		width:2.7em;
+        cursor:pointer
+		
+}
+
+
+	
+.mobile_menu_trigger span{
+		display:block;
+		height:0.35em;
+		margin-bottom:0.35em;
+		background-color:var(--text-color-01);
+		line-height:0.4em;
+		 transition: all 0.5s ease-in-out 0.5s;
+		 width: 2.5em;
+	}
+	
+.mobile_menu_trigger span.text{
+		background-color: transparent;
+  line-height: 1em;
+  text-transform: uppercase;
+  font-size: 0.85em;
+  color: var(--text-color-01);
+  font-weight: 500;
+
+	}
+.mobile_menu.active .menu-toggler span:first-child,
+.mobile_menu_trigger.active span:first-child {
+ transform: translateX(0.2em) rotate(30deg);
+ transform-origin: left top;
+ scale:1.1;
+ transition: all 0.5s ease-in-out 0.5s
+}
+.mobile_menu.active .menu-toggler span:nth-child(3),
+.mobile_menu_trigger.active span:nth-child(3) {
+ transform: translateX(0.2em) rotate(-30deg);
+ transform-origin: left bottom;
+ scale:1.1;
+ transition: all 0.5s ease-in-out 0.5s
+}
+.mobile_menu.active .menu-toggler span:nth-child(2),
+.mobile_menu_trigger.active span:nth-child(2) {
+ opacity:0;
+ transition: all 0.5s ease-in-out 0.5s
+}
+
+.mobile_menu_overlay.background {
+    background-color:rgba(255,255,255,.9)
+   }
+
+.mobile_menu .inner {
+    overflow:auto;
+   overflow: auto;
+  background-color: rgba(254, 254, 254,1);
+  color: #333;
+  box-sizing: border-box;
+  /*background-image: url(../img/20231204_Grafik_wohnffe_VK_1b.svg);*/
+background-size: 14.3em;
+  background-repeat: no-repeat;
+  background-position: 1em -6.3em;
+   }
+   
+.mobile_menu {
+	font-size:1.4em;
+}
+
+.mobile_menu figure {
+	margin:0;
+	border-bottom: 0.8em solid #d9d9d9;
+	padding:0.5em;
+	background: #fefefe;
+}
+
+
+
+.mobile_menu  img{
+	width:5.4em;
+    height:auto;
+}
+
+.mobile_menu nav {
+  font-size: 1.4em;
+  line-height: 1.7;
+}
+
+.mobile_menu ul {
+	display:block;
+	margin:2em 1em 1em 0.7em;
+}
+
+.mobile_menu nav ul li {
+	font-size:1em;
+	list-style-type:none;
+}
+
+.mobile_menu nav ul li a,
+.mobile_menu nav ul li strong {
+	line-height:2;
+	display: inline-block;
+}
+
+.mobile_menu nav ul li a::before,
+.mobile_menu nav ul li strong::before{
+	content:" ";
+	width:0.3em;
+	margin-right:0.7em;
+	box-sizing: border-box;
+		background-color:transparent;
+		display: inline-block;
+		height: 0.75em;
+}
+
+.mobile_menu nav ul li> a:hover,
+.mobile_menu nav ul li.trail> a,
+.mobile_menu nav ul li > strong{
+	color:#000;
+}
+
+.mobile_menu nav ul li> a:hover::before,
+.mobile_menu nav ul li.trail> a::before,
+.mobile_menu nav ul li > strong::before{
+	background-color:#000;
+}
+
+.mobile_menu ul li > ul {
+	font-size:0.9em;
+	margin:0 1em 1em;
+}
+

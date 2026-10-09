@@ -1,0 +1,172 @@
+#main .icon_menu {
+    position:fixed;
+    z-index:102;
+    top: 8.3em;
+    right: -10em;
+    width:12em;
+    font-size:1.25em;
+    overflow:visible;
+   }
+
+.icon_menu ul{
+    position:relative;
+    padding:0;
+    overflow:visible;
+}
+
+.icon_menu ul li {
+	width:12em;
+    position: relative;
+    right: 0em;
+    font-size: 1em;
+    color: #333;
+    background-color: var(--background-color-01);
+    display: block;
+    line-height:1.5em;
+    margin-bottom:0.3em;
+    border:2px solid #fff;
+	transition: right 1s ease-in-out;
+	border-radius: 0em;
+}
+
+
+.icon_menu ul li:hover{
+	transition: right 1s ease-in-out;
+    right: 9.3em;
+}
+
+.icon_menu ul li:before{
+	width:2em;
+	content:" ";
+	display:inline-block;
+	background-color:var(--deco-color-01);
+	height:2em;
+	vertical-align:middle;
+	mask-size: contain;
+	-webkit-mask-size: contain;
+    -webkit-mask-position:50% 50%;
+    -webkit-mask-size: 1.6em 1.6em;
+    mask-position:50% 50%;
+    mask-size: 1.6em 1.6em;
+    mask-repeat:no-repeat;
+    -webkit-mask-repeat:no-repeat;
+}
+
+.icon_menu ul li.email:before{
+	background-color:var(--text-color-05);
+	-webkit-mask-image: url("../lineawesome/svg/envelope.svg");
+    mask-image: url("../lineawesome/svg/envelope.svg");
+
+}
+
+.icon_menu ul li.phone:before{
+	background-color:var(--text-color-05);
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/phone-solid.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/phone-solid.svg");
+}
+
+.icon_menu ul li.fb:before{
+	background-color:var(--text-color-05);
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/facebook-f.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/facebook-f.svg");
+}
+
+.icon_menu ul li.instagram:before{
+	background-color:var(--text-color-05);
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/instagram.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/instagram.svg");
+}
+
+.icon_menu ul li.xing:before{
+	background-color:var(--text-color-04);
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/xing.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/xing.svg");
+}
+
+.icon_menu ul li.xing {
+	display:none;
+}
+
+.icon_menu ul li.pinterest:before{
+	background-color:#fff;
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/pinterest.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/pinterest.svg");
+}
+
+.icon_menu ul li.houzz:before{
+	background-color:#fff;
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/houzz2.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/houzz2.svg");
+    mask-size: 1.2em 1.2em;
+    -webkit-mask-size: 1.2em 1.2em;
+}
+
+.icon_menu ul li.nl-icon:before{
+	background-color:#fff;
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/envelope-open-news-solid-thin.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/envelope-open-news-solid-thin.svg");
+    mask-size: 1.8em 1.8em;
+    -webkit-mask-size: 1.8em 1.8em;
+}
+
+
+.icon_menu ul li.search:before{
+	background-color:var(--text-color-05);
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/search-solid.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/search-solid.svg");
+    mask-size: 1.7em 1.7em;
+    -webkit-mask-size: 1.7em 1.7em;
+}
+
+#main .icon_menu ul li a, #main .icon_menu ul li a:hover{
+display: inline-block;
+  text-decoration: none;
+  color: #333;
+  margin: 0;
+  vertical-align: middle;
+  background-color: var(--background-color-04);
+  font-family: var(--font-family-02);
+  width: calc(100% - 2em);
+  text-align: center;
+  line-height: 1.8em;
+
+  border: 0;
+}
+
+#main .icon_menu ul li.search .mod_search, #main .icon_menu ul li.search .mod_search .formbody{
+width: 9.9em;
+display: block;
+float: right;
+height: 2em;
+background-color:var(background-color-03);
+padding-left:0.3em;
+box-sizing:border-box;
+}
+
+#main .icon_menu ul li.search .mod_search .formbody{
+width: 9.5em;
+background-color:var(background-color-04);
+padding-left:0.5em;
+}
+
+#main .icon_menu ul li.search .mod_search .widget-text {
+	width:8em;
+}
+#main .icon_menu ul li.search .mod_search .widget-submit {
+	width:2em;
+	display: none;
+}
+
+#main .icon_menu ul li.search .mod_search .widget-text input {
+	border:0;
+	border-bottom:1px solid #000;
+	border-radius:0;
+
+	background-color: var(background-color-04);
+	font-size:0.8em;
+}
+
+.icon_menu ul li.nl-icon, .icon_menu ul li.instagram, .icon_menu ul li.fb {
+	display:none;
+}
+

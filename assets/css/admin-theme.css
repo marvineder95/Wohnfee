@@ -1,0 +1,211 @@
+/* WOHNFEE Admin Theme — warmes Creme, Serif-Titel, weiche Karten
+   Alles unter .wf-admin gescoped, damit die öffentliche Seite unberührt bleibt. */
+
+.wf-admin {
+  /* Tokens */
+  --wf-bg: #faf6ef;
+  --wf-card: #ffffff;
+  --wf-ink: #2e2b25;
+  --wf-muted: #8d8674;
+  --wf-green: #2f5d40;
+  --wf-green-dark: #26492f;
+  --wf-green-soft: #e9f0e8;
+  --wf-line: #ede6d8;
+  --wf-amber: #92610e;
+  --wf-amber-soft: #fbf2dd;
+  --wf-red: #a83226;
+  --wf-red-soft: #fbe9e7;
+  --wf-blue: #3a5f8a;
+  --wf-blue-soft: #e8eef6;
+  --wf-radius: 14px;
+  --wf-shadow: 0 1px 2px rgba(74, 62, 40, .05), 0 6px 24px rgba(74, 62, 40, .07);
+  --wf-font: var(--font-family-01, 'Open Sans', system-ui, sans-serif);
+  --wf-serif: var(--font-family-02, Gelasio, Georgia, serif);
+
+  background: var(--wf-bg);
+  color: var(--wf-ink);
+  font-family: var(--wf-font);
+}
+
+/* ---------- Seitenkopf ---------- */
+.wf-eyebrow {
+  font-size: .68em;
+  letter-spacing: .22em;
+  text-transform: uppercase;
+  color: var(--wf-muted);
+  font-weight: 600;
+  margin: 0 0 .5em;
+}
+.wf-title {
+  font-family: var(--wf-serif);
+  font-weight: 400;
+  font-size: 2.1em;
+  line-height: 1.12;
+  margin: 0 0 .25em;
+  color: var(--wf-ink);
+}
+.wf-subtitle {
+  color: var(--wf-muted);
+  font-size: .95em;
+  margin: 0;
+}
+
+/* ---------- Karten ---------- */
+.wf-card {
+  background: var(--wf-card);
+  border-radius: var(--wf-radius);
+  box-shadow: var(--wf-shadow);
+  border: 1px solid rgba(74, 62, 40, .04);
+}
+
+/* ---------- Buttons ---------- */
+.wf-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: .45em;
+  border: 1px solid var(--wf-line);
+  background: var(--wf-card);
+  color: var(--wf-ink);
+  border-radius: 10px;
+  padding: .5em 1em;
+  font-size: .88em;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+  transition: border-color .15s, color .15s, background .15s;
+  white-space: nowrap;
+}
+.wf-btn:hover:not(:disabled) { border-color: var(--wf-green); color: var(--wf-green); }
+.wf-btn:disabled { opacity: .45; cursor: default; }
+.wf-btn--primary {
+  background: var(--wf-green);
+  border-color: var(--wf-green);
+  color: #fff;
+}
+.wf-btn--primary:hover:not(:disabled) { background: var(--wf-green-dark); color: #fff; }
+.wf-btn--danger:hover:not(:disabled) { border-color: var(--wf-red); color: var(--wf-red); }
+.wf-btn--sm { padding: .32em .75em; font-size: .8em; border-radius: 8px; }
+
+/* ---------- Pills / Status ---------- */
+.wf-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: .35em;
+  font-size: .75em;
+  font-weight: 600;
+  padding: .2em .7em;
+  border-radius: 999px;
+  background: var(--wf-green-soft);
+  color: var(--wf-green);
+  white-space: nowrap;
+}
+.wf-pill::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.wf-pill--amber { background: var(--wf-amber-soft); color: var(--wf-amber); }
+.wf-pill--red { background: var(--wf-red-soft); color: var(--wf-red); }
+.wf-pill--blue { background: var(--wf-blue-soft); color: var(--wf-blue); }
+.wf-pill--green { background: var(--wf-green-soft); color: var(--wf-green); }
+.wf-pill--gray { background: #efede8; color: var(--wf-muted); }
+.wf-pill--plain::before { display: none; }
+
+/* ---------- Formulare ---------- */
+.wf-label { display: block; font-size: .78em; color: var(--wf-muted); margin-bottom: .3em; }
+.wf-input, .wf-admin select.wf-input {
+  width: 100%;
+  box-sizing: border-box;
+  padding: .6em .8em;
+  font-size: .92em;
+  font-family: inherit;
+  color: var(--wf-ink);
+  background: #fff;
+  border: 1px solid var(--wf-line);
+  border-radius: 10px;
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+}
+.wf-input:focus { border-color: var(--wf-green); box-shadow: 0 0 0 3px rgba(47, 93, 64, .12); }
+textarea.wf-input { resize: vertical; }
+
+/* ---------- Modal ---------- */
+.wf-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(46, 43, 37, .45);
+  backdrop-filter: blur(2px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 1em;
+}
+.wf-modal {
+  background: var(--wf-card);
+  border-radius: 18px;
+  padding: 1.8em 2em;
+  width: 100%;
+  max-width: 54em;
+  max-height: 92vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(46, 43, 37, .25);
+}
+.wf-modal h2, .wf-modal h3 {
+  font-family: var(--wf-serif);
+  font-weight: 400;
+}
+
+/* ---------- Tabelle ---------- */
+.wf-table { width: 100%; border-collapse: collapse; background: var(--wf-card); border-radius: var(--wf-radius); box-shadow: var(--wf-shadow); overflow: hidden; }
+.wf-table th {
+  text-align: left;
+  font-size: .72em;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  color: var(--wf-muted);
+  padding: .9em 1.1em;
+  border-bottom: 1px solid var(--wf-line);
+  font-weight: 600;
+}
+.wf-table td { padding: .8em 1.1em; border-bottom: 1px solid #f4efe6; font-size: .9em; vertical-align: middle; }
+.wf-table tbody tr:last-child td { border-bottom: 0; }
+.wf-table tbody tr:hover { background: #fbf9f4; }
+
+/* ---------- Thumbnail-Platzhalter ---------- */
+.wf-thumb {
+  width: 64px;
+  height: 48px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #efe8da, #e2d9c6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #b3a888;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.wf-thumb svg { width: 20px; height: 20px; }
+
+/* ---------- Seiten-Hero (Intro-Bild) ---------- */
+.wf-hero {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  margin-bottom: 1.3em;
+  background: var(--wf-card);
+  border-radius: var(--wf-radius);
+  box-shadow: var(--wf-shadow);
+  border: 1px solid rgba(74, 62, 40, .04);
+}
+.wf-hero-text { flex: 1; padding: 1.8em 0 1.8em 1.8em; display: flex; flex-direction: column; justify-content: center; }
+.wf-hero-img { flex: 0 0 38%; position: relative; min-height: 140px; }
+.wf-hero-img img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.wf-hero-cta { position: absolute; right: 1.1em; bottom: 1.1em; }
+@media (max-width: 700px) {
+  .wf-hero { flex-direction: column; }
+  .wf-hero-text { padding: 1.4em 1.4em 0; }
+  .wf-hero-img { flex: 0 0 auto; height: 150px; margin-top: 1em; }
+}

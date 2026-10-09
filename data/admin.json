@@ -1,0 +1,9 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "salt": "acd59a498f2af61cbeb70bed755e30ab",
+      "hash": "a9e516d88400d166a9f36218484afbca933bcac2c2cb34572ca80d3ba44f67350262bf6d58dba07233df92f7e47d3b01147c2346a6dd4734cf678d73d94e7d0c"
+    }
+  ]
+}

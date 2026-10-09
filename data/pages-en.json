@@ -1,0 +1,1620 @@
+{
+ "2": {
+  "route": "/en/start.html",
+  "title": "Home",
+  "alias": "en/start",
+  "pageTitle": "",
+  "description": "Home Staging . Redesign . Furniture Leasing - in Vienna, Lower Austria and Styria",
+  "robots": "index,follow",
+  "hide": true,
+  "parent": "1",
+  "columns": {
+   "slider": [
+    {
+     "type": "swiper",
+     "items": [
+      {
+       "id": "11",
+       "type": "image",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "src": "files/wohnfee/bilder_slider/SLIDER_2_Projekt_MAKLER_Wien_0043.jpg",
+       "alt": "Esstisch aus Holz mit Bambus Deckenleuchte und verschiedenen grauen Stühlen",
+       "title": null,
+       "caption": "Wir inszenieren Ihre Immobilie!",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": ""
+      },
+      {
+       "id": "12",
+       "type": "image",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "src": "files/wohnfee/bilder_slider/Slider_Gartenwohnung_Kueche.jpg",
+       "alt": "Wohnraum mit 2 beigen Stoffsofas schwarzer Deckenleuchte u schwarzen Rattanbeistelltischen",
+       "title": null,
+       "caption": "Wir inszenieren Ihre Immobilie!",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": ""
+      },
+      {
+       "id": "13",
+       "type": "image",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "src": "files/wohnfee/bilder_slider/SLIDER_Loft_0008.jpg",
+       "alt": "Essplatz mit rundem Einbein-Holztisch, hellblauen und schwarzen Stühlen und Metallschrank in schwarz",
+       "title": null,
+       "caption": "Wir inszenieren Ihre Immobilie!",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": ""
+      },
+      {
+       "id": "254",
+       "type": "image",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "src": "files/wohnfee/bilder_slider/SLIDER_Gobergasse-96_0097.jpg",
+       "alt": "Wohnraum im Dach mit Lehmwand und großem L-Sofa in beige und blauem Teppich",
+       "title": null,
+       "caption": "Wir inszenieren Ihre Immobilie!",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": ""
+      }
+     ],
+     "moduleId": null
+    }
+   ],
+   "main": [
+    {
+     "id": "16",
+     "type": "headline",
+     "headline": "Wake your property from its Sleeping Beauty slumber.",
+     "headlineUnit": "h1",
+     "cssClass": "no-flex"
+    },
+    {
+     "type": "wrapper",
+     "cssClass": "flex projekte",
+     "id": "22",
+     "headline": null,
+     "headlineUnit": "h2",
+     "children": [
+      {
+       "id": "17",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<h2><a href=\"/fuer-bautraeger-2.html\">Bauträger</a></h2>\n<p>In nur einem Tag verwandeln wir Ihre leere Musterwohnung in ein gemütliches Heim.</p>",
+       "src": "files/wohnfee/bilder/zielgruppen/BAUTRAEGER.jpg",
+       "alt": "Link zu Bauträger-Projekten",
+       "title": null,
+       "caption": "Mehr erfahren",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": "/fuer-bautraeger-2.html"
+      },
+      {
+       "id": "18",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<h2><a href=\"/fuer-makler.html\">Makler</a></h2>\n<p>WOHNFEE Home Staging macht das volle Potential Ihrer Immobilie sichtbar.</p>",
+       "src": "files/wohnfee/bilder/zielgruppen/MAKLER.jpg",
+       "alt": "Link zu Makler-Projekten",
+       "title": null,
+       "caption": "Mehr erfahren",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": "/fuer-makler.html"
+      },
+      {
+       "id": "19",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<h2><a href=\"/fuer-privatpersonen-2.html\">Privatpersonen</a></h2>\n<p>Ob Staging zum Verkauf oder Redesign Ihrer Räume - wir bringen das gewisse Etwas.</p>",
+       "src": "files/wohnfee/bilder/zielgruppen/REDESIGN.jpg",
+       "alt": "Link zu Privat-Projekten",
+       "title": null,
+       "caption": "Mehr erfahren",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": "/fuer-privatpersonen-2.html"
+      }
+     ]
+    },
+    {
+     "id": "23",
+     "type": "headline",
+     "headline": "What are the benefits of WOHNFEE home staging?",
+     "headlineUnit": "h1",
+     "cssClass": "no-flex"
+    },
+    {
+     "type": "wrapper",
+     "cssClass": "flex thirds",
+     "id": "28",
+     "headline": null,
+     "headlineUnit": "h2",
+     "children": [
+      {
+       "id": "24",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "camera",
+       "html": "<h2><span class=\"icon\"> </span> <span class=\"icontext\">Perfektes Marketingmaterial</span></h2>\n<p>Perfektion nicht nur vor Ort - wir halten<span class=\"icontext\"> das Ambiente auch im Bild und Video fest. So bekommen Sie das optimale Material für die Vermarktung.</span></p>"
+      },
+      {
+       "id": "25",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "wert",
+       "html": "<h2><span class=\"icon\">  </span><span class=\"icontext\">Optimaler Immobilienwert</span></h2>\n<p>Schöne Möbel, eine ansprechende Dekoration und Beleuchtung heben die Vorteile Ihrer Immobilie deutlich hervor und zeigen ihren Wert.</p>"
+      },
+      {
+       "id": "26",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "uhr",
+       "html": "<h2><span class=\"icon\"> </span> <span class=\"icontext\">Kurze Verkaufszeit</span></h2>\n<p>Wenn Ihre InteressentInnen sich bei der Besichtigung wie zuhause fühlen, ist die Wohnung schnell verkauft.</p>"
+      }
+     ]
+    },
+    {
+     "type": "newslist",
+     "archives": [
+      "13",
+      "9",
+      "8",
+      "11",
+      "5"
+     ],
+     "limit": 6,
+     "perPage": 0,
+     "moduleId": "41",
+     "variant": "latest",
+     "headline": "News",
+     "headlineUnit": "h1",
+     "cssClass": ""
+    },
+    {
+     "id": "506",
+     "type": "text",
+     "headline": "Fancy something new?",
+     "headlineUnit": "h2",
+     "cssClass": "bg-nl",
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+    }
+   ]
+  },
+  "cssClass": "home",
+  "lang": "en",
+  "alternate": "/start.html"
+ },
+ "3": {
+  "route": "/en/home-staging.html",
+  "title": "Home Staging",
+  "alias": "en/home-staging",
+  "pageTitle": "",
+  "description": "We stage your property optimally for sale or rental in just 1 day - in Vienna, Lower Austria and Styria",
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "1",
+  "columns": {
+   "main": [
+    {
+     "id": "45",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h1",
+     "cssClass": "nur_text",
+     "html": "<h1>Why home staging?</h1>\n<p style=\"text-align: center;\">Living in a house or an apartment differs significantly from marketing it.<br>On the one hand, it is the often very individual interior, and on the other hand, the lack of atmosphere in completely empty properties that turn out to be a hurdle when selling or renting.</p>"
+    },
+    {
+     "id": "76",
+     "type": "text",
+     "headline": "Only few people can imagine a room changed",
+     "headlineUnit": "h2",
+     "cssClass": "nur_text",
+     "html": "<p style=\"text-align: center;\">In empty rooms it is often difficult to assess the proportions correctly.</p>\n<p style=\"text-align: center;\">In furnished properties, the individual style of the current owners is usually too dominant.</p>"
+    },
+    {
+     "id": "77",
+     "type": "text",
+     "headline": "We create atmosphere",
+     "headlineUnit": "h2",
+     "cssClass": "nur_text",
+     "html": "<p style=\"text-align: center;\">Home staging emphasises a property's strengths, creates space, develops a lighting and colour concept, gives every room a clear function and \"neutralises\" through the targeted reduction of personal items and the addition of suitable rental furniture, accessories and lighting.</p>"
+    },
+    {
+     "id": "75",
+     "type": "headline",
+     "headline": "The process - how it works",
+     "headlineUnit": "h2",
+     "cssClass": ""
+    },
+    {
+     "id": "80",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "icon_list icon_contact",
+     "html": "<h3>1. Initial contact and viewing</h3>\n<p>You send us the floor plan of the property, some photos and the address. After an initial personal conversation, we view the property, take photographs and provide a first cost estimate.</p>"
+    },
+    {
+     "id": "81",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h3",
+     "cssClass": "icon_list icon_offer",
+     "html": "<h3>2. Detailed offer</h3>\n<p>The type and size of the property as well as the target group determine the scope of sensible HOME STAGING measures. You will receive a detailed offer from us with a cost overview and a possible staging date.</p>"
+    },
+    {
+     "id": "135",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h3",
+     "cssClass": "icon_list icon_setup",
+     "html": "<h3>3. Execution</h3>\n<p>After you commission us, we organise all the necessary preparatory work and stage the entire property with the whole team in just one day. The professional photographs – or an individual video if you like – are ready for marketing the very next day.</p>"
+    },
+    {
+     "id": "136",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h3",
+     "cssClass": "icon_list icon_quality",
+     "html": "<h3>4. The quality of our stagings</h3>\n<p>We pay attention to the high quality of our stagings and repeatedly surprise our customers with different productions. Every property is furnished with an individual mix of real furniture, carpets and accessories that naturally suits the target group! On average we deliver 80 to 150 pieces. Every light outlet is fitted with lamps. Cardboard furniture is only found in the kitchen with us!</p>"
+    },
+    {
+     "id": "137",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h3",
+     "cssClass": "icon_list icon_timeframe",
+     "html": "<h3>5. Marketing period</h3>\n<p><strong>(Will you collect the furniture right after the photos?)</strong></p>\n<p>The furniture, accessories and lighting remain in the property for the entire marketing period – at least 2 months. This is also the advantage of a real HOME STAGING compared to virtual staging, where the prospective buyer sees beautiful pictures but the viewing takes place in an empty property.</p>"
+    },
+    {
+     "id": "138",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h3",
+     "cssClass": "icon_list icon_after",
+     "html": "<h3>6. After the sale / after the rental</h3>\n<p>Once a buyer or tenant has been found, a single phone call is all it takes and all furniture, lamps and accessories will be dismantled and collected again.</p>"
+    },
+    {
+     "id": "139",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "icon_list no_icon",
+     "html": "<h3>An investment that pays off</h3>\n<p>As a rule, the cost of a home staging including all rental furniture and accessories amounts to 1 – 2 % of the sale price – depending on location, standard and condition of the property. This investment pays off for every type of property – whether a 2-room apartment, detached house or luxury penthouse – through a significantly shorter selling time and usually also a better sale price.</p>"
+    },
+    {
+     "id": "69",
+     "type": "headline",
+     "headline": "What are the benefits of WOHN.FEE home staging?",
+     "headlineUnit": "h1",
+     "cssClass": "no-flex center"
+    },
+    {
+     "type": "wrapper",
+     "cssClass": "flex thirds",
+     "id": "74",
+     "headline": null,
+     "headlineUnit": "h2",
+     "children": [
+      {
+       "id": "71",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "camera",
+       "html": "<h2><span class=\"icon\">  </span>Perfektes <br>Marketingmaterial</h2>\n<p>Perfektion nicht nur vor Ort - wir halten das Ambiente auch im Bild und Video fest. So bekommen Sie das optimale Material für die Vermarktung.</p>"
+      },
+      {
+       "id": "72",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "wert",
+       "html": "<h2><span class=\"icon\">  </span>Optimalen<br>Immobilienwert</h2>\n<p>Schöne Möbel, eine ansprechende Dekoration und Beleuchtung heben die Vorteile Ihrer Immobilie deutlich hervor und zeigen ihren Wert.</p>"
+      },
+      {
+       "id": "73",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "uhr",
+       "html": "<h2><span class=\"icon\">  </span> Kurze<br>Verkaufszeit</h2>\n<p>Wenn Ihre InteressentInnen sich bei der Besichtigung wie zuhause fühlen, ist die Wohnung schnell verkauft.</p>"
+      }
+     ]
+    },
+    {
+     "type": "article",
+     "elements": [
+      {
+       "id": "16",
+       "type": "headline",
+       "headline": "Erwecken Sie Ihre Immobilie aus dem Dornröschenschlaf.",
+       "headlineUnit": "h1",
+       "cssClass": "no-flex"
+      },
+      {
+       "type": "wrapper",
+       "cssClass": "flex projekte",
+       "id": "22",
+       "headline": null,
+       "headlineUnit": "h2",
+       "children": [
+        {
+         "id": "17",
+         "type": "text",
+         "headline": "",
+         "headlineUnit": "h2",
+         "cssClass": "",
+         "html": "<h2><a href=\"/fuer-bautraeger-2.html\">Bauträger</a></h2>\n<p>In nur einem Tag verwandeln wir Ihre leere Musterwohnung in ein gemütliches Heim.</p>",
+         "src": "files/wohnfee/bilder/zielgruppen/BAUTRAEGER.jpg",
+         "alt": "Link zu Bauträger-Projekten",
+         "title": null,
+         "caption": "Mehr erfahren",
+         "floating": "above",
+         "size": null,
+         "fullsize": false,
+         "link": "/fuer-bautraeger-2.html"
+        },
+        {
+         "id": "18",
+         "type": "text",
+         "headline": "",
+         "headlineUnit": "h2",
+         "cssClass": "",
+         "html": "<h2><a href=\"/fuer-makler.html\">Makler</a></h2>\n<p>WOHNFEE Home Staging macht das volle Potential Ihrer Immobilie sichtbar.</p>",
+         "src": "files/wohnfee/bilder/zielgruppen/MAKLER.jpg",
+         "alt": "Link zu Makler-Projekten",
+         "title": null,
+         "caption": "Mehr erfahren",
+         "floating": "above",
+         "size": null,
+         "fullsize": false,
+         "link": "/fuer-makler.html"
+        },
+        {
+         "id": "19",
+         "type": "text",
+         "headline": "",
+         "headlineUnit": "h2",
+         "cssClass": "",
+         "html": "<h2><a href=\"/fuer-privatpersonen-2.html\">Privatpersonen</a></h2>\n<p>Ob Staging zum Verkauf oder Redesign Ihrer Räume - wir bringen das gewisse Etwas.</p>",
+         "src": "files/wohnfee/bilder/zielgruppen/REDESIGN.jpg",
+         "alt": "Link zu Privat-Projekten",
+         "title": null,
+         "caption": "Mehr erfahren",
+         "floating": "above",
+         "size": null,
+         "fullsize": false,
+         "link": "/fuer-privatpersonen-2.html"
+        }
+       ]
+      }
+     ],
+     "id": "50",
+     "cssClass": "half-grey thirds"
+    }
+   ],
+   "slider": [
+    {
+     "id": "781",
+     "type": "image",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "src": "files/wohnfee/bilder/homestaging/Startbild_Homestaging2023_reduced.jpg",
+     "alt": "",
+     "title": null,
+     "caption": "",
+     "floating": "above",
+     "size": null,
+     "fullsize": false,
+     "link": ""
+    }
+   ]
+  },
+  "cssClass": "",
+  "lang": "en",
+  "alternate": "/home-staging.html"
+ },
+ "4": {
+  "route": "/en/redesign.html",
+  "title": "Redesign",
+  "alias": "en/redesign",
+  "pageTitle": "",
+  "description": "Re-stage what you have with furniture, lighting and great accessories - from concept to implementation, all from one hand - for your very own dream home",
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "1",
+  "columns": {
+   "main": [
+    {
+     "id": "340",
+     "type": "headline",
+     "headline": "WOHN.FEE Redesign",
+     "headlineUnit": "h1",
+     "cssClass": "no-flex"
+    },
+    {
+     "id": "341",
+     "type": "text",
+     "headline": "Not happy with your living environment?",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>Our offer is aimed at anyone who wants to change their living environment but is not quite sure what and how. Adapting rooms to new needs, creating new perspectives, zoning areas, using what you have and combining it with new pieces, adding something special.</p>\n<h3><strong>Fresh, innovative, with that certain something. </strong></h3>\n<p>The <span class=\"wohnfee-light\">WOHN.FEE</span> interior professionals support you in redesigning your own living spaces. We help you define your ideas and implement them either all at once or \"step by step\".</p>\n<p>This service is also recommended when moving into a new home – because with an overall concept you have a great decision-making aid for buying furniture, and your individual, cosy home won't take long to arrive.</p>"
+    },
+    {
+     "id": "342",
+     "type": "text",
+     "headline": "Redesign by the WOHN.FEE professionals",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>The <span class=\"wohnfee-light\">WOHN.FEE</span> analyses the conditions of your living spaces and clarifies the wishes, ideas and needs of all residents in a personal conversation. From this, an individual design concept is created with colours, materials, lighting, furniture and accessories.</p>\n<h3><strong>Implementation from a single source - fairy service, so to speak.</strong></h3>\n<p>The offer includes the entire redesign of the interior spaces. We plan and organise all the necessary things. If structural alterations are also required, we work with selected architecture firms.</p>\n<p>Properties <strong>of any size</strong> are changed for you – according to budget specifications and cost estimate – exactly as you dream of. No standard package, but something special.</p>\n<p>&nbsp;</p>"
+    },
+    {
+     "id": "354",
+     "type": "headline",
+     "headline": "Trends",
+     "headlineUnit": "h2",
+     "cssClass": ""
+    },
+    {
+     "type": "newslist",
+     "archives": [
+      "5"
+     ],
+     "limit": 0,
+     "perPage": 0,
+     "moduleId": "18",
+     "variant": "latest",
+     "headline": "",
+     "headlineUnit": "h1",
+     "cssClass": "",
+     "category": "4"
+    },
+    {
+     "id": "447",
+     "type": "headline",
+     "headline": "The process - how it works",
+     "headlineUnit": "h2",
+     "cssClass": ""
+    },
+    {
+     "id": "448",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "icon_list icon_redesign_contact",
+     "html": "<h3>1. Initial contact and viewing</h3>\n<p>You send us the floor plan of the property, some photos and the address. In a first personal meeting on site, we clarify all your wishes together and the possibilities for implementation</p>"
+    },
+    {
+     "id": "449",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h3",
+     "cssClass": "icon_list icon_redesign_concept",
+     "html": "<h3>2. Furnishing concept</h3>\n<p>We create a moodboard for you that captures the style, colours and materials. Then, room by room, colours, furniture, lighting, rugs and accessories are illustrated – of course also happily incorporating existing pieces of furniture. This concept is then discussed with you once more and refined in detail.</p>"
+    },
+    {
+     "id": "450",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h3",
+     "cssClass": "icon_list icon_redesign_implement",
+     "html": "<h3>3. <strong>Implementation</strong></h3>\n<p>Depending on whether you want to implement everything at once or prefer to go \"piece by piece\" – we will gladly plan the possible steps for you. After you commission us, we organise all the necessary preparatory work and will happily also order all the proposed furniture. If you prefer to shop yourself, that is of course no problem either – then you will receive a list with all product links and, if you like, the contacts of the professionals.</p>"
+    },
+    {
+     "id": "451",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h3",
+     "cssClass": "icon_list icon_redesign_timetable",
+     "html": "<h3>4. Budget and schedule</h3>\n<p>After the initial on-site assessment, we draw up a first cost framework. Then the individual details are discussed, samples are organised and a rough schedule is created. We always make sure to stay within the given budget. A good mix in furnishing is important to us: high-quality basic pieces (seating furniture, lighting, storage furniture) and more affordable accessories, vintage one-offs if desired – after all, it should become your individual, cosy home where you feel completely at ease.</p>"
+    },
+    {
+     "id": "454",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "icon_list no_icon",
+     "html": "<h3>An investment that pays off</h3>\n<p>The cost of a redesign consultation or even a complete redesign \"from WOHN.FEE's hand\" is definitely worth it – because the many hours you would spend searching for suitable materials, furniture, lighting etc. are taken off your hands. You make the final selection – according to your specifications, of course – but enhanced with the professional tips of WOHN.FEE. And you can then already enjoy the time you have saved in your new home.</p>"
+    }
+   ],
+   "slider": [
+    {
+     "type": "swiper",
+     "items": [
+      {
+       "id": "695",
+       "type": "image",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "src": "files/wohnfee/bilder/redesign/XT200235.JPG",
+       "alt": "Handskizze laut Wohnungsgrundriss mit eingezeichneten Möbeln",
+       "title": null,
+       "caption": "Von der ersten Skizze",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": ""
+      },
+      {
+       "id": "482",
+       "type": "image",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "src": "files/wohnfee/bilder/redesign/Redesign3_Essen 0052.jpg",
+       "alt": "Esstisch rund mit 4 grünen Stühlen - dahinter weiße Küchenzeile mit Stehbank",
+       "title": null,
+       "caption": "zum haptischen Wohngefühl",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": ""
+      },
+      {
+       "id": "697",
+       "type": "image",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "src": "files/wohnfee/bilder/redesign/XT200239.JPG",
+       "alt": "Skizze laut Hausgrundriss im Erdgeschoss - Wohnen, Essen, Küche",
+       "title": null,
+       "caption": "Vorhandenes mit Neuem ergänzen",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": ""
+      },
+      {
+       "id": "481",
+       "type": "image",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "src": "files/wohnfee/bilder/redesign/REDESIGN2_Wintergarten.jpg",
+       "alt": "Wintergarten mit Seilsofa, Teppich und vielen Pflanzen in Metalltöpfen",
+       "title": null,
+       "caption": "mit Ideen inspirieren",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": ""
+      },
+      {
+       "id": "485",
+       "type": "image",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "src": "files/wohnfee/bilder/redesign/XT200240.JPG",
+       "alt": "Farbkarte, Stoff- und Holzmuster für die Raumgestaltung",
+       "title": null,
+       "caption": "Farben und Materialien abstimmen",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": ""
+      },
+      {
+       "id": "698",
+       "type": "image",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "src": "files/wohnfee/bilder/redesign/Redesign4_JUZI.jpg",
+       "alt": "kleiner Holzschreibtisch mit Stuhl, Teppich und Rattan-Gästebett mit Stehleuchte",
+       "title": null,
+       "caption": "Räume gemütlich machen",
+       "floating": "above",
+       "size": null,
+       "fullsize": false,
+       "link": ""
+      }
+     ],
+     "moduleId": null
+    }
+   ]
+  },
+  "cssClass": "",
+  "lang": "en",
+  "alternate": "/redesign.html"
+ },
+ "9": {
+  "route": "/en/impressum.html",
+  "title": "Legal Notice",
+  "alias": "en/impressum",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "8",
+  "columns": {
+   "main": [
+    {
+     "id": "489",
+     "type": "text",
+     "headline": "Legal Notice",
+     "headlineUnit": "h1",
+     "cssClass": "",
+     "html": "<h2>Disclosure pursuant to § 25 para 5 of the Austrian Media Act (MedienG)</h2>\n<dl>\n<dt>Company name</dt>\n<dd>WOHN.FEE GmbH</dd>\n<dt>Line of business</dt>\n<dd>Living space consulting, trade in furniture and interior furnishing goods</dd>\n<dt>VAT ID</dt>\n<dd>ATU78831249</dd>\n<dt>Companies Register Court</dt>\n<dd>Commercial Court of Vienna</dd>\n<dt>Registered office</dt>\n<dd>Heumühlgasse 12/4, 1040 Vienna, AUSTRIA</dd>\n<dt>Phone</dt>\n<dd>+43 676 9202236</dd>\n<dt>Fax</dt>\n<dd>n/a</dd>\n<dt>E-mail</dt>\n<dd><a href=\"mailto:office@wohnfee.at\">office@wohnfee.at</a></dd>\n<dt>Website</dt>\n<dd><a href=\"https://www.wohnfee.at/\">www.wohnfee.at</a></dd>\n<dt>Membership in the Austrian Federal Economic Chamber (WKO)</dt>\n<dd>Member of the Vienna Chamber of Commerce</dd>\n<dt>Applicable legal regulations and access to them</dt>\n<dd><a href=\"http://www.ris.bka.gv.at/\">Trade Regulation Act (GewO)</a></dd>\n<dt>Supervisory authority, trade authority</dt>\n<dd>Municipal District Office of the 9th district</dd>\n<dt>Professional title</dt>\n<dd>Home Staging Professional, Interior Designer</dd>\n<dt>State of award</dt>\n<dd>Austria</dd>\n<dt>Managing director under commercial law:</dt>\n<dd>Paola Moreira</dd>\n<dt>Statement on the fundamental direction of the medium</dt>\n<dd>This website provides information about the company's services.</dd>\n</dl>\n<h2>WKO link</h2>\n<p><a rel=\"noopener\" href=\"http://www.wkoecg.at/Web/Ecg.aspx?FirmaID=8f5322dd-8c38-467b-a1d5-2829080dae47\" target=\"_blank\"><img style=\"border: 0px none; display: block; margin-left: auto; margin-right: auto;\" src=\"http://www.wkoecg.at/Web/Library/img/ecg.gif\" alt=\"Information on E-Commerce and Media Law\"></a></p>"
+    }
+   ]
+  },
+  "cssClass": "no-slider",
+  "lang": "en",
+  "alternate": "/impressum.html"
+ },
+ "10": {
+  "route": "/en/kontakt.html",
+  "title": "Contact",
+  "alias": "en/kontakt",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "8",
+  "columns": {
+   "main": [
+    {
+     "type": "wrapper",
+     "cssClass": "flex thirds centered",
+     "id": "849",
+     "headline": null,
+     "headlineUnit": "h2",
+     "children": [
+      {
+       "id": "702",
+       "type": "headline",
+       "headline": "Kontakt",
+       "headlineUnit": "h1",
+       "cssClass": "noflex"
+      },
+      {
+       "id": "704",
+       "type": "text",
+       "headline": "So erreichen Sie uns",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<dl>\n<dt>Telefon</dt>\n<dd><a href=\"tel:+436769202236\">+43 676 9202236</a></dd>\n<dt>E-Mail</dt>\n<dd><a href=\"mailto:office@wohnfee.at\">office@wohnfee.at</a></dd>\n<dt>Website</dt>\n<dd><a href=\"https://www.wohnfee.at\">www.wohnfee.at</a></dd>\n</dl>"
+      },
+      {
+       "id": "701",
+       "type": "text",
+       "headline": "Office",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<p style=\"text-align: center;\">WOHNFEE GmbH<br>Heumühlgasse 12/4<br>1040 Wien <br>ÖSTERREICH</p>"
+      },
+      {
+       "id": "707",
+       "type": "text",
+       "headline": "Die WOHN.FEE im „Netz“",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<ul>\n<li><a rel=\"noopener\" href=\"https://www.instagram.com/wohnfee.at\" target=\"_blank\">WOHN.FEE auf Instagram</a></li>\n<li><a rel=\"noopener\" href=\"https://www.facebook.com/wohnfee.homestaging\" target=\"_blank\">WOHN.FEE auf Facebook</a></li>\n</ul>"
+      }
+     ]
+    }
+   ]
+  },
+  "cssClass": "no-slider",
+  "lang": "en",
+  "alternate": "/kontakt.html"
+ },
+ "11": {
+  "route": "/en/datenschutz.html",
+  "title": "Privacy Policy",
+  "alias": "en/datenschutz",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": true,
+  "parent": "8",
+  "columns": {
+   "main": [
+    {
+     "id": "490",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<h2>Contact</h2>\n<p>If you contact us via the form on the website, by e-mail or by phone, the data you provide will be stored for up to six months in order to process your enquiry and in case of follow-up questions. This data will not be passed on without your consent.</p>"
+    },
+    {
+     "id": "491",
+     "type": "text",
+     "headline": "Data storage",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>Please note that, for the purpose of simplifying the ordering process by e-mail and subsequent contract processing, incoming e-mails and in particular details such as name, billing address, telephone number and e-mail address may be stored.</p>\n<p>The data you provide is required for the fulfilment of the contract or for the implementation of pre-contractual measures. Without this data, no contract can be concluded with you. Data will not be passed on to third parties, with the exception of the transfer of any credit card data to the processing banks/payment service providers for the purpose of debiting the purchase price, address data to the commissioned transport/shipping company for the delivery of physical goods, and invoice data to the tax advisor for the fulfilment of tax obligations.</p>\n<p>After an order process is aborted, the stored data will be deleted. In the event of a contract being concluded, all data from the contractual relationship will be stored until the end of the statutory tax retention period (7 years).</p>\n<p>The data name, address, purchased goods and date of purchase will be stored beyond that until the expiry of product liability (10 years). Data processing is carried out on the basis of the statutory provisions of § 96 para 3 TKG as well as Art 6 para 1 lit a (consent) and/or lit b (necessary for the fulfilment of the contract) of the GDPR.</p>"
+    },
+    {
+     "id": "492",
+     "type": "text",
+     "headline": "Cookies",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>This website uses so-called cookies. These are small text files that are stored on your device with the help of your browser. They do not cause any damage.</p>\n<p>The website uses cookies to make the offer user-friendly. Some cookies remain stored on your device until you delete them. The cookies make it possible to recognise your browser the next time you visit.</p>\n<p>If you do not wish this, you can set up your browser so that it informs you about the placement of cookies and you only allow this in individual cases.</p>\n<p>If cookies are deactivated, the functionality of this website may be limited.</p>\n<p></p>"
+    },
+    {
+     "id": "493",
+     "type": "text",
+     "headline": "Web analytics",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>This website uses functions of the web analysis service Google Analytics, provided by Google Inc., 1600 Amphitheatre Parkway Mountain View, CA 94043, USA.</p>\n<p>Cookies are used for this purpose, which enable an analysis of the use of the website by its users. The information generated in this way is anonymised using the \"IP anonymisation\" function and, within the scope of the provider's EU-U.S. Privacy Shield Framework certification, transferred to and stored on a server of the provider in a third country outside Europe.</p>\n<p>In our cookie bar you can enable web analysis for us by agreeing to the setting of cookies. You can also change the settings you have made at any time via this link: </p>\n<p>In any case, a corresponding data processing agreement has been concluded with the web analysis provider.</p>\n<p>The relationship with the web analysis provider is based on an adequacy decision of the European Commission.</p>\n<p>Data processing is carried out on the basis of the statutory provisions of § 96 para 3 TKG (Austrian Telecommunications Act) as well as Art 6 para 1 lit a (consent) and/or f (legitimate interest) of the GDPR.</p>\n<p>The concern in the sense of the GDPR (legitimate interest) is the improvement of the offer and the website. As the privacy of all users is considered important, user data is anonymised as described above. The remaining data is retained by the web analysis provider for a period of 26 months.</p>"
+    },
+    {
+     "id": "494",
+     "type": "text",
+     "headline": "Newsletter",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>The newsletter is managed and sent, where applicable, using the newsletter service Mailchimp of the provider The Rocket Science Group, LLC 675 Ponce de Leon Ave NE Suite 5000 Atlanta, GA 30308 USA.</p>\n<p>You have the option of subscribing to this newsletter via a link on this website to the registration form. For this, your e-mail address and your active consent that you agree to receive the newsletter are required.</p>\n<p>In order to provide you with targeted information, I also collect and process voluntarily provided details such as title / academic degree, first name, last name, company, function and preferred e-mail format.</p>\n<p>The information generated in this way is transferred, in the context of the EU-U.S. Privacy Shield Framework certification of the newsletter service provider, to a server of the newsletter service provider in a non-European third country and stored there.</p>\n<p>A corresponding data processing agreement has been concluded with the newsletter service provider.</p>\n<p>The relationship with the newsletter service provider is based on an adequacy decision of the European Commission.</p>\n<p>Data processing is carried out on the basis of the statutory provisions of § 96 para 3 TKG as well as Art 6 para 1 lit a (consent) and/or f (legitimate interest) of the GDPR.</p>\n<h3>Double opt-in</h3>\n<p>As soon as you have subscribed to the newsletter, you will receive a confirmation e-mail with a link to confirm your subscription.</p>\n<p>You can cancel your newsletter subscription at any time. Please send your cancellation to the following e-mail address: office@wohnfee.at. Your data related to the newsletter mailing will then be deleted immediately.</p>"
+    },
+    {
+     "id": "495",
+     "type": "text",
+     "headline": "Your rights",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>You are basically entitled to the rights of access, rectification, erasure, restriction, data portability, withdrawal and objection. If you believe that the processing of your data violates data protection law or that your data protection rights have otherwise been infringed in any way, you can complain to the supervisory authority. In Austria, this is the Data Protection Authority.</p>\n<p>Please use the following contact details for queries:</p>\n<p>WOHN.FEE GmbH<br>Heumühlgasse 12/4<br>1040 Wien<br>ÖSTERREICH</p>\n<p>Telefon:<br>+43 676 9202236<br>E-Mail:<br>office@wohnfee.at</p>"
+    },
+    {
+     "id": "496",
+     "type": "text",
+     "headline": "Photo credits",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>Image material: iStockphoto.com, edit homestaging, veer.com, Gernot Ebenlechner, Dipl. Ing. Wiebke Rieck, Peter Bárci, Christian Jobst, Valerie Fürstenberg / WILKE</p>"
+    }
+   ]
+  },
+  "cssClass": "no-slider",
+  "lang": "en",
+  "alternate": "/datenschutz.html"
+ },
+ "15": {
+  "route": "/en/projekte.html",
+  "title": "Projects",
+  "alias": "en/projekte",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "7",
+  "columns": {
+   "main": [
+    {
+     "id": "468",
+     "type": "headline",
+     "headline": "Projects",
+     "headlineUnit": "h1",
+     "cssClass": ""
+    },
+    {
+     "type": "categories",
+     "archives": [
+      "11"
+     ]
+    },
+    {
+     "type": "newslist",
+     "archives": [
+      "11"
+     ],
+     "limit": 0,
+     "perPage": 4,
+     "moduleId": "10",
+     "variant": "latest",
+     "headline": "",
+     "headlineUnit": "h1",
+     "cssClass": ""
+    },
+    {
+     "id": "506",
+     "type": "text",
+     "headline": "Fancy something new?",
+     "headlineUnit": "h2",
+     "cssClass": "bg-nl",
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+    }
+   ]
+  },
+  "cssClass": "blog",
+  "lang": "en",
+  "alternate": "/projekte.html"
+ },
+ "16": {
+  "route": "/en/trends-tipps.html",
+  "title": "Trends & Tips",
+  "alias": "en/trends-tipps",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "7",
+  "columns": {
+   "main": [
+    {
+     "type": "newslist",
+     "archives": [
+      "5"
+     ],
+     "limit": 0,
+     "perPage": 0,
+     "moduleId": "18",
+     "variant": "latest",
+     "headline": "",
+     "headlineUnit": "h1",
+     "cssClass": ""
+    },
+    {
+     "id": "506",
+     "type": "text",
+     "headline": "Fancy something new?",
+     "headlineUnit": "h2",
+     "cssClass": "bg-nl",
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+    }
+   ]
+  },
+  "cssClass": "blog",
+  "lang": "en",
+  "alternate": "/trends-tipps.html"
+ },
+ "18": {
+  "route": "/en/projekt.html",
+  "title": "Blog articles projects",
+  "alias": "en/projekt",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": true,
+  "parent": "15",
+  "columns": {
+   "main": [
+    {
+     "id": "506",
+     "type": "text",
+     "headline": "Fancy something new?",
+     "headlineUnit": "h2",
+     "cssClass": "bg-nl",
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+    }
+   ]
+  },
+  "cssClass": "blog",
+  "lang": "en",
+  "alternate": "/projekt.html"
+ },
+ "19": {
+  "route": "/en/blogartikel-trends-tipps.html",
+  "title": "Blog articles trends & tips",
+  "alias": "en/blogartikel-trends-tipps",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": true,
+  "parent": "16",
+  "columns": {
+   "main": [
+    {
+     "id": "506",
+     "type": "text",
+     "headline": "Fancy something new?",
+     "headlineUnit": "h2",
+     "cssClass": "bg-nl",
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+    }
+   ]
+  },
+  "cssClass": "blog",
+  "lang": "en",
+  "alternate": "/blogartikel-trends-tipps.html"
+ },
+ "20": {
+  "route": "/en/blogartikel.html",
+  "title": "Blog articles events",
+  "alias": "en/blogartikel",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": true,
+  "parent": "39",
+  "columns": {
+   "main": [
+    {
+     "id": "506",
+     "type": "text",
+     "headline": "Fancy something new?",
+     "headlineUnit": "h2",
+     "cssClass": "bg-nl",
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+    }
+   ]
+  },
+  "cssClass": "blog",
+  "lang": "en",
+  "alternate": "/blogartikel.html"
+ },
+ "25": {
+  "route": "/en/aktuelles.html",
+  "title": "Current",
+  "alias": "en/aktuelles",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "7",
+  "columns": {
+   "main": [
+    {
+     "type": "newslist",
+     "archives": [
+      "13",
+      "9",
+      "8",
+      "11",
+      "5"
+     ],
+     "limit": 6,
+     "perPage": 0,
+     "moduleId": "19",
+     "variant": "latest",
+     "headline": "News",
+     "headlineUnit": "h1",
+     "cssClass": ""
+    },
+    {
+     "id": "506",
+     "type": "text",
+     "headline": "Fancy something new?",
+     "headlineUnit": "h2",
+     "cssClass": "bg-nl",
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+    }
+   ]
+  },
+  "cssClass": "blog",
+  "lang": "en",
+  "alternate": "/aktuelles.html"
+ },
+ "28": {
+  "route": "/en/fuer-bautraeger-2.html",
+  "title": "For Property Developers",
+  "alias": "en/fuer-bautraeger-2",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "3",
+  "columns": {
+   "main": [
+    {
+     "id": "88",
+     "type": "headline",
+     "headline": "Home staging for property developers",
+     "headlineUnit": "h1",
+     "cssClass": ""
+    },
+    {
+     "id": "252",
+     "type": "text",
+     "headline": "The recognition value of your properties",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>Set your company apart from the competition and let your customers experience viewings in beautiful show homes even during the construction phase. Furnished rooms can be perceived much better in terms of their size and function. Beautiful furniture, appealing decoration and lighting clearly highlight the advantages of your property!</p>"
+    },
+    {
+     "id": "253",
+     "type": "text",
+     "headline": "Your advantages",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>With a WOHN.FEE home staging you increase the recognition value of your properties! Marketing times are shortened and price reductions avoided. Here you will find examples of show apartments in shell constructions and completed residential complexes, as well as an example of a converted construction container used as a sales room and office.</p>"
+    },
+    {
+     "type": "newslist",
+     "archives": [
+      "11"
+     ],
+     "limit": 0,
+     "perPage": 0,
+     "moduleId": "14",
+     "variant": "simple",
+     "headline": "Project examples",
+     "headlineUnit": "h2",
+     "cssClass": "projekt",
+     "category": "2"
+    }
+   ]
+  },
+  "cssClass": "",
+  "lang": "en",
+  "alternate": "/fuer-bautraeger-2.html"
+ },
+ "29": {
+  "route": "/en/fuer-makler.html",
+  "title": "For real estate agents",
+  "alias": "en/fuer-makler",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "3",
+  "columns": {
+   "main": [
+    {
+     "id": "502",
+     "type": "headline",
+     "headline": "Home staging for estate agents",
+     "headlineUnit": "h1",
+     "cssClass": "no-flex"
+    },
+    {
+     "id": "163",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h1",
+     "cssClass": "",
+     "html": "<h3>Your competitive edge</h3>\n<p>Use home staging for your business and benefit from competitive advantages over your rivals!<br>As an innovative property presentation, home staging successfully supports your work as an estate agent.</p>\n<p>By upgrading the property and equipping it for your target group, you generate significantly more demand. <br>Professional photos also ensure a high-quality presentation and, as a result, a high number of online views of your listing.</p>"
+    },
+    {
+     "id": "501",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<h3>Our experience</h3>\n<p>WOHN.FEE home staging demonstrably leads to faster purchase decisions by prospective buyers and thus to fewer viewing appointments until the sale. We have particularly good experience with properties that have difficult floor plans or many sloping ceilings!</p>\n<p>The financing of a home staging is usually provided by the owner of the property. So as an agent, you take no financial risk.</p>\n<p>You take care of the sale, we take care of the rest!</p>"
+    },
+    {
+     "type": "newslist",
+     "archives": [
+      "11"
+     ],
+     "limit": 0,
+     "perPage": 0,
+     "moduleId": "14",
+     "variant": "simple",
+     "headline": "Project examples",
+     "headlineUnit": "h2",
+     "cssClass": "projekt blog",
+     "category": "1"
+    }
+   ]
+  },
+  "cssClass": "",
+  "lang": "en",
+  "alternate": "/fuer-makler.html"
+ },
+ "30": {
+  "route": "/en/fuer-privatpersonen-2.html",
+  "title": "For private individuals",
+  "alias": "en/fuer-privatpersonen-2",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "3",
+  "columns": {
+   "main": [
+    {
+     "id": "503",
+     "type": "headline",
+     "headline": "Home staging for private individuals",
+     "headlineUnit": "h1",
+     "cssClass": "no-flex"
+    },
+    {
+     "id": "165",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h1",
+     "cssClass": "",
+     "html": "<h2>The first impression counts!</h2>\n<p>Anyone who has ever been looking for an apartment knows the situation: in a completely empty property it is difficult to estimate room sizes or imagine the furnishing. It is even harder in a property fully packed with the previous owner's belongings. <strong>8 out of 10 prospective buyers feel exactly the same way.</strong></p>"
+    },
+    {
+     "id": "504",
+     "type": "text",
+     "headline": "We spark interest",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<p>Not even advice such as 'you just have to imagine it all completely differently...' helps. The decision has usually already been made – and it is against the property. In order to appeal to the widest possible range of buyers, we present your property in a neutral and modern way - with rental furniture, decoration and beautiful lighting. The perfect photos after the home staging also increase interest in your property on the property portals.</p>"
+    },
+    {
+     "type": "newslist",
+     "archives": [
+      "11"
+     ],
+     "limit": 0,
+     "perPage": 0,
+     "moduleId": "14",
+     "variant": "simple",
+     "headline": "Project examples",
+     "headlineUnit": "h2",
+     "cssClass": "projekt blog",
+     "category": "3"
+    }
+   ]
+  },
+  "cssClass": "",
+  "lang": "en",
+  "alternate": "/fuer-privatpersonen-2.html"
+ },
+ "31": {
+  "route": "/en/faq.html",
+  "title": "FAQ",
+  "alias": "en/faq",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "3",
+  "columns": {
+   "main": [
+    {
+     "id": "362",
+     "type": "headline",
+     "headline": "FAQ",
+     "headlineUnit": "h1",
+     "cssClass": ""
+    },
+    {
+     "id": "933",
+     "type": "accordion",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "children": [
+      {
+       "id": "363",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<p>Auf den Punkt gebracht profitieren Verkäufer und Makler durch</p>\n<ul>\n<li>Perfektes Bild- oder auch Videomaterial für die Bewerbung</li>\n<li>Weniger Besichtigungstermine</li>\n<li>Eine um bis zu 50 % kürzere Verkaufszeit</li>\n<li>Den bestmöglichen Verkaufspreis</li>\n<li>Zufriedene Kunden</li>\n</ul>"
+      },
+      {
+       "id": "364",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<p>Das <span class=\"wohnfee-light\">WOHN.FEE</span> Team benötigt von der Besichtigung der Immobilie bis zur Umsetzung – je nach Größe der Immobilie – 1-2 Wochen. Das eigentliche Staging wird an einem Tag umgesetzt – inkl. Profifotos oder -video.</p>"
+      },
+      {
+       "id": "365",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<p>Die <span class=\"wohnfee-light\">WOHN.FEE</span> erstellt für jede Immobilie ein individuelles Angebot je nach Zielgruppe und Leihdauer. Unsere Leistung umfasst die Konzeption, die Möbelauswahl, die Organisation der Transporte und der Handwerker sowie das Staging vor Ort.</p>\n<p><a class=\"abutton\" href=\"mailto:office@wohnfee.at\">Fragen Sie uns!</a></p>"
+      },
+      {
+       "id": "366",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<p>Die Möbel, Leuchten und Accessoires bleiben während dem gesamten Vermarktungszeitraum im Objekt. Das ist eben der große Unterschied zu einer Visualisierung – das haptische Wohngefühl erleben!</p>"
+      },
+      {
+       "id": "367",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<p>Ein zu billiges Staging, das nicht der Zielgruppe entspricht, kann Nachteile für den Verkauf/ die Vermietung haben.</p>\n<p>Die <span class=\"wohnfee-light\">WOHN.FEE</span> plant passend zur Zielgruppe Möbel, Beleuchtung, Teppiche und Accessoires – hier werden pro Objekt je nach Größe zwischen 100 und 200 Teile angeliefert. Das erzielt natürlich eine andere Wirkung als „ein bisschen Dekoration“.</p>\n<p>Achten Sie daher bei Angeboten auf eine möglichst detaillierte Beschreibung der Ausstattung.</p>"
+      },
+      {
+       "id": "368",
+       "type": "text",
+       "headline": "",
+       "headlineUnit": "h2",
+       "cssClass": "",
+       "html": "<p>Wenn ein Objekt noch in Planung ist, kann ein virtuelles Staging sehr hilfreich sein.</p>\n<p>Vorhandende Immobilien „life“ zu stagen bringt das haptische Erleben bei der Besichtigung. Man setzt sich auf´s Sofa oder zum Essitsch, die Räume hallen nicht mehr, es ist gemütlich.</p>\n<p>Ein <span class=\"wohnfee-light\">WOHN.FEE</span><span class=\"wohnfee\">-</span>Kunde hat es auf den Punkt gebracht: <br>Ein Konzert im Fernsehen kann man auch nicht mit einem Live-Konzert vergleichen!</p>"
+      }
+     ]
+    }
+   ]
+  },
+  "cssClass": "",
+  "lang": "en",
+  "alternate": "/faq.html"
+ },
+ "32": {
+  "route": "/en/blogartikel-aktuelles.html",
+  "title": "Blog articles news",
+  "alias": "en/blogartikel-aktuelles",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": true,
+  "parent": "25",
+  "columns": {
+   "main": [
+    {
+     "id": "506",
+     "type": "text",
+     "headline": "Fancy something new?",
+     "headlineUnit": "h2",
+     "cssClass": "bg-nl",
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+    }
+   ]
+  },
+  "cssClass": "blog",
+  "lang": "en",
+  "alternate": "/blogartikel-aktuelles.html"
+ },
+ "37": {
+  "route": "/en/team.html",
+  "title": "Team",
+  "alias": "en/team",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "8",
+  "columns": {
+   "main": [
+    {
+     "id": "375",
+     "type": "headline",
+     "headline": "The WOHN.FEE team",
+     "headlineUnit": "h1",
+     "cssClass": ""
+    },
+    {
+     "id": "374",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "teamfoto",
+     "html": "<h2>Paola Moreira</h2>\n<p>takes over WOHNFEE and its team from founder Yvonne Werginz as of June 2023, and with it the challenge of continuing to realise exciting projects in the well-known WOHNFEE quality.</p>\n<blockquote>\n<p>\"Coming to WOHNFEE felt like meeting the right people at the right place at the right time. It is with great joy that I am now part of this experienced team, and I look forward to contributing my creativity here.\"</p>\n</blockquote>\n<p>Born in Brazil and a naturalised Austrian, she also came to Vienna for love in 2004. With a degree in interior architecture (in Brazil), training in textile design and further training in home staging (both in Vienna), she was responsible in recent years for the redesign of the traditional Viennese accommodation \"Hostel Ruthensteiner\", which was awarded \"best hostel in Austria\" in 2019 and 2020 and \"most popular hostel in Vienna\" and was included in the \"Five Stars Hostels\" list.</p>\n<blockquote>\n<p>\"Spatial design has always been my great passion. Creating creative rooms with a feel-good atmosphere is fun for me. Home staging, too, thrives on the exciting mix of furniture and different materials and thus brings a special added value for our customers\".</p>\n</blockquote>\n<h3>Contact</h3>\n<p>Mobile: <a href=\"tel:+436769202236\">+43 676 9202236</a><br>E-mail: <a href=\"mailto:paola.moreira@wohnfee.at\">paola.moreira@wohnfee.at</a></p>",
+     "src": "files/wohnfee/team/WohnFee_Brandingfotos_23-26.jpg",
+     "alt": "",
+     "title": null,
+     "caption": "",
+     "floating": "above",
+     "size": null,
+     "fullsize": false,
+     "link": ""
+    },
+    {
+     "id": "377",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "teamfoto",
+     "html": "<h2>Sandra Berte</h2>\n<p>… has been part of the WOHN.FEE team since autumn 2015 and is mainly responsible for planning and executing stagings as well as redesign projects. Even in challenging Furniture Leasing projects she proves her poise and humour.</p>\n<blockquote>\n<p>\"What makes my job exciting is the variety. From planning at the desk to preparatory organisation in the warehouse to the finishing touches on staging day, every project is different and inspiring.\"</p>\n</blockquote>\n<p>The Berlin native, who came to Vienna for love via Hamburg, is a passionate member of the WOHN.FEE team. As a trained master florist, she successfully completed further training in interior design in 2014. She brings a special flair for designing living spaces and plenty of ideas for redesigning properties that have \"seen better days\".</p>\n<h3>Contact</h3>\n<p>E-mail: <a href=\"mailto:sandra.berte@wohnfee.at\">sandra.berte@wohnfee.at</a></p>",
+     "src": "files/wohnfee/team/WohnFee_Brandingfotos_23-6.jpg",
+     "alt": "",
+     "title": null,
+     "caption": "",
+     "floating": "above",
+     "size": null,
+     "fullsize": false,
+     "link": ""
+    }
+   ],
+   "slider": [
+    {
+     "id": "851",
+     "type": "image",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "centered",
+     "src": "files/wohnfee/team/DSC_3543-2 1.jpg",
+     "alt": "",
+     "title": null,
+     "caption": "",
+     "floating": "above",
+     "size": null,
+     "fullsize": false,
+     "link": ""
+    }
+   ]
+  },
+  "cssClass": "",
+  "lang": "en",
+  "alternate": "/team.html"
+ },
+ "38": {
+  "route": "/en/presse.html",
+  "title": "Press",
+  "alias": "en/presse",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "8",
+  "columns": {
+   "main": [
+    {
+     "id": "370",
+     "type": "headline",
+     "headline": "Press Review",
+     "headlineUnit": "h1",
+     "cssClass": ""
+    },
+    {
+     "type": "categories",
+     "archives": [
+      "8"
+     ]
+    },
+    {
+     "type": "newslist",
+     "archives": [
+      "8"
+     ],
+     "limit": 0,
+     "perPage": 5,
+     "moduleId": "28",
+     "variant": "short",
+     "headline": "",
+     "headlineUnit": "h1",
+     "cssClass": "blog"
+    }
+   ]
+  },
+  "cssClass": "no-slider",
+  "lang": "en",
+  "alternate": "/presse.html"
+ },
+ "39": {
+  "route": "/en/events.html",
+  "title": "Events",
+  "alias": "en/events",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "7",
+  "columns": {
+   "main": [
+    {
+     "type": "newslist",
+     "archives": [
+      "9"
+     ],
+     "limit": 0,
+     "perPage": 0,
+     "moduleId": "17",
+     "variant": "latest",
+     "headline": "Events",
+     "headlineUnit": "h1",
+     "cssClass": "blog"
+    },
+    {
+     "id": "506",
+     "type": "text",
+     "headline": "Fancy something new?",
+     "headlineUnit": "h2",
+     "cssClass": "bg-nl",
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+    }
+   ]
+  },
+  "cssClass": "",
+  "lang": "en",
+  "alternate": "/events.html"
+ },
+ "40": {
+  "route": "/en/presseartikel.html",
+  "title": "Press articles",
+  "alias": "en/presseartikel",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": true,
+  "parent": "38",
+  "columns": {
+   "main": []
+  },
+  "cssClass": "no-slider",
+  "lang": "en",
+  "alternate": "/presseartikel.html"
+ },
+ "47": {
+  "route": "/en/home-staging/preise.html",
+  "title": "Prices",
+  "alias": "en/home-staging/preise",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "3",
+  "columns": {
+   "main": [
+    {
+     "id": "904",
+     "type": "text",
+     "headline": "WOHNFEE Price Packages",
+     "headlineUnit": "h1",
+     "cssClass": "no-flex",
+     "html": "<p><strong>General:</strong></p>\n<ul>\n<li>Rental period 3 months</li>\n<li>50% deposit, remainder after the staging</li>\n<li>All prices plus 20% VAT.</li>\n<li>All prices without lamp installation</li>\n</ul>\n<p><strong>The installation of the lamps is to be carried out by the client themselves or </strong><strong>to be agreed individually.</strong></p>\n<p><strong>The furnishings may vary depending on availability and individual wishes.</strong></p>"
+    },
+    {
+     "id": "906",
+     "type": "text",
+     "headline": "PACKAGE 1",
+     "headlineUnit": "h2",
+     "cssClass": "no-flex paket",
+     "html": "<h3>Staging of the living/dining area, kitchen and entrance hall up to max. 50 m²,</h3>"
+    },
+    {
+     "id": "907",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "",
+     "html": "<h4>Living room:</h4>\n<ul>\n<li>Full-size sofa and lounger</li>\n<li>Coffee table</li>\n<li>Matching rug</li>\n<li>Lighting (room light, floor lamp)</li>\n<li>Console or sideboard</li>\n<li>Decoration (cushions, vases, pictures etc.)</li>\n</ul>"
+    },
+    {
+     "id": "908",
+     "type": "text",
+     "headline": "Dining room:",
+     "headlineUnit": "h4",
+     "cssClass": "",
+     "html": "<ul>\n<li>Dining table to match the property</li>\n<li>4-6 dining chairs</li>\n<li>Lighting</li>\n<li>Decoration</li>\n</ul>"
+    },
+    {
+     "id": "910",
+     "type": "text",
+     "headline": "Kitchen:",
+     "headlineUnit": "h4",
+     "cssClass": "",
+     "html": "<ul>\n<li>Dummy kitchen adapted to the available space</li>\n<li>Lighting</li>\n<li>Decoration</li>\n<li>Nespresso machine incl. accessories</li>\n</ul>"
+    },
+    {
+     "id": "911",
+     "type": "text",
+     "headline": "Entrance hall:",
+     "headlineUnit": "h4",
+     "cssClass": "",
+     "html": "<ul>\n<li>Wardrobe</li>\n<li>Console</li>\n<li>Mirror</li>\n<li>Runner</li>\n<li>Decoration</li>\n<li>Shoe covers</li>\n</ul>"
+    },
+    {
+     "id": "912",
+     "type": "headline",
+     "headline": "Price: € 2990.00",
+     "headlineUnit": "h3",
+     "cssClass": "no-flex paket"
+    },
+    {
+     "id": "913",
+     "type": "text",
+     "headline": "PACKAGE 2",
+     "headlineUnit": "h2",
+     "cssClass": "no-flex paket",
+     "html": "<h3>Staging of the living/dining area, kitchen, entrance hall, bedroom, bathroom up to max. 70 sqm</h3>"
+    },
+    {
+     "id": "930",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "no-flex",
+     "html": "<p style=\"text-align: center;\"><span style=\"font-size: 14pt;\">Staging of <strong>living room</strong>, <strong>dining room</strong>, <strong>kitchen </strong>and <strong>entrance hall</strong> <br>as in package 1 <strong>plus additionally</strong>:</span></p>"
+    },
+    {
+     "id": "919",
+     "type": "text",
+     "headline": "Bedroom:",
+     "headlineUnit": "h4",
+     "cssClass": "",
+     "html": "<ul>\n<li>Dummy bed with bedspread, cushions, throw, valance</li>\n<li>Bedside tables</li>\n<li>Lighting (room light, table lamps)</li>\n<li>Rug</li>\n<li>Wardrobe</li>\n<li>Mirror</li>\n<li>Decoration</li>\n</ul>"
+    },
+    {
+     "id": "920",
+     "type": "text",
+     "headline": "Bathroom:",
+     "headlineUnit": "h4",
+     "cssClass": "",
+     "html": "<ul>\n<li>Lighting</li>\n<li>Mirror</li>\n<li>Bath mat/ rug</li>\n<li>Towels</li>\n<li>Decoration</li>\n</ul>"
+    },
+    {
+     "id": "918",
+     "type": "headline",
+     "headline": "Price: € 3490.00",
+     "headlineUnit": "h3",
+     "cssClass": "no-flex paket"
+    },
+    {
+     "id": "921",
+     "type": "text",
+     "headline": "PACKAGE 3",
+     "headlineUnit": "h2",
+     "cssClass": "no-flex paket",
+     "html": "<h3>Complete staging of a residential unit up to max. 100 m² €</h3>"
+    },
+    {
+     "id": "931",
+     "type": "text",
+     "headline": "",
+     "headlineUnit": "h2",
+     "cssClass": "no-flex",
+     "html": "<p style=\"text-align: center;\"><span style=\"font-size: 14pt;\">Staging of <strong>living room</strong>, <strong>dining room</strong>, <strong>kitchen, </strong><strong>entrance hall</strong>, <br><strong>bedroom </strong>and <strong>bathroom </strong>as in package 2 <strong>plus additionally</strong>:</span></p>"
+    },
+    {
+     "id": "929",
+     "type": "text",
+     "headline": "additional rooms as youth room/ home office/ guest room:",
+     "headlineUnit": "h4",
+     "cssClass": "no-flex",
+     "html": "<ul>\n<li>Desk with chair</li>\n<li>Lighting (room light, floor/table lamp)</li>\n<li>Shelf or console</li>\n<li>Lounger or daybed</li>\n<li>Rug</li>\n<li>Decoration</li>\n</ul>"
+    },
+    {
+     "id": "928",
+     "type": "headline",
+     "headline": "Price: € 4490.00",
+     "headlineUnit": "h3",
+     "cssClass": "no-flex paket"
+    }
+   ]
+  },
+  "cssClass": "hspreise",
+  "lang": "en",
+  "alternate": "/home-staging/preise.html"
+ },
+ "49": {
+  "route": "/en/start/blogartikel-startseite.html",
+  "title": "Blog articles homepage",
+  "alias": "en/start/blogartikel-startseite",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": true,
+  "parent": "2",
+  "columns": {
+   "main": [
+    {
+     "id": "506",
+     "type": "text",
+     "headline": "Fancy something new?",
+     "headlineUnit": "h2",
+     "cssClass": "bg-nl",
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+    }
+   ]
+  },
+  "cssClass": "blog",
+  "lang": "en",
+  "alternate": "/start/blogartikel-startseite.html"
+ }
+}

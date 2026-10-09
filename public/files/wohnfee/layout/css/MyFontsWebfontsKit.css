@@ -1,0 +1,54 @@
+/* @import must be at top of file, otherwise CSS will not work */
+/*@import url("//hello.myfonts.net/count/3e994b");*/
+
+/**
+ * @license
+ * MyFonts Webfont Build ID 4102475, 2021-06-14T09:46:31-0400
+ * 
+ * The fonts listed in this notice are subject to the End User License
+ * Agreement(s) entered into by the website owner. All other parties are 
+ * explicitly restricted from using the Licensed Webfonts(s).
+ * 
+ * You may obtain a valid license at the URLs below.
+ * 
+ * Webfont: BauhausPro-Medium by ITC
+ * URL: https://www.myfonts.com/fonts/itc/bauhaus/pro-medium-177552/
+ * Copyright: Copyright &amp;#x00A9; 2014 Monotype ITC Inc. All rights reserved.
+ * 
+ * Webfont: BauhausPro-Light by ITC
+ * URL: https://www.myfonts.com/fonts/itc/bauhaus/pro-light-177552/
+ * Copyright: Copyright &amp;#x00A9; 2014 Monotype ITC Inc. All rights reserved.
+ * 
+ * Webfont: FrutigerLTPro-Light by Linotype
+ * URL: https://www.myfonts.com/fonts/linotype/frutiger/pro-45-light/
+ * Copyright: Copyright &amp;#x00A9; 2014 - 2016 Monotype Imaging Inc. All rights reserved.
+ * 
+ * Webfont: FrutigerLTPro-Roman by Linotype
+ * URL: https://www.myfonts.com/fonts/linotype/frutiger/pro-55-roman-2/
+ * Copyright: Copyright &amp;#x00A9; 2014 - 2016 Monotype Imaging Inc. All rights reserved.
+ * 
+ * 
+ * 
+ * © 2021 MyFonts Inc
+*/
+
+
+  
+@font-face {
+  font-family: "FrutigerLTPro-Light";
+  src: url('../webFonts/FrutigerLTProLight/font.woff2') format('woff2'), url('../webFonts/FrutigerLTProLight/font.woff') format('woff');
+}
+@font-face {
+  font-family: "FrutigerLTPro-Roman";
+  src: url('../webFonts/FrutigerLTProRoman/font.woff2') format('woff2'), url('../webFonts/FrutigerLTProRoman/font.woff') format('woff');
+}
+@font-face {
+  font-family: "BauhausPro-Light";
+  src: url('../webFonts/BauhausProLight/font.woff2') format('woff2'), url('../webFonts/BauhausProLight/font.woff') format('woff');
+}
+@font-face {
+  font-family: "BauhausPro-Medium";
+  src: url('../webFonts/BauhausProMedium/font.woff2') format('woff2'), url('../webFonts/BauhausProMedium/font.woff') format('woff');
+}
+
+

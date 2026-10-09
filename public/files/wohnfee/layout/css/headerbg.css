@@ -1,0 +1,55 @@
+header .inside {
+  background-image: url(../img/20231204_Grafik_wohnffe_VK_1_transp3.svg);
+  background-size: 21em;
+  background-repeat: no-repeat;
+  background-position: -1.6em -6.5em;
+  background-position: -0.5em -8.5em;
+  opacity: 1;
+}
+
+header .inside
+{
+  background-image: url(../img/20231204_Grafik_wohnffe_VK_1_transp4clip.svg);
+  background-size: 18em;
+  background-repeat: repeat-y;
+  background-position: 0em -7.74em;
+
+}
+
+header.sticky .inside
+{
+  background-image: url(../img/20231204_Grafik_wohnffe_VK_1_transp4clip.svg);
+  background-size: 18em;
+  background-repeat: repeat-y;
+  background-position: 0em -9.92em;
+
+}
+header.sticky nav {
+	margin-bottom:1.5em;
+}
+
+header nav ul li a,
+header nav ul li strong {
+	padding-top:0.1em;
+}
+
+.mobile_menu .inner
+{
+  overflow: auto;
+  overflow: auto;
+  background-color: rgba(244, 244, 244,1);
+  color: #333;
+  box-sizing: border-box;
+  background-image: url(../img/20231204_Grafik_wohnffe_VK_1_transp4mobile.svg);
+  background-size: 12.3em;
+  background-repeat: no-repeat;
+  background-position: 1em -6.7em;
+}
+
+footer .inside
+{
+  background-image: url(../img/20231204_Grafik_wohnffe_VK_1_footer.svg);
+  background-size: 18em;
+  background-repeat: no-repeat;
+  background-position: -1em -8.3em;
+}

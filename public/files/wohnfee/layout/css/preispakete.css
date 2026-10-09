@@ -1,0 +1,13 @@
+.hspreise #main .inside {
+	display:flex;
+	flex-flow:row wrap;
+	flex: 1 0 0;
+	justify-content:space-between;
+	gap:2em
+}
+
+.preise.flex {
+	display:block;
+	flex-basis:calc(3305 - 1.34em);
+}
+

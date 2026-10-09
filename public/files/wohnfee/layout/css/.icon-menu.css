@@ -1,0 +1,21 @@
+.icon_menu {
+    position:fixed;
+    z-index:999;
+    top: 45%;
+    right: 6em;
+   }
+
+.icon_menu ul{
+    position:relative:
+}
+
+.icon_menu ul li{
+    position:absolute;
+    
+
+}
+
+.icon_menu ul li:hover{
+    position:absolute;
+    right: -6em;
+}

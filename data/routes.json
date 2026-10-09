@@ -1,0 +1,1030 @@
+{
+ "/start.html": {
+  "type": "page",
+  "id": "2"
+ },
+ "/home-staging.html": {
+  "type": "page",
+  "id": "3"
+ },
+ "/redesign.html": {
+  "type": "page",
+  "id": "4"
+ },
+ "/furniture-leasing.html": {
+  "type": "page",
+  "id": "5"
+ },
+ "/impressum.html": {
+  "type": "page",
+  "id": "9"
+ },
+ "/kontakt.html": {
+  "type": "page",
+  "id": "10"
+ },
+ "/datenschutz.html": {
+  "type": "page",
+  "id": "11"
+ },
+ "/layout-elements.html": {
+  "type": "page",
+  "id": "12"
+ },
+ "/suche.html": {
+  "type": "page",
+  "id": "13"
+ },
+ "/projekte.html": {
+  "type": "page",
+  "id": "15"
+ },
+ "/trends-tipps.html": {
+  "type": "page",
+  "id": "16"
+ },
+ "/projekt.html": {
+  "type": "page",
+  "id": "18"
+ },
+ "/blogartikel-trends-tipps.html": {
+  "type": "page",
+  "id": "19"
+ },
+ "/blogartikel.html": {
+  "type": "page",
+  "id": "20"
+ },
+ "/aktuelles.html": {
+  "type": "page",
+  "id": "25"
+ },
+ "/fuer-bautraeger-2.html": {
+  "type": "page",
+  "id": "28"
+ },
+ "/fuer-makler.html": {
+  "type": "page",
+  "id": "29"
+ },
+ "/fuer-privatpersonen-2.html": {
+  "type": "page",
+  "id": "30"
+ },
+ "/faq.html": {
+  "type": "page",
+  "id": "31"
+ },
+ "/blogartikel-aktuelles.html": {
+  "type": "page",
+  "id": "32"
+ },
+ "/team.html": {
+  "type": "page",
+  "id": "37"
+ },
+ "/presse.html": {
+  "type": "page",
+  "id": "38"
+ },
+ "/events.html": {
+  "type": "page",
+  "id": "39"
+ },
+ "/presseartikel.html": {
+  "type": "page",
+  "id": "40"
+ },
+ "/home-staging/preise.html": {
+  "type": "page",
+  "id": "47"
+ },
+ "/start/blogartikel-startseite.html": {
+  "type": "page",
+  "id": "49"
+ },
+ "/blogartikel-trends-tipps/drei-gesichter-eines-sofas.html": {
+  "type": "news",
+  "id": "1"
+ },
+ "/projekt/staging-nach-plan.html": {
+  "type": "news",
+  "id": "3"
+ },
+ "/projekt/baucontainer-als-verkaufsbuero.html": {
+  "type": "news",
+  "id": "4"
+ },
+ "/projekt/2-zimmer-miet-apartment.html": {
+  "type": "news",
+  "id": "5"
+ },
+ "/projekt/garten-wohnung-im-eigentum.html": {
+  "type": "news",
+  "id": "15"
+ },
+ "/projekt/hochwertige-neubau-musterwohnung.html": {
+  "type": "news",
+  "id": "16"
+ },
+ "/projekt/sanierter-2-zimmer-neubau-2.html": {
+  "type": "news",
+  "id": "19"
+ },
+ "/presseartikel/immobilien-verkaufen-sich-durch-home-staging-doppelt-so-schnell.html": {
+  "type": "news",
+  "id": "22"
+ },
+ "/projekt/villa-im-gruenen.html": {
+  "type": "news",
+  "id": "25"
+ },
+ "/blogartikel-trends-tipps/farben-sind-ausdruck-der-persoenlichkeit.html": {
+  "type": "news",
+  "id": "28"
+ },
+ "/presseartikel/woman-award-2012-gewinnerinnen-im-ueberblick.html": {
+  "type": "news",
+  "id": "30"
+ },
+ "/presseartikel/wohnillusionen-auf-zeit.html": {
+  "type": "news",
+  "id": "31"
+ },
+ "/presseartikel/gut-eingerichtet.html": {
+  "type": "news",
+  "id": "32"
+ },
+ "/presseartikel/mehr-als-einrichten.html": {
+  "type": "news",
+  "id": "33"
+ },
+ "/presseartikel/pimp-your-home.html": {
+  "type": "news",
+  "id": "35"
+ },
+ "/presseartikel/auge-kauft-mit.html": {
+  "type": "news",
+  "id": "36"
+ },
+ "/presseartikel/wie-wohnt-oesterreich.html": {
+  "type": "news",
+  "id": "37"
+ },
+ "/presseartikel/instagramfit-so-setzt-man-die-wohnung-in-sozialen-medien-in-szene.html": {
+  "type": "news",
+  "id": "38"
+ },
+ "/presseartikel/immobilienverkauf-der-erste-eindruck-entscheidet.html": {
+  "type": "news",
+  "id": "39"
+ },
+ "/presseartikel/gut-aufgemoebelt.html": {
+  "type": "news",
+  "id": "40"
+ },
+ "/presseartikel/es-ist-eingerichtet.html": {
+  "type": "news",
+  "id": "41"
+ },
+ "/presseartikel/nichts-vorgaukeln-aber-zeigen-was-moeglich-ist.html": {
+  "type": "news",
+  "id": "42"
+ },
+ "/presseartikel/wohnen-ist-ein-gefuehl.html": {
+  "type": "news",
+  "id": "43"
+ },
+ "/presseartikel/kunst-der-reduktion-und-inszenierung.html": {
+  "type": "news",
+  "id": "44"
+ },
+ "/presseartikel/wohnen-wie-die-profis.html": {
+  "type": "news",
+  "id": "45"
+ },
+ "/presseartikel/home-sweet-home.html": {
+  "type": "news",
+  "id": "46"
+ },
+ "/presseartikel/mustergueltig-wohnen.html": {
+  "type": "news",
+  "id": "47"
+ },
+ "/presseartikel/raeume-in-szene-setzen.html": {
+  "type": "news",
+  "id": "48"
+ },
+ "/presseartikel/die-kunst-den-blick-des-kaeufers-zu-lenken.html": {
+  "type": "news",
+  "id": "49"
+ },
+ "/presseartikel/home-staging-drinnen-und-draussen-zeigen-was-geht.html": {
+  "type": "news",
+  "id": "50"
+ },
+ "/presseartikel/ich-pimpe-haeuser-vor-deren-verkauf.html": {
+  "type": "news",
+  "id": "51"
+ },
+ "/presseartikel/wie-home-stager-wohnungen-besser-in-szene-setzen.html": {
+  "type": "news",
+  "id": "52"
+ },
+ "/projekt/staging-eines-penthouses.html": {
+  "type": "news",
+  "id": "54"
+ },
+ "/projekt/penthouse-mit-storchenblick.html": {
+  "type": "news",
+  "id": "55"
+ },
+ "/projekt/townhouse-zur-miete.html": {
+  "type": "news",
+  "id": "56"
+ },
+ "/projekt/cooles-loft-im-eigentum.html": {
+  "type": "news",
+  "id": "57"
+ },
+ "/blogartikel-trends-tipps/pop-up-kurtl.html": {
+  "type": "news",
+  "id": "58"
+ },
+ "/blogartikel-trends-tipps/faia-place-klimafreundliches-terrassen-feuer.html": {
+  "type": "news",
+  "id": "60"
+ },
+ "/blogartikel-trends-tipps/neues-mit-wiener-geflecht.html": {
+  "type": "news",
+  "id": "61"
+ },
+ "/blogartikel-trends-tipps/die-neue-keep-kueche-im-wohn-fee-showroom.html": {
+  "type": "news",
+  "id": "62"
+ },
+ "/blogartikel-trends-tipps/bock-auf-noch-mehr-nachhaltigkeit.html": {
+  "type": "news",
+  "id": "63"
+ },
+ "/blogartikel-trends-tipps/lind-dna.html": {
+  "type": "news",
+  "id": "64"
+ },
+ "/blogartikel-trends-tipps/virtuelles-oder-reales-staging.html": {
+  "type": "news",
+  "id": "65"
+ },
+ "/projekt/ein-virtueller-rundgang-mit-fluegel-n.html": {
+  "type": "news",
+  "id": "66"
+ },
+ "/blogartikel/erste-wohnmesse-digital-2021-mit-wohn-fee.html": {
+  "type": "news",
+  "id": "67"
+ },
+ "/blogartikel/streetart-extended-tour.html": {
+  "type": "news",
+  "id": "68"
+ },
+ "/blogartikel/afterwork-event-am-27-februar-2017.html": {
+  "type": "news",
+  "id": "69"
+ },
+ "/projekt/smarte-musterwohnung.html": {
+  "type": "news",
+  "id": "70"
+ },
+ "/projekt/dachgeschoss-maisonette-zur-miete.html": {
+  "type": "news",
+  "id": "71"
+ },
+ "/projekt/teil-staging-einer-villenetage.html": {
+  "type": "news",
+  "id": "72"
+ },
+ "/blogartikel/since-2011-10-jahre-wohn-fee-und-noch-keine-zeit-zum-feiern.html": {
+  "type": "news",
+  "id": "73"
+ },
+ "/blogartikel-trends-tipps/eine-besondere-stadtlampe.html": {
+  "type": "news",
+  "id": "75"
+ },
+ "/projekt/gestaltung-eines-ferien-apartments.html": {
+  "type": "news",
+  "id": "76"
+ },
+ "/projekt/staging-einer-renovierten-60er-jahre-immobilie.html": {
+  "type": "news",
+  "id": "77"
+ },
+ "/projekt/staging-einer-traumhaften-altbau-wohnung.html": {
+  "type": "news",
+  "id": "80"
+ },
+ "/blogartikel/erste-wohnmesse-digital-unter-dem-motto-fragen-kostet-nix.html": {
+  "type": "news",
+  "id": "81"
+ },
+ "/projekt/staging-einer-modernen-architektenvilla.html": {
+  "type": "news",
+  "id": "82"
+ },
+ "/blogartikel-trends-tipps/vom-sperrmuell-zum-designobjekt.html": {
+  "type": "news",
+  "id": "83"
+ },
+ "/blogartikel/erste-wohnmesse-summertalks-mit-wohn-fee.html": {
+  "type": "news",
+  "id": "84"
+ },
+ "/presseartikel/herausgeputzt-fuer-den-verkauf.html": {
+  "type": "news",
+  "id": "86"
+ },
+ "/presseartikel/home-staging-buehne-frei-fuer-den-verkauf.html": {
+  "type": "news",
+  "id": "90"
+ },
+ "/blogartikel-trends-tipps/die-trends-2023-fuer-ihr-zuhause.html": {
+  "type": "news",
+  "id": "92"
+ },
+ "/blogartikel-trends-tipps/weniger-kaeufer-mehr-marketing.html": {
+  "type": "news",
+  "id": "93"
+ },
+ "/projekt/staging-fuer-ein-open-house.html": {
+  "type": "news",
+  "id": "94"
+ },
+ "/projekt/junges-staging-fuer-eine-mietwohnung.html": {
+  "type": "news",
+  "id": "95"
+ },
+ "/presseartikel/leben-in-die-bude.html": {
+  "type": "news",
+  "id": "97"
+ },
+ "/presseartikel/aufgemoebelt.html": {
+  "type": "news",
+  "id": "99"
+ },
+ "/blogartikel-trends-tipps/wie-schoen-kann-loeschen-sein.html": {
+  "type": "news",
+  "id": "100"
+ },
+ "/projekt/Penthouse-Staging_WOHN.FEE.html": {
+  "type": "news",
+  "id": "101"
+ },
+ "/blogartikel/die-wohn-feen-auf-der-maison-objet-in-paris.html": {
+  "type": "news",
+  "id": "103"
+ },
+ "/blogartikel/handwerk-form-2023-im-bregenzerwald.html": {
+  "type": "news",
+  "id": "104"
+ },
+ "/presseartikel/Wohnen_in_der_Innenstadt_mit_ganz_viel_Lebensqualität.html": {
+  "type": "news",
+  "id": "106"
+ },
+ "/blogartikel-trends-tipps/peach-fuzz-die-neue-trendfarbe-2024.html": {
+  "type": "news",
+  "id": "108"
+ },
+ "/projekt/elegantes-staging-fuer-eine-miet-maisonette.html": {
+  "type": "news",
+  "id": "109"
+ },
+ "/blogartikel-aktuelles/schnelles-leihmoebel-service-gesucht.html": {
+  "type": "news",
+  "id": "110"
+ },
+ "/presseartikel/wohntrends-2024-eine-flauschig-bunte-zeitreise.html": {
+  "type": "news",
+  "id": "111"
+ },
+ "/blogartikel-trends-tipps/foto-setting-fuer-raumausstatter.html": {
+  "type": "news",
+  "id": "112"
+ },
+ "/blogartikel-trends-tipps/froehlich-bunte-outdoor-lounge-gesucht.html": {
+  "type": "news",
+  "id": "113"
+ },
+ "/blogartikel-aktuelles/staging-in-krems-investment-direkt-neben-der-privatuni.html": {
+  "type": "news",
+  "id": "114"
+ },
+ "/blogartikel-aktuelles/die-schoene-agnes-staging-an-einem-historischen-platz-in-sievering.html": {
+  "type": "news",
+  "id": "115"
+ },
+ "/blogartikel-trends-tipps/3-days-of-design.html": {
+  "type": "news",
+  "id": "117"
+ },
+ "/projekt/staging-einer-extravaganten-dachgeschosswohnung.html": {
+  "type": "news",
+  "id": "118"
+ },
+ "/blogartikel-trends-tipps/unser-design-tip-fuer-den-balkon-squarely-pflanzgefaesse-aus-copenhagen.html": {
+  "type": "news",
+  "id": "119"
+ },
+ "/blogartikel-aktuelles/staging-mit-der-wohnfee-der-unterschied-steckt-im-detail.html": {
+  "type": "news",
+  "id": "121"
+ },
+ "/blogartikel-trends-tipps/garderobenhaken-von-formpoet.html": {
+  "type": "news",
+  "id": "122"
+ },
+ "/projekt/staging-einer-hochhaus-musterwohnung.html": {
+  "type": "news",
+  "id": "123"
+ },
+ "/blogartikel/erste-wohnmesse-standgestaltung-mit-wohnfee.html": {
+  "type": "news",
+  "id": "124"
+ },
+ "/presseartikel/acht-tips-fuer-die-eigenen-4-waende.html": {
+  "type": "news",
+  "id": "125"
+ },
+ "/blogartikel-trends-tipps/die-trendfarbe-2025-mocha-mousse.html": {
+  "type": "news",
+  "id": "126"
+ },
+ "/presseartikel/die-no-go-s-werden-immer-weniger.html": {
+  "type": "news",
+  "id": "127"
+ },
+ "/presse/category/online-artikel.html": {
+  "type": "category",
+  "id": "7",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2021.html": {
+  "type": "category",
+  "id": "9",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2012.html": {
+  "type": "category",
+  "id": "18",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2013.html": {
+  "type": "category",
+  "id": "17",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/pdf-artikel.html": {
+  "type": "category",
+  "id": "8",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2020.html": {
+  "type": "category",
+  "id": "10",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2015.html": {
+  "type": "category",
+  "id": "15",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2016.html": {
+  "type": "category",
+  "id": "14",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2017.html": {
+  "type": "category",
+  "id": "13",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2018.html": {
+  "type": "category",
+  "id": "12",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2019.html": {
+  "type": "category",
+  "id": "11",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2022.html": {
+  "type": "category",
+  "id": "25",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2023-28.html": {
+  "type": "category",
+  "id": "28",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2024.html": {
+  "type": "category",
+  "id": "29",
+  "page": "38",
+  "archive": "8"
+ },
+ "/presse/category/id-2025.html": {
+  "type": "category",
+  "id": "33",
+  "page": "38",
+  "archive": "8"
+ },
+ "/projekte/category/bautrager.html": {
+  "type": "category",
+  "id": "2",
+  "page": "15",
+  "archive": "11"
+ },
+ "/projekte/category/makler.html": {
+  "type": "category",
+  "id": "1",
+  "page": "15",
+  "archive": "11"
+ },
+ "/projekte/category/privatpersonen.html": {
+  "type": "category",
+  "id": "3",
+  "page": "15",
+  "archive": "11"
+ },
+ "/en/furniture-leasing.html": {
+  "type": "page",
+  "id": "43"
+ },
+ "/en/start.html": {
+  "type": "page",
+  "id": "2"
+ },
+ "/en/home-staging.html": {
+  "type": "page",
+  "id": "3"
+ },
+ "/en/redesign.html": {
+  "type": "page",
+  "id": "4"
+ },
+ "/en/impressum.html": {
+  "type": "page",
+  "id": "9"
+ },
+ "/en/kontakt.html": {
+  "type": "page",
+  "id": "10"
+ },
+ "/en/datenschutz.html": {
+  "type": "page",
+  "id": "11"
+ },
+ "/en/projekte.html": {
+  "type": "page",
+  "id": "15"
+ },
+ "/en/trends-tipps.html": {
+  "type": "page",
+  "id": "16"
+ },
+ "/en/projekt.html": {
+  "type": "page",
+  "id": "18"
+ },
+ "/en/blogartikel-trends-tipps.html": {
+  "type": "page",
+  "id": "19"
+ },
+ "/en/blogartikel.html": {
+  "type": "page",
+  "id": "20"
+ },
+ "/en/aktuelles.html": {
+  "type": "page",
+  "id": "25"
+ },
+ "/en/fuer-bautraeger-2.html": {
+  "type": "page",
+  "id": "28"
+ },
+ "/en/fuer-makler.html": {
+  "type": "page",
+  "id": "29"
+ },
+ "/en/fuer-privatpersonen-2.html": {
+  "type": "page",
+  "id": "30"
+ },
+ "/en/faq.html": {
+  "type": "page",
+  "id": "31"
+ },
+ "/en/blogartikel-aktuelles.html": {
+  "type": "page",
+  "id": "32"
+ },
+ "/en/team.html": {
+  "type": "page",
+  "id": "37"
+ },
+ "/en/presse.html": {
+  "type": "page",
+  "id": "38"
+ },
+ "/en/events.html": {
+  "type": "page",
+  "id": "39"
+ },
+ "/en/presseartikel.html": {
+  "type": "page",
+  "id": "40"
+ },
+ "/en/home-staging/preise.html": {
+  "type": "page",
+  "id": "47"
+ },
+ "/en/start/blogartikel-startseite.html": {
+  "type": "page",
+  "id": "49"
+ },
+ "/en/blogartikel-trends-tipps/drei-gesichter-eines-sofas.html": {
+  "type": "news",
+  "id": "1"
+ },
+ "/en/projekt/staging-nach-plan.html": {
+  "type": "news",
+  "id": "3"
+ },
+ "/en/projekt/baucontainer-als-verkaufsbuero.html": {
+  "type": "news",
+  "id": "4"
+ },
+ "/en/projekt/2-zimmer-miet-apartment.html": {
+  "type": "news",
+  "id": "5"
+ },
+ "/en/projekt/garten-wohnung-im-eigentum.html": {
+  "type": "news",
+  "id": "15"
+ },
+ "/en/projekt/hochwertige-neubau-musterwohnung.html": {
+  "type": "news",
+  "id": "16"
+ },
+ "/en/projekt/sanierter-2-zimmer-neubau-2.html": {
+  "type": "news",
+  "id": "19"
+ },
+ "/en/presseartikel/immobilien-verkaufen-sich-durch-home-staging-doppelt-so-schnell.html": {
+  "type": "news",
+  "id": "22"
+ },
+ "/en/projekt/villa-im-gruenen.html": {
+  "type": "news",
+  "id": "25"
+ },
+ "/en/blogartikel-trends-tipps/farben-sind-ausdruck-der-persoenlichkeit.html": {
+  "type": "news",
+  "id": "28"
+ },
+ "/en/presseartikel/woman-award-2012-gewinnerinnen-im-ueberblick.html": {
+  "type": "news",
+  "id": "30"
+ },
+ "/en/presseartikel/wohnillusionen-auf-zeit.html": {
+  "type": "news",
+  "id": "31"
+ },
+ "/en/presseartikel/gut-eingerichtet.html": {
+  "type": "news",
+  "id": "32"
+ },
+ "/en/presseartikel/mehr-als-einrichten.html": {
+  "type": "news",
+  "id": "33"
+ },
+ "/en/presseartikel/pimp-your-home.html": {
+  "type": "news",
+  "id": "35"
+ },
+ "/en/presseartikel/auge-kauft-mit.html": {
+  "type": "news",
+  "id": "36"
+ },
+ "/en/presseartikel/wie-wohnt-oesterreich.html": {
+  "type": "news",
+  "id": "37"
+ },
+ "/en/presseartikel/instagramfit-so-setzt-man-die-wohnung-in-sozialen-medien-in-szene.html": {
+  "type": "news",
+  "id": "38"
+ },
+ "/en/presseartikel/immobilienverkauf-der-erste-eindruck-entscheidet.html": {
+  "type": "news",
+  "id": "39"
+ },
+ "/en/presseartikel/gut-aufgemoebelt.html": {
+  "type": "news",
+  "id": "40"
+ },
+ "/en/presseartikel/es-ist-eingerichtet.html": {
+  "type": "news",
+  "id": "41"
+ },
+ "/en/presseartikel/nichts-vorgaukeln-aber-zeigen-was-moeglich-ist.html": {
+  "type": "news",
+  "id": "42"
+ },
+ "/en/presseartikel/wohnen-ist-ein-gefuehl.html": {
+  "type": "news",
+  "id": "43"
+ },
+ "/en/presseartikel/kunst-der-reduktion-und-inszenierung.html": {
+  "type": "news",
+  "id": "44"
+ },
+ "/en/presseartikel/wohnen-wie-die-profis.html": {
+  "type": "news",
+  "id": "45"
+ },
+ "/en/presseartikel/home-sweet-home.html": {
+  "type": "news",
+  "id": "46"
+ },
+ "/en/presseartikel/mustergueltig-wohnen.html": {
+  "type": "news",
+  "id": "47"
+ },
+ "/en/presseartikel/raeume-in-szene-setzen.html": {
+  "type": "news",
+  "id": "48"
+ },
+ "/en/presseartikel/die-kunst-den-blick-des-kaeufers-zu-lenken.html": {
+  "type": "news",
+  "id": "49"
+ },
+ "/en/presseartikel/home-staging-drinnen-und-draussen-zeigen-was-geht.html": {
+  "type": "news",
+  "id": "50"
+ },
+ "/en/presseartikel/ich-pimpe-haeuser-vor-deren-verkauf.html": {
+  "type": "news",
+  "id": "51"
+ },
+ "/en/presseartikel/wie-home-stager-wohnungen-besser-in-szene-setzen.html": {
+  "type": "news",
+  "id": "52"
+ },
+ "/en/projekt/staging-eines-penthouses.html": {
+  "type": "news",
+  "id": "54"
+ },
+ "/en/projekt/penthouse-mit-storchenblick.html": {
+  "type": "news",
+  "id": "55"
+ },
+ "/en/projekt/townhouse-zur-miete.html": {
+  "type": "news",
+  "id": "56"
+ },
+ "/en/projekt/cooles-loft-im-eigentum.html": {
+  "type": "news",
+  "id": "57"
+ },
+ "/en/blogartikel-trends-tipps/pop-up-kurtl.html": {
+  "type": "news",
+  "id": "58"
+ },
+ "/en/blogartikel-trends-tipps/faia-place-klimafreundliches-terrassen-feuer.html": {
+  "type": "news",
+  "id": "60"
+ },
+ "/en/blogartikel-trends-tipps/neues-mit-wiener-geflecht.html": {
+  "type": "news",
+  "id": "61"
+ },
+ "/en/blogartikel-trends-tipps/die-neue-keep-kueche-im-wohn-fee-showroom.html": {
+  "type": "news",
+  "id": "62"
+ },
+ "/en/blogartikel-trends-tipps/bock-auf-noch-mehr-nachhaltigkeit.html": {
+  "type": "news",
+  "id": "63"
+ },
+ "/en/blogartikel-trends-tipps/lind-dna.html": {
+  "type": "news",
+  "id": "64"
+ },
+ "/en/blogartikel-trends-tipps/virtuelles-oder-reales-staging.html": {
+  "type": "news",
+  "id": "65"
+ },
+ "/en/projekt/ein-virtueller-rundgang-mit-fluegel-n.html": {
+  "type": "news",
+  "id": "66"
+ },
+ "/en/blogartikel/erste-wohnmesse-digital-2021-mit-wohn-fee.html": {
+  "type": "news",
+  "id": "67"
+ },
+ "/en/blogartikel/streetart-extended-tour.html": {
+  "type": "news",
+  "id": "68"
+ },
+ "/en/blogartikel/afterwork-event-am-27-februar-2017.html": {
+  "type": "news",
+  "id": "69"
+ },
+ "/en/projekt/smarte-musterwohnung.html": {
+  "type": "news",
+  "id": "70"
+ },
+ "/en/projekt/dachgeschoss-maisonette-zur-miete.html": {
+  "type": "news",
+  "id": "71"
+ },
+ "/en/projekt/teil-staging-einer-villenetage.html": {
+  "type": "news",
+  "id": "72"
+ },
+ "/en/blogartikel/since-2011-10-jahre-wohn-fee-und-noch-keine-zeit-zum-feiern.html": {
+  "type": "news",
+  "id": "73"
+ },
+ "/en/blogartikel-trends-tipps/eine-besondere-stadtlampe.html": {
+  "type": "news",
+  "id": "75"
+ },
+ "/en/projekt/gestaltung-eines-ferien-apartments.html": {
+  "type": "news",
+  "id": "76"
+ },
+ "/en/projekt/staging-einer-renovierten-60er-jahre-immobilie.html": {
+  "type": "news",
+  "id": "77"
+ },
+ "/en/projekt/staging-einer-traumhaften-altbau-wohnung.html": {
+  "type": "news",
+  "id": "80"
+ },
+ "/en/blogartikel/erste-wohnmesse-digital-unter-dem-motto-fragen-kostet-nix.html": {
+  "type": "news",
+  "id": "81"
+ },
+ "/en/projekt/staging-einer-modernen-architektenvilla.html": {
+  "type": "news",
+  "id": "82"
+ },
+ "/en/blogartikel-trends-tipps/vom-sperrmuell-zum-designobjekt.html": {
+  "type": "news",
+  "id": "83"
+ },
+ "/en/blogartikel/erste-wohnmesse-summertalks-mit-wohn-fee.html": {
+  "type": "news",
+  "id": "84"
+ },
+ "/en/presseartikel/herausgeputzt-fuer-den-verkauf.html": {
+  "type": "news",
+  "id": "86"
+ },
+ "/en/presseartikel/home-staging-buehne-frei-fuer-den-verkauf.html": {
+  "type": "news",
+  "id": "90"
+ },
+ "/en/blogartikel-trends-tipps/die-trends-2023-fuer-ihr-zuhause.html": {
+  "type": "news",
+  "id": "92"
+ },
+ "/en/blogartikel-trends-tipps/weniger-kaeufer-mehr-marketing.html": {
+  "type": "news",
+  "id": "93"
+ },
+ "/en/projekt/staging-fuer-ein-open-house.html": {
+  "type": "news",
+  "id": "94"
+ },
+ "/en/projekt/junges-staging-fuer-eine-mietwohnung.html": {
+  "type": "news",
+  "id": "95"
+ },
+ "/en/presseartikel/leben-in-die-bude.html": {
+  "type": "news",
+  "id": "97"
+ },
+ "/en/presseartikel/aufgemoebelt.html": {
+  "type": "news",
+  "id": "99"
+ },
+ "/en/blogartikel-trends-tipps/wie-schoen-kann-loeschen-sein.html": {
+  "type": "news",
+  "id": "100"
+ },
+ "/en/projekt/Penthouse-Staging_WOHN.FEE.html": {
+  "type": "news",
+  "id": "101"
+ },
+ "/en/blogartikel/die-wohn-feen-auf-der-maison-objet-in-paris.html": {
+  "type": "news",
+  "id": "103"
+ },
+ "/en/blogartikel/handwerk-form-2023-im-bregenzerwald.html": {
+  "type": "news",
+  "id": "104"
+ },
+ "/en/presseartikel/Wohnen_in_der_Innenstadt_mit_ganz_viel_Lebensqualität.html": {
+  "type": "news",
+  "id": "106"
+ },
+ "/en/blogartikel-trends-tipps/peach-fuzz-die-neue-trendfarbe-2024.html": {
+  "type": "news",
+  "id": "108"
+ },
+ "/en/projekt/elegantes-staging-fuer-eine-miet-maisonette.html": {
+  "type": "news",
+  "id": "109"
+ },
+ "/en/blogartikel-aktuelles/schnelles-leihmoebel-service-gesucht.html": {
+  "type": "news",
+  "id": "110"
+ },
+ "/en/presseartikel/wohntrends-2024-eine-flauschig-bunte-zeitreise.html": {
+  "type": "news",
+  "id": "111"
+ },
+ "/en/blogartikel-trends-tipps/foto-setting-fuer-raumausstatter.html": {
+  "type": "news",
+  "id": "112"
+ },
+ "/en/blogartikel-trends-tipps/froehlich-bunte-outdoor-lounge-gesucht.html": {
+  "type": "news",
+  "id": "113"
+ },
+ "/en/blogartikel-aktuelles/staging-in-krems-investment-direkt-neben-der-privatuni.html": {
+  "type": "news",
+  "id": "114"
+ },
+ "/en/blogartikel-aktuelles/die-schoene-agnes-staging-an-einem-historischen-platz-in-sievering.html": {
+  "type": "news",
+  "id": "115"
+ },
+ "/en/blogartikel-trends-tipps/3-days-of-design.html": {
+  "type": "news",
+  "id": "117"
+ },
+ "/en/projekt/staging-einer-extravaganten-dachgeschosswohnung.html": {
+  "type": "news",
+  "id": "118"
+ },
+ "/en/blogartikel-trends-tipps/unser-design-tip-fuer-den-balkon-squarely-pflanzgefaesse-aus-copenhagen.html": {
+  "type": "news",
+  "id": "119"
+ },
+ "/en/blogartikel-aktuelles/staging-mit-der-wohnfee-der-unterschied-steckt-im-detail.html": {
+  "type": "news",
+  "id": "121"
+ },
+ "/en/blogartikel-trends-tipps/garderobenhaken-von-formpoet.html": {
+  "type": "news",
+  "id": "122"
+ },
+ "/en/projekt/staging-einer-hochhaus-musterwohnung.html": {
+  "type": "news",
+  "id": "123"
+ },
+ "/en/blogartikel/erste-wohnmesse-standgestaltung-mit-wohnfee.html": {
+  "type": "news",
+  "id": "124"
+ },
+ "/en/presseartikel/acht-tips-fuer-die-eigenen-4-waende.html": {
+  "type": "news",
+  "id": "125"
+ },
+ "/en/blogartikel-trends-tipps/die-trendfarbe-2025-mocha-mousse.html": {
+  "type": "news",
+  "id": "126"
+ },
+ "/en/presseartikel/die-no-go-s-werden-immer-weniger.html": {
+  "type": "news",
+  "id": "127"
+ }
+}

@@ -1,0 +1,27 @@
+/* migration helpers: originals are served instead of Contao-resized variants */
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+figure {
+  margin: 0;
+}
+
+/* mobile menu: replicate jQuery mobileMenu plugin behaviour (breakPoint 767) */
+@media screen and (max-width:767px) {
+  .mobile_menu_trigger {
+    display: block;
+  }
+}
+
+.mobile_menu.position_left {
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 80%;
+}
+
+.mobile_menu.active {
+  display: block;
+}

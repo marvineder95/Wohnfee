@@ -1,0 +1,266 @@
+
+
+.icon_list{
+    display:flex;
+    flex-flow:row wrap;
+    margin-bottom:3em;
+    justify-content:space-between;
+}
+
+.icon_list_small{
+    display:flex;
+    flex-flow:row wrap;
+    margin-bottom:2em;
+    justify-content:space-between;
+}
+
+.icon_list::before, .icon_list::after{
+    display:inline-block;
+    width:10%;
+	content: " ";
+    box-sizing:border-box;
+}
+.icon_list_small::before, .icon_list_small::after{
+    display:inline-block;
+    width:7.5%;
+	content: " ";
+    box-sizing:border-box;
+}
+
+
+icon_list::after{
+	 padding-left:1.5em;
+	 margin-top:2em;
+}
+icon_list::before{
+	 padding-right:1.5em;
+	 margin-top:2em;
+}
+ 
+
+.icon_list .rte {
+	width:65%;
+}
+
+.icon_list_small .rte {
+	width:65%;
+}
+
+.rte p{
+		margin-top:0;
+}
+
+.icon_list h3{
+	text-align:left;
+	margin-top:0;
+}
+
+
+.icon_contact::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945706 - design interior istar lineicons live.svg");
+}
+
+.icon_contact::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945618 - design interior istar lineicons live.svg");
+	
+}
+.icon_offer::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945705 - design interior istar lineicons live.svg");
+}
+
+.icon_offer::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945666 - design interior istar lineicons live.svg");
+}
+.icon_setup::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945615 - design interior istar lineicons live.svg");
+}
+
+.icon_setup::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945649 - design interior istar lineicons live.svg");
+}
+.icon_quality::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945650 - design interior istar lineicons live.svg");
+}
+
+.icon_quality::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945638 - design interior istar lineicons live.svg");
+}
+.icon_timeframe::before {
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945634 - design interior istar lineicons live.svg");
+}
+.icon_timeframe::after {
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945633 - design interior istar lineicons live.svg");
+}
+.icon_after::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945699 - design interior istar lineicons live.svg");
+}
+.icon_after::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945611 - design interior istar lineicons live.svg");
+}
+
+.icon_appliances::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945627 - design interior istar lineicons live.svg");
+}
+.icon_appliances::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945629 - design interior istar lineicons live.svg");
+}
+
+.icon_furniture::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945687 - design interior istar lineicons live.svg");
+}
+.icon_furniture::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945682 - design interior istar lineicons live.svg");
+}
+
+.icon_delivery::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945698 - design interior istar lineicons live.svg");
+}
+.icon_delivery::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945683 - design interior istar lineicons live.svg");
+}
+
+.icon_redesign_timetable::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945670 - design interior istar lineicons live.svg");
+}
+.icon_redesign_timetable::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945614 - design interior istar lineicons live.svg");
+}
+
+.icon_redesign_implement::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945673 - design interior istar lineicons live.svg");
+}
+
+.icon_redesign_implement::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945659 - design interior istar lineicons live.svg");
+}
+
+.icon_redesign_concept::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945666 - design interior istar lineicons live.svg");
+}
+.icon_redesign_concept::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945612 - design interior istar lineicons live.svg");
+}
+
+.icon_redesign_contact::before{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945702 - design interior istar lineicons live.svg");
+}
+.icon_redesign_contact::after{
+	content:url("/files/wohnfee/layout/icons/interior-design/svg/2945709 - design interior istar lineicons live.svg");
+}
+.no_icon::after,  .no_icon::before {
+	display:none;
+	flex-basis:0;
+}
+
+.icon_list.no_icon .rte{
+	flex-basis:100%;
+}
+
+.icon_list.no_icon .rte h3 {
+	text-align:center;
+}
+#topcontrol {
+width: 2.5em;
+height: 2.5em;
+padding: 0em;
+background-color: var(--background-color-01);
+border: 2px solid #fff;
+border-radius:0;
+}
+
+#topcontrol .arrow-up {
+    mask-image:url("/files/wohnfee/layout/icons/2561359_up_chevron_icon_cole_bemis.svg");
+	-webkit-mask-image:url("/files/wohnfee/layout/icons/2561359_up_chevron_icon_cole_bemis.svg");
+	background-color:var(--text-color-05);
+	width:100%;
+	height:100%;
+	mask-size:contain;
+	-webkit-mask-size:contain;
+	mask-repeat:no-repeat;
+	-webkit-mask-repeat:no-repeat;
+	display: block;
+}
+
+footer .icon_list {
+	padding:0;
+	margin:0;
+	width:auto;
+	list-style-type:none;
+    display:flex;
+    flex-flow:row wrap;
+    margin-bottom:2em;
+    justify-content:flex-start;
+	overflow:hidden;
+	gap:0.5em;
+}
+
+footer .icon_list li {
+	width:1.6em;
+	height:1.6em;
+	overflow:hidden;
+	flex-basis:1.6em;
+}
+
+footer .icon_list::before, footer .icon_list::after {
+	display:none;
+}
+
+footer .icon_list li a{
+	display:block;
+	width:1.6em;
+	height:1.6em;
+	overflow:hidden
+}
+
+footer .icon_list li a:before {
+	width:1.6em;
+	height:1.6em;
+	content:" ";
+	display:block;
+	background-color:#666;
+	vertical-align:middle;
+	mask-size: contain;
+	-webkit-mask-size: contain;
+    -webkit-mask-position:50%;
+    -webkit-mask-size: 1.6em;
+    mask-position:50%;
+    mask-size: 1.6em;
+    mask-repeat:no-repeat;
+    -webkit-mask-repeat:no-repeat;
+
+}
+
+footer .icon_list li.fb a:before{
+	background-color:#666;
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/facebook-f.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/facebook-f.svg");
+}
+
+footer .icon_list  li.instagram  a:before{
+	background-color:#666;
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/instagram.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/instagram.svg");
+}
+
+footer .icon_list  li.xing a:before{
+	background-color:#666;
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/xing.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/xing.svg");
+}
+
+
+footer .icon_list  li.pinterest a:before{
+	background-color:#666;
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/pinterest.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/pinterest.svg");
+    mask-size: 1.8em;
+    -webkit-mask-size: 1.8em;
+}
+
+footer .icon_list  li.houzz a:before{
+	background-color:#666;
+	-webkit-mask-image: url("/files/wohnfee/layout/lineawesome/svg/houzz2.svg");
+    mask-image: url("/files/wohnfee/layout/lineawesome/svg/houzz2.svg");
+    mask-size: 1em;
+    -webkit-mask-size: 1em;
+}

@@ -1,0 +1,18 @@
+# Abhängigkeiten & Build
+node_modules/
+.nuxt/
+.output/
+.data/
+dist/
+
+# Secrets
+.env
+.env.*
+
+# Laufzeit-Uploads (Avatare, Inventarbilder) – gehören nicht ins Repo
+public/uploads/*
+!public/uploads/.gitkeep
+
+# OS/Editor
+.DS_Store
+*.log

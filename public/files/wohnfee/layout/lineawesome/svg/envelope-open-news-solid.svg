@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 32 32"
+   version="1.1"
+   id="svg4"
+   sodipodi:docname="envelope-open-news-solid.svg"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
+  <style
+     id="style835"></style>
+  <metadata
+     id="metadata10">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs8" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     id="namedview6"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:zoom="36.571949"
+     inkscape:cx="13.537062"
+     inkscape:cy="13.07059"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg4">
+    <sodipodi:guide
+       position="8.0116048,30.851579"
+       orientation="1,0"
+       id="guide837" />
+    <sodipodi:guide
+       position="16.434475,25.000847"
+       orientation="0,-1"
+       id="guide839" />
+    <sodipodi:guide
+       position="14.423668,22.410001"
+       orientation="0,-1"
+       id="guide841" />
+    <sodipodi:guide
+       position="14.578346,19.161775"
+       orientation="0,-1"
+       id="guide843" />
+    <sodipodi:guide
+       position="16.163789,21.288589"
+       orientation="0,-1"
+       id="guide845" />
+    <sodipodi:guide
+       position="14.810362,20.631211"
+       orientation="0,-1"
+       id="guide847" />
+    <sodipodi:guide
+       position="24.007471,29.183634"
+       orientation="1,0"
+       id="guide849" />
+    <sodipodi:guide
+       position="10.00767,35.800727"
+       orientation="1,0"
+       id="guide851" />
+    <sodipodi:guide
+       position="27.957942,22.410001"
+       orientation="1,0"
+       id="guide853" />
+    <sodipodi:guide
+       position="25.908466,41.435322"
+       orientation="1,0"
+       id="guide855" />
+    <sodipodi:guide
+       position="16.163789,18.156372"
+       orientation="0,-1"
+       id="guide857" />
+    <sodipodi:guide
+       position="21.229474,30.259879"
+       orientation="1,0"
+       id="guide859" />
+    <sodipodi:guide
+       position="-1.8046618,25.984461"
+       orientation="0,-1"
+       id="guide865" />
+    <sodipodi:guide
+       position="22.175466,32.765614"
+       orientation="1,0"
+       id="guide867" />
+    <sodipodi:guide
+       position="12.249826,26.996165"
+       orientation="0,-1"
+       id="guide869" />
+    <sodipodi:guide
+       position="8.9959658,29.265664"
+       orientation="1,0"
+       id="guide871" />
+    <sodipodi:guide
+       position="23.02311,28.445363"
+       orientation="1,0"
+       id="guide873" />
+  </sodipodi:namedview>
+  <path
+     d="M 8.0116048,5.003835 V 7.6280503 L 4.0078125,10.802734 V 27 H 27.992188 V 10.802734 l -3.984717,-3.803581 0,-1.995318 z m 1.0663909,1.011704 13.9451143,0 0,6.822686 L 16,17.273438 8.9959658,12.838225 Z M 8.0116048,10.32827 v 1.881058 L 6.84375,11.341797 Z m 15.9958662,-0.136717 1.148779,1.150244 -1.148779,0.785501 z M 6.0078125,13.183594 16,19.65625 25.992188,13.183594 V 25 H 6.0078125 Z"
+     id="path2"
+     sodipodi:nodetypes="ccccccccccccccccccccccccccccc" />
+  <text
+     xml:space="preserve"
+     style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:5px;line-height:0.75;font-family:'Arial Rounded MT Bold';-inkscape-font-specification:'Arial Rounded MT Bold, ';letter-spacing:-0.3px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none"
+     x="9.7903137"
+     y="11.375757"
+     id="text863"><tspan
+       sodipodi:role="line"
+       id="tspan861"
+       x="9.7903137"
+       y="11.375757">News</tspan></text>
+</svg>
