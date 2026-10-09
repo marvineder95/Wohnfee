@@ -53,23 +53,45 @@ async function doLogout() {
   await router.push('/admin')
 }
 
-const NAV = [
-  { to: '/admin/dashboard', label: 'Übersicht', icon: 'home', exact: true },
-  { to: '/admin/anfragen', label: 'Anfragen', icon: 'inbox', exact: false },
-  { to: '/admin/mietanfragen', label: 'Mietanfragen', icon: 'bag', exact: false },
-  { to: '/admin/newsletter', label: 'Newsletter', icon: 'mail', exact: false },
-  { to: '/admin/artikel', label: 'Blog-Artikel', icon: 'edit', exact: false },
-  { to: '/admin/projekte', label: 'Projekte', icon: 'folder', exact: false },
-  { to: '/admin/kalender', label: 'Kalender', icon: 'calendar', exact: false },
-  { to: '/admin/angebote', label: 'Angebote', icon: 'file', exact: false },
-  { to: '/admin/rechnungen', label: 'Rechnungen', icon: 'receipt', exact: false },
-  { to: '/admin/kontakte', label: 'Kontakte', icon: 'contacts', exact: false },
-  { to: '/admin/inventar', label: 'Inventar', icon: 'box', exact: false },
-  { to: '/admin/users', label: 'Benutzer', icon: 'users', exact: false, super: true },
-  { to: '/admin/profil', label: 'Mein Profil', icon: 'settings', exact: false }
+// Navigation nach Arbeitsbereichen gruppiert (Eingang → Planung → Kunden & Finanzen → Website)
+interface NavItem { to: string; label: string; icon: string; exact: boolean; super?: boolean; badge?: 'inquiries' | 'rental' }
+const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
+  { label: null, items: [
+    { to: '/admin/dashboard', label: 'Übersicht', icon: 'home', exact: true }
+  ] },
+  { label: 'Eingang', items: [
+    { to: '/admin/anfragen', label: 'Kontaktanfragen', icon: 'inbox', exact: false, badge: 'inquiries' },
+    { to: '/admin/mietanfragen', label: 'Mietanfragen', icon: 'bag', exact: false, badge: 'rental' }
+  ] },
+  { label: 'Planung', items: [
+    { to: '/admin/projekte', label: 'Projekte', icon: 'folder', exact: false },
+    { to: '/admin/kalender', label: 'Kalender', icon: 'calendar', exact: false },
+    { to: '/admin/inventar', label: 'Inventar', icon: 'box', exact: false }
+  ] },
+  { label: 'Kunden & Finanzen', items: [
+    { to: '/admin/kontakte', label: 'Kontakte', icon: 'contacts', exact: false },
+    { to: '/admin/angebote', label: 'Angebote', icon: 'file', exact: false },
+    { to: '/admin/rechnungen', label: 'Rechnungen', icon: 'receipt', exact: false }
+  ] },
+  { label: 'Website', items: [
+    { to: '/admin/artikel', label: 'Blog-Artikel', icon: 'edit', exact: false },
+    { to: '/admin/newsletter', label: 'Newsletter', icon: 'mail', exact: false }
+  ] },
+  { label: 'Verwaltung', items: [
+    { to: '/admin/users', label: 'Benutzer', icon: 'users', exact: false, super: true },
+    { to: '/admin/profil', label: 'Mein Profil', icon: 'settings', exact: false }
+  ] }
 ]
 
-const navItems = computed(() => NAV.filter(n => !n.super || user.value?.role === 'superadmin'))
+const navGroups = computed(() => NAV_GROUPS
+  .map(g => ({ ...g, items: g.items.filter(n => !n.super || user.value?.role === 'superadmin') }))
+  .filter(g => g.items.length))
+
+function badgeCount(item: NavItem) {
+  if (item.badge === 'inquiries') return newInquiries.value
+  if (item.badge === 'rental') return newRentalInquiries.value
+  return 0
+}
 
 // Badge: Anzahl neuer Kontaktanfragen
 const newInquiries = ref(0)
@@ -97,6 +119,17 @@ function loadBadges() {
 }
 
 watch(user, (u) => { if (u) loadBadges() }, { immediate: true })
+// Zähler aktuell halten: jede Minute und beim Zurückkehren in den Tab
+let badgeTimer: ReturnType<typeof setInterval> | null = null
+const onVisible = () => { if (document.visibilityState === 'visible') loadBadges() }
+onMounted(() => {
+  badgeTimer = setInterval(loadBadges, 60_000)
+  document.addEventListener('visibilitychange', onVisible)
+})
+onBeforeUnmount(() => {
+  if (badgeTimer) clearInterval(badgeTimer)
+  document.removeEventListener('visibilitychange', onVisible)
+})
 watch(() => route.path, (p, prev) => {
   if ((prev === '/admin/anfragen' || prev === '/admin/mietanfragen') && p !== prev) loadBadges()
 })
@@ -128,17 +161,17 @@ const initials = computed(() => {
       </NuxtLink>
 
       <nav class="admin-shell__nav">
-        <NuxtLink v-for="item in navItems" :key="item.to" :to="item.to"
-                  class="admin-shell__navlink" :class="{ 'is-active': isActive(item) }">
-          <WfIcon :name="item.icon" :size="17" />
-          <span class="admin-shell__navlabel">{{ item.label }}</span>
-          <span v-if="item.to === '/admin/anfragen' && newInquiries > 0" class="admin-shell__badge">
-            {{ newInquiries > 99 ? '99+' : newInquiries }}
-          </span>
-          <span v-if="item.to === '/admin/mietanfragen' && newRentalInquiries > 0" class="admin-shell__badge">
-            {{ newRentalInquiries > 99 ? '99+' : newRentalInquiries }}
-          </span>
-        </NuxtLink>
+        <div v-for="(g, gi) in navGroups" :key="g.label || gi" class="admin-shell__group">
+          <p v-if="g.label" class="admin-shell__grouplabel">{{ g.label }}</p>
+          <NuxtLink v-for="item in g.items" :key="item.to" :to="item.to"
+                    class="admin-shell__navlink" :class="{ 'is-active': isActive(item) }" :title="item.label">
+            <WfIcon :name="item.icon" :size="17" />
+            <span class="admin-shell__navlabel">{{ item.label }}</span>
+            <span v-if="badgeCount(item) > 0" class="admin-shell__badge">
+              {{ badgeCount(item) > 99 ? '99+' : badgeCount(item) }}
+            </span>
+          </NuxtLink>
+        </div>
       </nav>
 
       <div class="admin-shell__sideuser">
@@ -163,9 +196,11 @@ const initials = computed(() => {
           <button v-if="canInstall" class="wf-btn wf-btn--sm" @click="installApp">
             <WfIcon name="download" :size="14" /> App installieren
           </button>
-          <NuxtLink to="/admin/anfragen" class="admin-shell__iconbtn admin-shell__bell" title="Anfragen">
+          <NuxtLink :to="newInquiries > 0 || !newRentalInquiries ? '/admin/anfragen' : '/admin/mietanfragen'"
+                    class="admin-shell__iconbtn admin-shell__bell"
+                    :title="`${newInquiries} neue Kontaktanfrage(n), ${newRentalInquiries} neue Mietanfrage(n)`">
             <WfIcon name="bell" :size="19" />
-            <span v-if="newInquiries > 0" class="admin-shell__bellbadge">{{ newInquiries > 9 ? '9+' : newInquiries }}</span>
+            <span v-if="newInquiries + newRentalInquiries > 0" class="admin-shell__bellbadge">{{ newInquiries + newRentalInquiries > 9 ? '9+' : newInquiries + newRentalInquiries }}</span>
           </NuxtLink>
           <span class="admin-shell__userchip">
             {{ user?.displayName || user?.username }}
@@ -228,6 +263,13 @@ const initials = computed(() => {
   gap: .15em;
   flex: 1;
   overflow-y: auto;
+}
+
+.admin-shell__group { display: flex; flex-direction: column; gap: .15em; }
+.admin-shell__group + .admin-shell__group { margin-top: .9em; }
+.admin-shell__grouplabel {
+  margin: 0 0 .25em; padding: 0 .9em;
+  font-size: .66em; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #a39c89;
 }
 
 .admin-shell__navlink {
@@ -391,7 +433,8 @@ const initials = computed(() => {
 @media (max-width: 860px) {
   .admin-shell__side { width: 4.6em; padding: 1.2em .5em .9em; }
   .admin-shell__brand { justify-content: center; padding: .2em 0 1em; }
-  .admin-shell__wordmark, .admin-shell__navlabel, .admin-shell__sideuserinfo { display: none; }
+  .admin-shell__wordmark, .admin-shell__navlabel, .admin-shell__sideuserinfo, .admin-shell__grouplabel { display: none; }
+  .admin-shell__group + .admin-shell__group { margin-top: .5em; padding-top: .5em; border-top: 1px solid var(--wf-line); }
   .admin-shell__navlink { justify-content: center; padding: .7em .4em; }
   .admin-shell__badge { position: absolute; transform: translate(10px, -8px); }
   .admin-shell__navlink { position: relative; }

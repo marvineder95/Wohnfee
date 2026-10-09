@@ -8,8 +8,13 @@ export default defineEventHandler(async (event) => {
   if (!Number.isInteger(id) || id < 1) {
     throw createError({ statusCode: 400, statusMessage: 'Ungültige Rechnungs-ID' })
   }
-  const invoice = await queryOne('SELECT id, number FROM invoices WHERE id = :id', { id })
+  const invoice = await queryOne('SELECT id, number, status FROM invoices WHERE id = :id', { id })
   if (!invoice) throw createError({ statusCode: 404, statusMessage: 'Rechnung nicht gefunden' })
+  // Nur Entwürfe dürfen gelöscht werden – ausgestellte Rechnungen müssen lückenlos
+  // erhalten bleiben und werden stattdessen storniert.
+  if ((invoice as any).status !== 'entwurf') {
+    throw createError({ statusCode: 409, statusMessage: 'Nur Entwürfe können gelöscht werden – ausgestellte Rechnungen bitte stornieren.' })
+  }
   await query('DELETE FROM documents WHERE source = :src AND number = :number',
     { src: 'dashboard', number: (invoice as any).number })
   await query('DELETE FROM invoices WHERE id = :id', { id })

@@ -148,7 +148,7 @@ onMounted(load)
       <li v-for="item in inquiries" :key="item.id" class="inquiries__item"
           :class="{ 'is-expanded': expandedId === item.id }">
         <button class="inquiries__row" @click="toggleDetail(item)">
-          <span class="wf-pill" :class="item.status === 'neu' ? '' : item.status === 'gelesen' ? 'wf-pill--amber' : 'wf-pill--gray'">{{ item.status }}</span>
+          <span class="wf-pill" :class="item.status === 'neu' ? '' : item.status === 'gelesen' ? 'wf-pill--amber' : 'wf-pill--gray'">{{ tabs.find(t => t.value === item.status)?.label || item.status }}</span>
           <span class="inquiries__main">
             <strong>{{ item.name }}</strong>
             <span class="inquiries__subject">{{ item.subject || 'Allgemeine Anfrage' }}</span>

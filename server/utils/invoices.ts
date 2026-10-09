@@ -1,3 +1,4 @@
+import { todayVienna } from './site'
 // Gemeinsame Helfer für Rechnungs-Endpunkte
 export function invClean(v: any, max = 190) {
   return String(v ?? '').trim().slice(0, max) || null
@@ -37,7 +38,7 @@ export function parseItems(body: any): ParsedItem[] {
 // Das Jahr richtet sich nach dem Rechnungsdatum; Jahreswechsel startet wieder bei 1000.
 export async function nextInvoiceNumber(docDate?: string | null): Promise<{ year2: number; number: string; max: number }> {
   const { query } = await import('./db')
-  const d = docDate && /^\d{4}-\d{2}-\d{2}$/.test(docDate) ? docDate : new Date().toISOString().slice(0, 10)
+  const d = docDate && /^\d{4}-\d{2}-\d{2}$/.test(docDate) ? docDate : todayVienna()
   const year2 = Number(d.slice(0, 4)) % 100
   const rows = await query("SELECT number FROM invoices WHERE number REGEXP '^[0-9]{6}WF$'")
   let max = 999
@@ -51,7 +52,7 @@ export async function nextInvoiceNumber(docDate?: string | null): Promise<{ year
 // Naechste freie Angebotsnummer: AG<JJ><lfd ab 1000>WF (z. B. AG261000WF), eigener Zaehler.
 export async function nextOfferNumber(docDate?: string | null): Promise<{ year2: number; number: string; max: number }> {
   const { query } = await import('./db')
-  const d = docDate && /^\d{4}-\d{2}-\d{2}$/.test(docDate) ? docDate : new Date().toISOString().slice(0, 10)
+  const d = docDate && /^\d{4}-\d{2}-\d{2}$/.test(docDate) ? docDate : todayVienna()
   const year2 = Number(d.slice(0, 4)) % 100
   const rows = await query("SELECT number FROM offers WHERE number REGEXP '^AG[0-9]{6}WF$'")
   let max = 999

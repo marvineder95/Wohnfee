@@ -1,5 +1,6 @@
 import { requireAdmin } from '../../../../utils/admin-auth'
 import { query, queryOne } from '../../../../utils/db'
+import { assignedQuantity, syncItemStatus } from '../../../../utils/inventory-sync'
 
 function clean(v: any, max = 190) {
   return String(v ?? '').trim().slice(0, max) || null
@@ -27,12 +28,30 @@ export default defineEventHandler(async (event) => {
   const item = await queryOne('SELECT id, quantity FROM inventory_items WHERE id = :itemId', { itemId })
   if (!item) throw createError({ statusCode: 404, statusMessage: 'Inventarobjekt nicht gefunden' })
 
-  const qty = Math.max(1, Math.min(Number(body?.quantity) || 1, Number(item.quantity) || 1))
+  const stock = Number(item.quantity) || 1
+  const qty = Math.max(1, Math.min(Number(body?.quantity) || 1, stock))
+  // Doppelbelegung verhindern: Menge darf den noch freien Bestand nicht übersteigen
+  const elsewhere = await assignedQuantity(itemId, id)
+  const free = Math.max(0, stock - elsewhere)
+  if (qty > free) {
+    const where: any[] = await query(
+      `SELECT COALESCE(p.customer, p.title) AS label FROM project_items pi JOIN projects p ON p.id = pi.project_id
+       WHERE pi.item_id = :itemId AND pi.project_id <> :id LIMIT 3`, { itemId, id }
+    )
+    const names = where.map((w) => w.label).filter(Boolean).join(', ')
+    throw createError({
+      statusCode: 409,
+      statusMessage: free === 0
+        ? `Dieses Objekt ist bereits vollständig im Einsatz${names ? ` (${names})` : ''}.`
+        : `Nur noch ${free} Stück frei – der Rest ist im Einsatz${names ? ` (${names})` : ''}.`
+    })
+  }
   await query(
     `INSERT INTO project_items (project_id, item_id, quantity, return_date, note)
      VALUES (:id, :itemId, :qty, :ret, :note)
      ON DUPLICATE KEY UPDATE quantity = VALUES(quantity), return_date = VALUES(return_date), note = VALUES(note)`,
     { id, itemId, qty, ret: dateOrNull(body?.return_date), note: clean(body?.note) }
   )
+  await syncItemStatus(itemId)
   return { ok: true }
 })

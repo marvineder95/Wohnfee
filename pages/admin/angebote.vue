@@ -2,6 +2,7 @@
 definePageMeta({ layout: 'admin' })
 
 useHead({ title: 'Angebote - WOHNFEE Dashboard' })
+const newParam = useNewParam()
 
 interface OfferRow {
   id: number
@@ -46,7 +47,7 @@ const form = reactive({
   customer_city: '',
   customer_country: '',
   customer_uid: '',
-  doc_date: new Date().toISOString().slice(0, 10),
+  doc_date: localToday(),
   valid_until: '',
   subject: '',
   lang: 'de',
@@ -100,7 +101,7 @@ function openNew() {
     contact_id: null,
     customer_name: '', customer_street: '', customer_zip: '', customer_city: '',
     customer_country: '', customer_uid: '',
-    doc_date: new Date().toISOString().slice(0, 10),
+    doc_date: localToday(),
     valid_until: '', subject: '',
     lang: 'de', vat_free: false, vat_rate: 20, vat_note: '',
     note: defaults.value.note_de || '', status: 'entwurf'
@@ -349,7 +350,7 @@ async function doSend() {
   }
 }
 
-onMounted(load)
+onMounted(async () => { await load(); newParam.consume(openNew) })
 </script>
 
 <template>

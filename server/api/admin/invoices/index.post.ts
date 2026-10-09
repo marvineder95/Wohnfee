@@ -1,3 +1,4 @@
+import { todayVienna } from '../../../utils/site'
 import { requireAdmin } from '../../../utils/admin-auth'
 import { getDb, query, queryOne } from '../../../utils/db'
 import { parseItems, invClean, invMoney, invDate, nextInvoiceNumber } from '../../../utils/invoices'
@@ -9,7 +10,7 @@ export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const body = await readBody(event)
   const customerName = invClean(body?.customer_name, 190)
-  const docDate = invDate(body?.doc_date) || new Date().toISOString().slice(0, 10)
+  const docDate = invDate(body?.doc_date) || todayVienna()
   if (!customerName) throw createError({ statusCode: 400, statusMessage: 'Bitte einen Kundennamen angeben.' })
   const items = parseItems(body)
   if (!items.length) throw createError({ statusCode: 400, statusMessage: 'Bitte mindestens eine Position angeben.' })

@@ -1,4 +1,6 @@
 import { query, queryOne } from '../utils/db'
+import { clientIp, assertNotLimited, countAttempt } from '../utils/rate-limit'
+import { assignedQuantity } from '../utils/inventory-sync'
 import { rentalPerks, transportPerk, MIN_MONTHLY, OTHER_STATES_DISCOUNT } from '../../shared/rental-perks'
 
 function clean(v: any, max = 190): string | null {
@@ -13,6 +15,9 @@ function dateOk(v: any): boolean {
 // Öffentlicher Endpunkt (kein Login), aber nur öffentliche Inventardaten werden gelesen
 // und die monatlichen Preise werden SERVERSEITIG aus der Datenbank neu berechnet.
 export default defineEventHandler(async (event) => {
+  // Spam-Schutz: max. 5 Mietanfragen je IP und Stunde
+  const limitKey = `rental:${clientIp(event)}`
+  assertNotLimited(limitKey, 5, 60 * 60 * 1000)
   const body = await readBody(event)
 
   // Pflichtfelder
@@ -52,7 +57,7 @@ export default defineEventHandler(async (event) => {
     )
     // nur vermietbare, lagernde Objekte, Menge begrenzt auf realen Bestand
     if (!item || !item.rentable || item.status !== 'lager') continue
-    const stock = Math.max(0, Number(item.stock) || 0)
+    const stock = Math.max(0, (Number(item.stock) || 0) - await assignedQuantity(itemId))
     if (stock < 1) continue
     const price = dur === 1 ? (item.p1 !== null ? Number(item.p1) : null)
       : (item.p3 !== null ? Number(item.p3) : null)
@@ -107,6 +112,7 @@ export default defineEventHandler(async (event) => {
       notes
     }
   )
+  countAttempt(limitKey, 60 * 60 * 1000)
   const inquiryId = result.insertId
   const year = new Date().getFullYear()
   const number = `M${year}-${String(inquiryId).padStart(4, '0')}`

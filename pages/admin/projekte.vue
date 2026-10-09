@@ -4,6 +4,7 @@ import { categoryLabel } from '~~/shared/inventory-categories'
 definePageMeta({ layout: 'admin' })
 
 useHead({ title: 'Projekte - WOHNFEE Dashboard' })
+const newParam = useNewParam()
 
 interface Project {
   id: number
@@ -153,6 +154,8 @@ async function addItem() {
 
 async function removeItem(itemId: number) {
   if (!editing.value) return
+  const it = projectItems.value.find((x) => x.item_id === itemId)
+  if (!confirm(`„${it?.title || 'Objekt'}" aus diesem Projekt entfernen?\n\nDas Möbelstück gilt danach wieder als im Lager verfügbar.`)) return
   try {
     await $fetch(`/api/admin/projects/${editing.value.id}/items/${itemId}`, { method: 'DELETE' })
     await loadProjectItems(editing.value.id)
@@ -198,7 +201,7 @@ const grouped = computed(() => {
 function deadlineClass(p: Project) {
   if (!p.deadlineDate) return ''
   const today = new Date(); today.setHours(0, 0, 0, 0)
-  const d = new Date(p.deadlineDate + 'T00:00:00')
+  const d = new Date(String(p.deadlineDate).slice(0, 10) + 'T00:00:00')
   const diff = (d.getTime() - today.getTime()) / 86400000
   if (diff < 0) return 'is-overdue'
   if (diff <= 14) return 'is-soon'
@@ -235,7 +238,7 @@ function openEdit(p: Project) {
     category: p.category, section: p.section || '', customer: p.customer || '',
     title: p.title || '', art: p.art || '', team: p.team || '',
     statusInfo: p.statusInfo || '', deadlineText: p.deadlineText || '',
-    deadlineDate: p.deadlineDate || '', note: p.note || '',
+    deadlineDate: p.deadlineDate ? String(p.deadlineDate).slice(0, 10) : '', note: p.note || '',
     nextStep: p.nextStep || '', who: p.who || '', dateInfo: p.dateInfo || ''
   })
   itemError.value = ''
@@ -282,6 +285,7 @@ onMounted(async () => {
   const cat = String(route.query.cat || '')
   if (['staging', 'leasing', 'showroom'].includes(cat)) tab.value = cat
   await load()
+  newParam.consume(openNew)
   if (Number.isInteger(openId) && openId > 0) {
     const target = projects.value.find((p) => p.id === openId)
     if (target) openEdit(target)
@@ -505,7 +509,7 @@ onMounted(async () => {
                     <span class="proj__poscat">Kategorie: {{ categoryLabel(it.itemCategory) }}</span>
                   </span>
                   <span class="proj__posqty">× {{ it.quantity }}</span>
-                  <span v-if="it.return_date" class="proj__posret" :class="{ 'is-overdue': it.return_date < new Date().toISOString().slice(0, 10) }">
+                  <span v-if="it.return_date" class="proj__posret" :class="{ 'is-overdue': it.return_date < localToday() }">
                     <WfIcon name="calendar" :size="12" /> Rückgabe {{ formatDate(it.return_date) }}
                   </span>
                   <span v-if="it.note" class="proj__posnote">{{ it.note }}</span>

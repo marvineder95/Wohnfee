@@ -1,3 +1,4 @@
+import { todayVienna } from '../../../../utils/site'
 import { requireAdmin } from '../../../../utils/admin-auth'
 import { getDb, queryOne } from '../../../../utils/db'
 import { nextInvoiceNumber } from '../../../../utils/invoices'
@@ -30,7 +31,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Rechnung ohne Positionen kann nicht storniert werden.' })
   }
 
-  const today = new Date().toISOString().slice(0, 10)
+  const today = todayVienna()
   const { year2, max } = await nextInvoiceNumber(today)
 
   const conn = await getDb().getConnection()

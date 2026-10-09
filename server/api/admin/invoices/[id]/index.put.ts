@@ -1,3 +1,4 @@
+import { todayVienna } from '../../../../utils/site'
 import { requireAdmin } from '../../../../utils/admin-auth'
 import { getDb, queryOne } from '../../../../utils/db'
 import { parseItems, invClean, invMoney, invDate } from '../../../../utils/invoices'
@@ -10,10 +11,25 @@ export default defineEventHandler(async (event) => {
   if (!Number.isInteger(id) || id < 1) {
     throw createError({ statusCode: 400, statusMessage: 'Ungültige Rechnungs-ID' })
   }
-  const invoice = await queryOne('SELECT id, number FROM invoices WHERE id = :id', { id })
+  const invoice = await queryOne('SELECT id, number, status FROM invoices WHERE id = :id', { id })
   if (!invoice) throw createError({ statusCode: 404, statusMessage: 'Rechnung nicht gefunden' })
 
   const body = await readBody(event)
+
+  // Ausgestellte Rechnungen (nicht mehr Entwurf) sind inhaltlich gesperrt – sie
+  // dürfen nach UGB/BAO nicht nachträglich verändert werden. Erlaubt ist nur der
+  // Statuswechsel gesendet ↔ bezahlt; Korrekturen laufen über „Stornieren".
+  const current = (invoice as any).status as string
+  if (current !== 'entwurf') {
+    if (current === 'storniert') {
+      throw createError({ statusCode: 409, statusMessage: 'Stornierte Rechnungen können nicht mehr geändert werden.' })
+    }
+    const next = ['gesendet', 'bezahlt'].includes(body?.status) ? body.status : current
+    if (next !== current) {
+      await queryOne('UPDATE invoices SET status = :next WHERE id = :id', { next, id })
+    }
+    return { ok: true, locked: true }
+  }
   // Die Rechnungsnummer ist unveraenderbar: Nummernschema 261000WF, vergeben bei Erstellung
   const number = (invoice as any).number
   const customerName = invClean(body?.customer_name, 190)
@@ -42,7 +58,7 @@ export default defineEventHandler(async (event) => {
         street: invClean(body?.customer_street), zip: invClean(body?.customer_zip, 16),
         city: invClean(body?.customer_city, 128), country: invClean(body?.customer_country, 8),
         cuid: invClean(body?.customer_uid, 32),
-        docDate: invDate(body?.doc_date) || new Date().toISOString().slice(0, 10),
+        docDate: invDate(body?.doc_date) || todayVienna(),
         sfrom: invDate(body?.service_from), sto: invDate(body?.service_to),
         subject: invClean(body?.subject),
         intro: invClean(body?.intro, 5000),
@@ -50,7 +66,7 @@ export default defineEventHandler(async (event) => {
         vatRate, vatFree,
         vatNote: invClean(body?.vat_note, 190),
         note: invClean(body?.note, 5000),
-        status: ['entwurf', 'gesendet', 'bezahlt', 'storniert'].includes(body?.status) ? body.status : 'entwurf'
+        status: ['entwurf', 'gesendet', 'bezahlt'].includes(body?.status) ? body.status : 'entwurf'
       }
     )
     await conn.query('DELETE FROM invoice_items WHERE invoice_id = ?', [id])

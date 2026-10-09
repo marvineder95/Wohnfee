@@ -2,6 +2,7 @@
 definePageMeta({ layout: 'admin' })
 
 useHead({ title: 'Rechnungen - WOHNFEE Dashboard' })
+const newParam = useNewParam()
 
 interface InvoiceRow {
   id: number
@@ -46,7 +47,7 @@ const form = reactive({
   customer_city: '',
   customer_country: '',
   customer_uid: '',
-  doc_date: new Date().toISOString().slice(0, 10),
+  doc_date: localToday(),
   service_from: '',
   service_to: '',
   subject: '',
@@ -101,7 +102,7 @@ function openNew() {
     contact_id: null,
     customer_name: '', customer_street: '', customer_zip: '', customer_city: '',
     customer_country: '', customer_uid: '',
-    doc_date: new Date().toISOString().slice(0, 10),
+    doc_date: localToday(),
     service_from: '', service_to: '', subject: '', intro: defaults.value.intro_de || '',
     lang: 'de', vat_free: false, vat_rate: 20, vat_note: '',
     note: defaults.value.note_de || '', status: 'entwurf'
@@ -254,6 +255,20 @@ function repickCustomer() {
   custSearch.value = ''
   custResults.value = []
 }
+// Ausgestellte Rechnungen (nicht Entwurf) sind inhaltlich gesperrt – nur der
+// Status (gesendet ↔ bezahlt) kann noch geändert werden (siehe API).
+const locked = computed(() => !!editing.value && editing.value.status !== 'entwurf')
+
+async function setPaid(inv: InvoiceRow) {
+  error.value = ''
+  try {
+    await $fetch(`/api/admin/invoices/${inv.id}`, { method: 'PUT', body: { status: 'bezahlt' } })
+    await load()
+  } catch (e: any) {
+    error.value = e?.data?.statusMessage || 'Status konnte nicht geändert werden.'
+  }
+}
+
 async function saveAsDraft() {
   form.status = 'entwurf'
   await save()
@@ -355,7 +370,7 @@ async function doSend() {
   }
 }
 
-onMounted(load)
+onMounted(async () => { await load(); newParam.consume(openNew) })
 </script>
 
 <template>
@@ -402,7 +417,8 @@ onMounted(load)
               class="wf-btn wf-btn--sm"
               @click="storno(i)"
             >Stornieren</button>
-            <button class="wf-btn wf-btn--sm wf-btn--danger" title="Löschen" @click="remove(i)"><WfIcon name="trash" :size="14" /></button>
+            <button v-if="i.status === 'gesendet' && !i.storno_of" class="wf-btn wf-btn--sm" title="Als bezahlt markieren" @click="setPaid(i)"><WfIcon name="check" :size="13" /> Bezahlt</button>
+            <button v-if="i.status === 'entwurf'" class="wf-btn wf-btn--sm wf-btn--danger" title="Entwurf löschen" @click="remove(i)"><WfIcon name="trash" :size="14" /></button>
           </td>
         </tr>
       </tbody>
@@ -421,6 +437,19 @@ onMounted(load)
           <button class="inv__edclose" title="Schließen" @click="editOpen = false">×</button>
         </div>
 
+        <div v-if="locked" class="inv__lockbar">
+          <WfIcon name="lock" :size="16" />
+          <span v-if="editing?.status === 'storniert'">Diese Rechnung ist storniert und kann nicht mehr verändert werden.</span>
+          <span v-else>Ausgestellte Rechnungen sind gesperrt – Korrekturen bitte über <strong>„Stornieren"</strong> und eine neue Rechnung.</span>
+          <label v-if="editing?.status !== 'storniert'" class="inv__lockstatus">
+            Status
+            <select v-model="form.status">
+              <option value="gesendet">Gesendet</option>
+              <option value="bezahlt">Bezahlt</option>
+            </select>
+          </label>
+        </div>
+        <fieldset class="inv__lockset" :disabled="locked">
         <div class="inv__edgrid">
           <!-- Linke Spalte -->
           <div>
@@ -617,6 +646,7 @@ onMounted(load)
             </section>
           </div>
         </div>
+        </fieldset>
 
         <p v-if="saveError" class="inv__error" role="alert">{{ saveError }}</p>
         <div class="inv__edfoot">
@@ -624,8 +654,8 @@ onMounted(load)
           <div class="inv__edfootright">
             <button v-if="editing" class="wf-btn" @click="openPreview(editing)"><WfIcon name="eye" :size="13" /> PDF ansehen</button>
             <button v-if="!editing" class="wf-btn" :disabled="saving" @click="saveAsDraft">Als Entwurf speichern</button>
-            <button class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
-              {{ saving ? 'Speichere …' : (editing ? 'Speichern' : 'Rechnung erstellen →') }}
+            <button v-if="editing?.status !== 'storniert'" class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
+              {{ saving ? 'Speichere …' : (locked ? 'Status speichern' : editing ? 'Speichern' : 'Rechnung erstellen →') }}
             </button>
           </div>
         </div>
@@ -741,6 +771,15 @@ onMounted(load)
   cursor: pointer; padding: .1em .3em; border-radius: 8px;
 }
 .inv__edclose:hover { color: var(--wf-ink); background: var(--wf-green-soft); }
+.inv__lockset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.inv__lockset:disabled { opacity: .72; }
+.inv__lockbar {
+  display: flex; align-items: center; gap: .7em; flex-wrap: wrap; margin: 0 0 1.2em; padding: .75em 1em;
+  border-radius: 12px; background: #fdf6e7; border: 1px solid #efdcb2; color: #6b4e14; font-size: .88em;
+}
+.inv__lockbar > span { flex: 1; min-width: 14em; }
+.inv__lockstatus { display: inline-flex; align-items: center; gap: .5em; font-weight: 600; }
+.inv__lockstatus select { font: inherit; padding: .3em .6em; border-radius: 8px; border: 1px solid #e3cf9f; background: #fff; }
 .inv__edgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4em; align-items: start; }
 .inv__edsec { margin-bottom: 1.3em; }
 .inv__edsectitle { font-family: var(--wf-serif); font-weight: 500; font-size: 1.05em; margin: 0 0 .6em; color: var(--wf-ink); }

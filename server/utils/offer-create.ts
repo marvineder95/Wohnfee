@@ -1,3 +1,4 @@
+import { todayVienna } from './site'
 import { getDb, query, queryOne } from './db'
 import { nextOfferNumber } from './invoices'
 import { getSetting } from './settings'
@@ -49,8 +50,8 @@ export async function createOfferForInquiry(inquiryId: number): Promise<{ offerI
     : ''
   const start = fmt(inquiry.start_date)
   const end = fmt(inquiry.end_date)
-  const docDate = new Date().toISOString().slice(0, 10)
-  const validUntil = new Date(Date.now() + 14 * 86400000).toISOString().slice(0, 10)
+  const docDate = todayVienna()
+  const validUntil = todayVienna(14)
 
   const subject = `Möbelmiete${start ? ` ${start}` : ''}${end ? ` – ${end}` : ''}`
   // Standardtext der Angebote + Abwicklungs-Infos aus der Anfrage

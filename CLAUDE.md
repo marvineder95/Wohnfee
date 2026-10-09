@@ -28,6 +28,21 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   der Vorteil landet als Notiz in der Mietanfrage (Dashboard + Mail).
 - Warenkorb öffnet seitenweit ohne Weiterleitung (`AppCartDrawer.vue`, Event `wf:open-cart`).
 
+## Dashboard (/admin)
+- Navigation gruppiert in `layouts/admin.vue` (`NAV_GROUPS`): Eingang · Planung ·
+  Kunden & Finanzen · Website · Verwaltung. Badges für neue Kontakt-/Mietanfragen (60-s-Refresh).
+- `?new=1` öffnet auf Projekte/Kalender/Angebote/Rechnungen/Kontakte/Inventar direkt den
+  Neu-Dialog (`composables/useNewParam.ts`) – genutzt von den Schnellzugriffen der Übersicht.
+- DB-Pool (`server/utils/db.ts`): DATE kommt als 'YYYY-MM-DD', DECIMAL als Zahl.
+- Datum „heute": Server `todayVienna()` (`server/utils/site.ts`), Browser `localToday()`.
+- Rechnungen: nur Entwürfe lösch-/editierbar; ausgestellte nur Status gesendet↔bezahlt,
+  Korrektur über Storno (serverseitig erzwungen).
+- Möbel ↔ Projekte: `server/utils/inventory-sync.ts` verhindert Doppelbelegung und setzt
+  Lagerstatus (lager/vermietet); Shop zeigt nur freien Bestand.
+- Sicherheit: Login max. 10 Fehlversuche/15 min je IP, „Passwort vergessen" 5/h,
+  Mietanfragen 5/h (`server/utils/rate-limit.ts`). Reset-Links nie in API-Antworten.
+  In Produktion `NUXT_SITE_URL` setzen (Basis für Links in Mails).
+
 ## Design-System (neue Seiten)
 - Komponenten `components/Hs*.vue`: Start, Hero/Content (Home Staging), Audience (Bauträger/
   Makler/Privat), Prices, Faq, Redesign, BlogList, Article, Gallery, Team, Press, Contact,
@@ -50,6 +65,9 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - SMTP-Passwort (`NUXT_SMTP_PASSWORD`) fehlt → Mails werden nur geloggt.
 - Mietkatalog: Möbel ohne Fotos; danach Live-Produktvorschau auf der Startseite möglich.
 - Tippfehler im Pflegetext: Redesign „entseht“, Preise Paket 1/3 (Komma/€ am Ende).
+- Rolle „Benutzer" hat derzeit dieselben Rechte wie „Admin" (nur Benutzerverwaltung ist
+  Superadmin-only) – Rechtekonzept festlegen?
+- Newsletter: kein Abmeldelink/Double-Opt-in (Abmeldung nur per Antwort-Mail).
 - Checkout: Mietdauer im Formular (1/3 Monate) ist unabhängig von der Mietdauer je Artikel
   im Warenkorb – vereinheitlichen?
 - Noch nicht im neuen Design: Datenschutz, Furniture Leasing unterhalb des Heros, EN-Startseite

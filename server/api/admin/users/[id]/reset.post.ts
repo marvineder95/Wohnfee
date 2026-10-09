@@ -1,4 +1,5 @@
 import { requireSuperadmin } from '../../../../utils/admin-auth'
+import { publicOrigin } from '../../../../utils/site'
 import { query, queryOne } from '../../../../utils/db'
 import { createAccountToken, isValidTokenFormat } from '../../../../utils/tokens'
 import { sendMail, resetMail, mailerConfigured } from '../../../../utils/mailer'
@@ -29,7 +30,7 @@ export default defineEventHandler(async (event) => {
     { tokenHash, id }
   )
 
-  const origin = getRequestURL(event).origin
+  const origin = publicOrigin(event)
   const resetUrl = `${origin}/admin/passwort?token=${token}`
   const mail = resetMail({
     to: target.email,

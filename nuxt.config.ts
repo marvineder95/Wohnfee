@@ -23,7 +23,10 @@ export default defineNuxtConfig({
     smtpUser: process.env.NUXT_SMTP_USER || '',
     smtpPassword: process.env.NUXT_SMTP_PASSWORD || '',
     smtpSecure: process.env.NUXT_SMTP_SECURE !== undefined ? process.env.NUXT_SMTP_SECURE === 'true' : undefined,
-    mailFrom: process.env.NUXT_MAIL_FROM || ''
+    mailFrom: process.env.NUXT_MAIL_FROM || '',
+    // Öffentliche Basis-URL für Links in Mails (z. B. https://www.wohnfee.at) –
+    // verhindert, dass ein manipulierter Host-Header Reset-Links umleitet
+    siteUrl: process.env.NUXT_SITE_URL || ''
   },
   image: {
     // 'ipx' is resolved automatically by the module: live optimization in dev,

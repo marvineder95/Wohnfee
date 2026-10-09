@@ -1,6 +1,8 @@
 import { query, queryOne } from '../../../utils/db'
 import { createAccountToken } from '../../../utils/tokens'
 import { sendMail, selfResetMail, mailerConfigured } from '../../../utils/mailer'
+import { publicOrigin } from '../../../utils/site'
+import { clientIp, assertNotLimited, countAttempt } from '../../../utils/rate-limit'
 
 const RESET_VALID_HOURS = 2
 
@@ -10,6 +12,10 @@ export default defineEventHandler(async (event) => {
   const { usernameOrEmail } = await readBody(event).catch(() => ({} as any)) as { usernameOrEmail?: string }
   const q = String(usernameOrEmail || '').trim()
   if (!q) throw createError({ statusCode: 400, statusMessage: 'Bitte Benutzername oder E-Mail eingeben' })
+  // max. 5 Anfragen je IP pro Stunde
+  const key = `reset:${clientIp(event)}`
+  assertNotLimited(key, 5, 60 * 60 * 1000)
+  countAttempt(key, 60 * 60 * 1000)
 
   const user = await queryOne<any>(
     `SELECT id, username, email, display_name FROM admin_users
@@ -17,7 +23,6 @@ export default defineEventHandler(async (event) => {
     { q }
   )
 
-  let devResetUrl: string | undefined
   if (user?.email) {
     const { token, tokenHash } = createAccountToken()
     await query(
@@ -26,9 +31,10 @@ export default defineEventHandler(async (event) => {
        WHERE id = :id`,
       { tokenHash, id: user.id }
     )
-    const origin = getRequestURL(event).origin
-    const resetUrl = `${origin}/admin/passwort?token=${token}`
-    devResetUrl = resetUrl
+    const resetUrl = `${publicOrigin(event)}/admin/passwort?token=${token}`
+    // Ohne SMTP nur im Server-Log ausgeben – NIE in der Antwort: dieser Endpunkt
+    // ist öffentlich, sonst könnte jeder fremde Passwörter zurücksetzen.
+    if (!mailerConfigured()) console.log(`[self-reset] SMTP fehlt – Reset-Link für ${user.username}: ${resetUrl}`)
     const mail = selfResetMail({ to: user.email, displayName: user.display_name || user.username, resetUrl })
     try {
       await sendMail(user.email, mail.subject, mail.text, mail.html)
@@ -39,7 +45,6 @@ export default defineEventHandler(async (event) => {
 
   return {
     ok: true,
-    message: 'Falls ein Konto mit diesen Daten existiert, wurde eine E-Mail mit einem Link zum Zurücksetzen versendet.',
-    ...(mailerConfigured() || !devResetUrl ? {} : { devResetUrl })
+    message: 'Falls ein Konto mit diesen Daten existiert, wurde eine E-Mail mit einem Link zum Zurücksetzen versendet.'
   }
 })

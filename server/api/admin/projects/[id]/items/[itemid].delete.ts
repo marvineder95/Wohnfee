@@ -1,5 +1,6 @@
 import { requireAdmin } from '../../../../../utils/admin-auth'
 import { query } from '../../../../../utils/db'
+import { syncItemStatus } from '../../../../../utils/inventory-sync'
 
 // DELETE /api/admin/projects/:id/items/:itemid — Möbelzuweisung entfernen
 export default defineEventHandler(async (event) => {
@@ -10,5 +11,6 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Ungültige ID' })
   }
   await query('DELETE FROM project_items WHERE project_id = :id AND item_id = :itemId', { id, itemId })
+  await syncItemStatus(itemId)
   return { ok: true }
 })

@@ -7,6 +7,7 @@ useHead({
 })
 
 const { user } = useAdminAuth()
+const newParam = useNewParam()
 
 interface CalEvent {
   id: number
@@ -113,7 +114,7 @@ async function load() {
   }
 }
 watch([viewYear, viewMonth], load)
-onMounted(load)
+onMounted(async () => { await load(); newParam.consume(() => openNew()) })
 
 const eventsByDate = computed(() => {
   const m: Record<string, CalEvent[]> = {}

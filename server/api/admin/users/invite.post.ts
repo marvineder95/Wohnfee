@@ -1,4 +1,5 @@
 import { createHash, randomBytes } from 'node:crypto'
+import { publicOrigin } from '../../../utils/site'
 import { requireSuperadmin } from '../../../utils/admin-auth'
 import { query, queryOne } from '../../../utils/db'
 import { sendMail, inviteMail, mailerConfigured } from '../../../utils/mailer'
@@ -42,7 +43,7 @@ export default defineEventHandler(async (event) => {
   )
   const insertId = (res as any).insertId
 
-  const origin = getRequestURL(event).origin
+  const origin = publicOrigin(event)
   const inviteUrl = `${origin}/admin/einladung?token=${token}`
   const inviterName = inviter.displayName || inviter.username
   const mail = inviteMail({ to: cleanEmail, displayName: cleanName, inviterName, inviteUrl })

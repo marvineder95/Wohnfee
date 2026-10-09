@@ -4,6 +4,7 @@ import { INVENTORY_CATEGORIES } from '~~/shared/inventory-categories'
 definePageMeta({ layout: 'admin' })
 
 useHead({ title: 'Inventar - WOHNFEE Dashboard' })
+const newParam = useNewParam()
 
 interface Item {
   id: number
@@ -292,7 +293,7 @@ async function remove(item: Item) {
   }
 }
 
-onMounted(load)
+onMounted(async () => { await load(); newParam.consume(openNew) })
 </script>
 
 <template>
@@ -381,7 +382,7 @@ onMounted(load)
             <span class="wf-pill" :class="i.status === 'vermietet' ? 'wf-pill--blue' : i.status === 'verkauft' ? 'wf-pill--gray' : i.status === 'ausser_dienst' ? 'wf-pill--red' : ''">{{ STATUS_LABELS[i.status] }}</span>
             <span class="inv__loc">{{ i.status === 'vermietet' ? (i.customerLocation || '—') : (i.warehouse || '—') }}</span>
             <span v-if="i.status === 'vermietet' && i.returnDate" class="inv__ret"
-                  :class="{ 'is-overdue': String(i.returnDate).slice(0, 10) < new Date().toISOString().slice(0, 10) }">
+                  :class="{ 'is-overdue': String(i.returnDate).slice(0, 10) < localToday() }">
               Rückgabe {{ String(i.returnDate).slice(0, 10).split('-').reverse().join('.') }}
             </span>
             <span v-else-if="i.status === 'vermietet'" class="inv__ret inv__ret--open">Rückgabe offen</span>
@@ -530,7 +531,7 @@ onMounted(load)
                   <span class="inv__assigncat">{{ a.project_category === 'staging' ? 'Staging' : a.project_category === 'leasing' ? 'Leasing' : 'Showroom' }}</span>
                   <span class="inv__assignqty">× {{ a.quantity }}</span>
                   <span v-if="a.return_date" class="inv__assignret"
-                        :class="{ 'is-overdue': a.return_date < new Date().toISOString().slice(0, 10) }">
+                        :class="{ 'is-overdue': a.return_date < localToday() }">
                     Rückgabe {{ a.return_date.split('-').reverse().join('.') }}
                   </span>
                   <span v-else-if="a.deadline_date" class="inv__assigndead">

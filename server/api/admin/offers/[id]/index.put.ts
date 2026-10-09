@@ -1,3 +1,4 @@
+import { todayVienna } from '../../../../utils/site'
 import { requireAdmin } from '../../../../utils/admin-auth'
 import { getDb, queryOne } from '../../../../utils/db'
 import { parseItems, invClean, invMoney, invDate } from '../../../../utils/invoices'
@@ -46,7 +47,7 @@ export default defineEventHandler(async (event) => {
         street: invClean(body?.customer_street), zip: invClean(body?.customer_zip, 16),
         city: invClean(body?.customer_city, 128), country: invClean(body?.customer_country, 8),
         cuid: invClean(body?.customer_uid, 32),
-        docDate: invDate(body?.doc_date) || new Date().toISOString().slice(0, 10),
+        docDate: invDate(body?.doc_date) || todayVienna(),
         validUntil: invDate(body?.valid_until),
         subject: invClean(body?.subject),
         lang: body?.lang === 'en' ? 'en' : 'de',

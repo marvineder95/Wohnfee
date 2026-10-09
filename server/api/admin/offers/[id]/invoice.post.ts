@@ -1,3 +1,4 @@
+import { todayVienna } from '../../../../utils/site'
 import { requireAdmin } from '../../../../utils/admin-auth'
 import { getDb, query, queryOne } from '../../../../utils/db'
 import { nextInvoiceNumber } from '../../../../utils/invoices'
@@ -27,7 +28,7 @@ export default defineEventHandler(async (event) => {
   )
   if (!items.length) throw createError({ statusCode: 400, statusMessage: 'Das Angebot enthält keine Positionen.' })
 
-  const docDate = new Date().toISOString().slice(0, 10)
+  const docDate = todayVienna()
   const { year2, max } = await nextInvoiceNumber(docDate)
   const netto = items.reduce((s: number, it: any) => s + Number(it.quantity) * Number(it.unit_price), 0)
   const vatRate = offer.vat_free ? 0 : Number(offer.vat_rate) || 20

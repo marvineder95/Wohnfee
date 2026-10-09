@@ -48,9 +48,10 @@ const inquiries = ref<Inq[]>([])
 const projectCounts = ref<Record<string, number>>({})
 const expiring = ref<Expiring[]>([])
 const upcomingEvents = ref<CalendarEvent[]>([])
-const invoiceStats = ref({ open: 0, thisMonth: 0 })
+const invoiceStats = ref({ open: 0, openSum: 0, thisMonth: 0 })
+const rentalCounts = ref<Record<string, number>>({ neu: 0, in_bearbeitung: 0 })
 
-const INQ_LABELS: Record<string, string> = { neu: 'Neu', gelesen: 'In Bearbeitung', archiviert: 'Abgeschlossen' }
+const INQ_LABELS: Record<string, string> = { neu: 'Neu', gelesen: 'Gelesen', archiviert: 'Archiviert' }
 const CAT_LABELS: Record<string, string> = { staging: 'Staging', leasing: 'Leasing', showroom: 'Showroom' }
 const EVT_LABELS: Record<string, string> = { aufbau: 'Aufbau', abholung: 'Abholung', lieferung: 'Lieferung', beratung: 'Beratung', sonstiges: 'Sonstiges' }
 
@@ -62,24 +63,31 @@ function fmtEuro(v: number | null) {
   if (v === null || v === undefined) return '—'
   return v.toLocaleString('de-AT', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' €'
 }
-const monthKey = new Date().toISOString().slice(0, 7)
+// lokales Datum (nicht UTC – sonst kurz nach Mitternacht noch „gestern")
+const localIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const todayIso = localIso(new Date())
+const monthKey = todayIso.slice(0, 7)
 
 onMounted(async () => {
   try {
-    const [inq, proj, inv, exp, cal] = await Promise.all([
+    const [inq, proj, inv, exp, cal, rent] = await Promise.all([
       $fetch<{ inquiries: Inq[]; counts: any }>('/api/admin/inquiries'),
       $fetch<{ counts: Record<string, number> }>('/api/admin/projects'),
       $fetch<{ invoices: Inv[] }>('/api/admin/invoices'),
       $fetch<{ projects: Expiring[] }>('/api/admin/dashboard/expiring'),
-      $fetch<{ events: CalendarEvent[] }>(`/api/admin/calendar?from=${new Date().toISOString().slice(0, 10)}&to=${new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)}`)
+      $fetch<{ events: CalendarEvent[] }>(`/api/admin/calendar?from=${todayIso}&to=${localIso(new Date(Date.now() + 30 * 86400000))}`),
+      $fetch<{ counts: Record<string, number> }>('/api/admin/rental-inquiries').catch(() => ({ counts: {} }))
     ])
+    rentalCounts.value = { neu: 0, in_bearbeitung: 0, ...rent.counts }
     upcomingEvents.value = (cal.events || []).slice(0, 5)
     inquiryCounts.value = inq.counts
     inquiries.value = inq.inquiries.slice(0, 5)
     projectCounts.value = proj.counts
     expiring.value = exp.projects
+    const openInv = inv.invoices.filter(i => i.status === 'gesendet')
     invoiceStats.value = {
-      open: inv.invoices.filter(i => i.status !== 'bezahlt' && i.status !== 'storniert').length,
+      open: openInv.length,
+      openSum: openInv.reduce((s, i) => s + (Number(i.netto) || 0), 0),
       thisMonth: inv.invoices.filter(i => String(i.doc_date).slice(0, 7) === monthKey).length
     }
   } catch (e: any) {
@@ -90,38 +98,41 @@ onMounted(async () => {
 })
 
 function daysUntil(iso: string): number {
-  const today = new Date().toISOString().slice(0, 10)
-  return Math.round((new Date(String(iso).slice(0, 10)).getTime() - new Date(today).getTime()) / 86400000)
+  return Math.round((new Date(String(iso).slice(0, 10)).getTime() - new Date(todayIso).getTime()) / 86400000)
 }
 
 const stats = computed(() => [
   {
-    icon: 'inbox', label: 'Anfragen',
-    value: (inquiryCounts.value.neu || 0) + (inquiryCounts.value.gelesen || 0) + (inquiryCounts.value.archiviert || 0),
-    delta: inquiryCounts.value.neu || 0, deltaLabel: 'neue Anfrage' + ((inquiryCounts.value.neu || 0) === 1 ? '' : 'n'), tone: 'green'
-  },
-  {
-    icon: 'folder', label: 'Aktive Projekte',
-    value: (projectCounts.value.staging || 0) + (projectCounts.value.leasing || 0) + (projectCounts.value.showroom || 0),
-    delta: projectCounts.value.staging || 0, deltaLabel: 'Staging-Projekte', tone: 'amber'
-  },
-  {
-    icon: 'receipt', label: 'Offene Rechnungen',
-    value: invoiceStats.value.open,
-    delta: invoiceStats.value.thisMonth, deltaLabel: 'erstellt diesen Monat', tone: 'blue'
-  },
-  {
-    icon: 'leaf', label: 'Anfragen (neu)',
+    icon: 'inbox', label: 'Neue Kontaktanfragen', to: '/admin/anfragen',
     value: inquiryCounts.value.neu || 0,
-    delta: null, deltaLabel: 'ungelesen', tone: 'green'
+    delta: inquiryCounts.value.gelesen || 0, deltaLabel: 'gelesen, offen', tone: 'green'
+  },
+  {
+    icon: 'bag', label: 'Neue Mietanfragen', to: '/admin/mietanfragen',
+    value: rentalCounts.value.neu || 0,
+    delta: rentalCounts.value.in_bearbeitung || 0, deltaLabel: 'in Bearbeitung', tone: 'amber'
+  },
+  {
+    icon: 'folder', label: 'Projekte', to: '/admin/projekte',
+    value: (projectCounts.value.staging || 0) + (projectCounts.value.leasing || 0) + (projectCounts.value.showroom || 0),
+    delta: projectCounts.value.staging || 0, deltaLabel: 'davon Staging', tone: 'green'
+  },
+  {
+    icon: 'receipt', label: 'Offene Rechnungen', to: '/admin/rechnungen',
+    value: invoiceStats.value.open,
+    delta: invoiceStats.value.open ? fmtEuro(invoiceStats.value.openSum) : null,
+    deltaLabel: 'netto ausständig', tone: 'blue'
   }
 ])
 
+// Schnellzugriffe öffnen direkt den jeweiligen „Neu"-Dialog (?new=1)
 const quickActions = [
-  { label: 'Neue Anfrage', icon: 'inbox', to: '/admin/anfragen' },
-  { label: 'Neues Projekt', icon: 'folder', to: '/admin/projekte' },
-  { label: 'Kontakt hinzufügen', icon: 'contacts', to: '/admin/kontakte' },
-  { label: 'Rechnung erstellen', icon: 'receipt', to: '/admin/rechnungen' }
+  { label: 'Neues Projekt', icon: 'folder', to: '/admin/projekte?new=1' },
+  { label: 'Termin anlegen', icon: 'calendar', to: '/admin/kalender?new=1' },
+  { label: 'Angebot erstellen', icon: 'file', to: '/admin/angebote?new=1' },
+  { label: 'Rechnung erstellen', icon: 'receipt', to: '/admin/rechnungen?new=1' },
+  { label: 'Kontakt hinzufügen', icon: 'contacts', to: '/admin/kontakte?new=1' },
+  { label: 'Möbel erfassen', icon: 'box', to: '/admin/inventar?new=1' }
 ]
 </script>
 
@@ -148,7 +159,7 @@ const quickActions = [
 
     <!-- Statistik-Karten -->
     <section class="dash-stats">
-      <article v-for="s in stats" :key="s.label" class="dash-stat wf-card" :data-tone="s.tone">
+      <NuxtLink v-for="s in stats" :key="s.label" :to="s.to" class="dash-stat wf-card" :data-tone="s.tone">
         <span class="dash-stat__icon"><WfIcon :name="s.icon" :size="20" /></span>
         <div class="dash-stat__body">
           <strong class="dash-stat__num">{{ s.value }}</strong>
@@ -158,7 +169,7 @@ const quickActions = [
             {{ s.delta }} {{ s.deltaLabel }}
           </span>
         </div>
-      </article>
+      </NuxtLink>
     </section>
 
     <!-- Listen -->
@@ -306,11 +317,15 @@ const quickActions = [
   margin-bottom: 1.4em;
 }
 .dash-stat {
+  text-decoration: none;
+  color: inherit;
+  transition: transform .15s, box-shadow .15s;
   display: flex;
   align-items: center;
   gap: .9em;
   padding: 1.1em 1.2em;
 }
+.dash-stat:hover { transform: translateY(-2px); box-shadow: 0 10px 24px rgba(38, 73, 47, .08); }
 .dash-stat__icon {
   width: 42px;
   height: 42px;
@@ -389,7 +404,7 @@ const quickActions = [
 .dash-quick { padding: 1.2em 1.3em; }
 .dash-quick__grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: .8em;
   margin-top: .9em;
 }

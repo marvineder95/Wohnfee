@@ -2,6 +2,7 @@
 definePageMeta({ layout: 'admin' })
 
 useHead({ title: 'Kontakte - WOHNFEE Dashboard' })
+const newParam = useNewParam()
 
 interface Contact {
   id: number
@@ -72,7 +73,7 @@ function fmtEuro(v: number | null) {
   return v.toLocaleString('de-AT', { style: 'currency', currency: 'EUR' })
 }
 function isOverdue(d: string | null) {
-  return !!d && d < new Date().toISOString().slice(0, 10)
+  return !!d && d < localToday()
 }
 
 function displayName(c: Contact) {
@@ -187,6 +188,7 @@ onMounted(() => {
   const q = String(useRoute().query.q || '').trim()
   if (q) search.value = q
   load()
+  newParam.consume(openNew)
 })
 </script>
 
