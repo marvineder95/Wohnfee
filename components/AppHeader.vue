@@ -116,12 +116,18 @@ const liClass = (item: any, submenu = true) => [
   pageClass(item.route)
 ].filter(Boolean).join(' ')
 
-// lock body scroll while the mobile menu is open
+// Mobiles Menü: aktiven Bereich aufgeklappt öffnen, Body-Scroll sperren,
+// bei Seitenwechsel/Esc schließen
+const expanded = ref<string | null>(null)
 watch(open, (v) => {
-  if (import.meta.client) {
-    document.body.style.overflow = v ? 'hidden' : ''
-  }
+  if (!import.meta.client) return
+  document.body.style.overflow = v ? 'hidden' : ''
+  if (v) expanded.value = (nav as any).main.find((i: any) => i.children?.length && isActive(i))?.route ?? null
 })
+watch(() => route.path, () => { open.value = false })
+const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') open.value = false }
+onMounted(() => window.addEventListener('keydown', onKey))
+onBeforeUnmount(() => { if (import.meta.client) window.removeEventListener('keydown', onKey) })
 
 // Header bekommt beim Scrollen nur einen Schatten – Höhe/Größen bleiben konstant
 const scrolled = ref(false)
@@ -222,56 +228,91 @@ onBeforeUnmount(() => {
       <NuxtLink :to="linkFor('/kontakt.html')" class="wfh-cta">
         {{ currentLang === 'en' ? 'Get in touch' : 'Beratung anfragen' }}
       </NuxtLink>
-      <div class="mod_mobile_menu block">
-        <div id="mobile-menu-22-trigger" class="mobile_menu_trigger" :class="{ active: open }"
-             @click="open = !open">
-          <span></span><span></span><span></span><span class="text">{{ currentLang === 'en' ? 'Menu' : 'Menü' }}</span>
-        </div>
-        <div id="mobile-menu-22" class="mobile_menu position_left" :class="{ active: open }">
-          <div class="inner">
-            <p class="logo">
-              <NuxtLink :to="linkFor('/start.html')" @click="open = false">
-                <img src="/files/wohnfee/layout/img/wohnfee_logo_neu.png" alt="WOHNFEE Home Staging">
-              </NuxtLink><br><span class="subtag">since 2011</span>
-            </p>
-            <nav class="mod_navigation block">
-              <a href="#skipNavigation23" class="invisible">Navigation überspringen</a>
-              <ul class="level_1">
-                <li v-for="item in (nav as any).main" :key="item.route" :class="liClass(item)">
-                  <NuxtLink :to="linkFor(item.route)" :title="titleFor(item)" :class="liClass(item)"
-                            :aria-haspopup="item.children?.length ? 'true' : undefined"
-                            @click="open = false">{{ titleFor(item) }}</NuxtLink>
-                  <ul v-if="item.children?.length" class="level_2">
-                    <li v-for="child in item.children" :key="child.route" :class="pageClass(child.route)">
-                      <NuxtLink :to="linkFor(child.route)" :title="titleFor(child)" :class="pageClass(child.route)"
-                                @click="open = false">{{ titleFor(child) }}</NuxtLink>
-                    </li>
-                  </ul>
-                </li>
-              </ul>
-              <span id="skipNavigation23" class="invisible"></span>
-            </nav>
-            <div class="langswitch langswitch--mobile" role="navigation" :aria-label="currentLang === 'en' ? 'Choose language' : 'Sprache wählen'">
-              <NuxtLink v-if="deTarget" :to="deTarget" hreflang="de" :class="{ 'is-active': currentLang === 'de' }" @click="setLangPref('de'); open = false">DE</NuxtLink>
-              <span v-else class="is-active is-current" aria-current="true">DE</span>
-              <span class="langswitch__sep" aria-hidden="true">|</span>
-              <NuxtLink v-if="enTarget" :to="enTarget" hreflang="en" lang="en" :class="{ 'is-active': currentLang === 'en' }" @click="setLangPref('en'); open = false">EN</NuxtLink>
-              <span v-else class="is-active is-current" aria-current="true" lang="en">EN</span>
-            </div>
-            <nav class="mod_customnav block">
-              <ul class="level_1">
-                <li v-for="item in (nav as any).footer" :key="item.route">
-                  <NuxtLink :to="linkFor(item.route)" :title="titleFor(item)" @click="open = false">{{ titleFor(item) }}</NuxtLink>
-                </li>
-              </ul>
-            </nav>
-          </div>
-        </div>
-        <div v-if="open" id="mobile-menu-22-overlay" class="mobile_menu_overlay background"
-             @click="open = false" />
-      </div>
+      <button type="button" class="wfm-trigger" :class="{ 'is-open': open }"
+              :aria-label="currentLang === 'en' ? (open ? 'Close menu' : 'Open menu') : (open ? 'Menü schließen' : 'Menü öffnen')"
+              :aria-expanded="open" aria-controls="wfm" @click="open = !open">
+        <span /><span /><span />
+      </button>
     </div>
   </header>
+
+  <!-- Mobiles Menü: per Teleport direkt in <body>, weil der Header (backdrop-filter)
+       sonst als Container für position:fixed wirkt und das Panel abschneidet -->
+  <Teleport to="body">
+    <Transition name="wfm">
+      <div v-if="open" id="wfm" class="wfm" role="dialog" aria-modal="true"
+           :aria-label="currentLang === 'en' ? 'Menu' : 'Menü'">
+        <div class="wfm__top">
+          <NuxtLink :to="linkFor('/start.html')" class="wfm__logo" @click="open = false">
+            <img src="/files/wohnfee/layout/img/wohnfee_logo_neu.png" alt="WOHNFEE Home Staging">
+            <span>since 2011</span>
+          </NuxtLink>
+          <button type="button" class="wfm__close" :aria-label="currentLang === 'en' ? 'Close menu' : 'Menü schließen'" @click="open = false">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" /></svg>
+          </button>
+        </div>
+
+        <div class="wfm__body">
+          <div class="wfm__nav" role="navigation" :aria-label="currentLang === 'en' ? 'Main navigation' : 'Hauptnavigation'">
+            <div v-for="(item, i) in (nav as any).main" :key="item.route" class="wfm__item"
+                 :class="{ 'is-active': isActive(item), 'is-expanded': expanded === item.route }"
+                 :style="{ '--i': i }">
+              <div class="wfm__row">
+                <NuxtLink :to="linkFor(item.route)" class="wfm__link" @click="open = false">
+                  <span class="wfm__no">0{{ i + 1 }}</span>{{ titleFor(item) }}
+                </NuxtLink>
+                <button v-if="item.children?.length" type="button" class="wfm__toggle"
+                        :aria-expanded="expanded === item.route"
+                        :aria-label="(currentLang === 'en' ? 'Show subpages: ' : 'Unterseiten anzeigen: ') + titleFor(item)"
+                        @click="expanded = expanded === item.route ? null : item.route">
+                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+                </button>
+              </div>
+              <div v-if="item.children?.length" class="wfm__sub">
+                <div class="wfm__subinner">
+                  <NuxtLink v-for="child in item.children" :key="child.route" :to="linkFor(child.route)"
+                            class="wfm__sublink" :class="{ 'is-current': child.route === dePath(route.path) }"
+                            @click="open = false">
+                    {{ titleFor(child) }}
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+                  </NuxtLink>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <NuxtLink :to="linkFor('/kontakt.html')" class="wfm__cta" @click="open = false">
+            {{ currentLang === 'en' ? 'Get in touch' : 'Beratung anfragen' }}
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+          </NuxtLink>
+
+          <div class="wfm__contact">
+            <a href="tel:+436769202236">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z" /></svg>
+              +43 676 9202236
+            </a>
+            <a href="mailto:office@wohnfee.at">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="4" width="20" height="16" rx="2" /><path d="m22 7-10 6L2 7" /></svg>
+              office@wohnfee.at
+            </a>
+          </div>
+        </div>
+
+        <div class="wfm__foot">
+          <div class="wfm__lang" role="navigation" :aria-label="currentLang === 'en' ? 'Choose language' : 'Sprache wählen'">
+            <NuxtLink v-if="deTarget" :to="deTarget" hreflang="de" @click="setLangPref('de'); open = false">DE</NuxtLink>
+            <span v-else class="is-active" aria-current="true">DE</span>
+            <NuxtLink v-if="enTarget" :to="enTarget" hreflang="en" lang="en" @click="setLangPref('en'); open = false">EN</NuxtLink>
+            <span v-else class="is-active" aria-current="true" lang="en">EN</span>
+          </div>
+          <div class="wfm__legal">
+            <NuxtLink v-for="item in (nav as any).footer.filter((f: any) => f.route !== '/kontakt.html')" :key="item.route"
+                      :to="linkFor(item.route)" @click="open = false">{{ titleFor(item) }}</NuxtLink>
+          </div>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style>
@@ -291,11 +332,6 @@ onBeforeUnmount(() => {
 #header nav {
   margin-top: 0;
   margin-bottom: 0;
-}
-
-#header .mod_mobile_menu {
-  margin: 0;
-  align-self: center;
 }
 
 /* DE|EN-Sprachswitch — als dezente Pill rechts neben der Hauptnavigation.
@@ -339,18 +375,9 @@ onBeforeUnmount(() => {
 
 #header .langswitch__sep { color: #d8d2c4; }
 
-/* Variante im mobilen Menü: ohne Pill-Rahmen */
-#header .langswitch--mobile {
-  margin: 1.4em 0 .6em;
-  padding: 0;
-  border: 0;
-  background: none;
-  border-radius: 0;
-  font-size: 1em;
-}
 
 @media (max-width: 767px) {
-  #header .langswitch:not(.langswitch--mobile) { display: none; }
+  #header .langswitch { display: none; }
 }
 
 /* Neues WOHNFEE-Logo: PNG hat keine Eigengröße -> feste Breite */
@@ -526,7 +553,106 @@ onBeforeUnmount(() => {
 }
 
 @media (max-width: 767px) {
-  #header .cartbtn { display: none; }
-  #header #logo img { width: 160px; }
+  #header #logo img { width: 150px; }
+  #header.wfh .cartbtn { margin-left: auto; margin-right: .2rem; }
 }
+
+/* ── Mobiles Menü ─────────────────────────────────────── */
+.wfm-trigger {
+  display: none; position: relative; flex: none; width: 46px; height: 46px; margin-left: .4rem;
+  border: 1px solid #e4ddcb; border-radius: 50%; background: rgba(255, 255, 255, .9); cursor: pointer; padding: 0;
+}
+.wfm-trigger span {
+  position: absolute; left: 13px; right: 13px; height: 1.8px; border-radius: 2px; background: #2b2b28;
+  transition: transform .25s ease, opacity .2s ease, top .25s ease;
+}
+.wfm-trigger span:nth-child(1) { top: 16px; }
+.wfm-trigger span:nth-child(2) { top: 22px; }
+.wfm-trigger span:nth-child(3) { top: 28px; }
+@media (max-width: 767px) { .wfm-trigger { display: block; } }
+
+.wfm {
+  --green: #2f5d40; --ink: #2b2b28; --muted: #6f6a5e; --line: #e6e0d2; --cream: #f8f5ef;
+  position: fixed; inset: 0; z-index: 10500; display: flex; flex-direction: column;
+  background: radial-gradient(circle at 100% 0%, #efe9dc 0%, var(--cream) 55%);
+  color: var(--ink); overscroll-behavior: contain;
+}
+.wfm-enter-active, .wfm-leave-active { transition: opacity .28s ease, transform .32s cubic-bezier(.2, .7, .2, 1); }
+.wfm-enter-from, .wfm-leave-to { opacity: 0; transform: translateY(-12px); }
+
+.wfm__top {
+  display: flex; align-items: center; justify-content: space-between; flex: none;
+  padding: 1rem 16px .9rem; border-bottom: 1px solid var(--line);
+}
+.wfm__logo { display: flex; flex-direction: column; text-decoration: none; color: var(--ink); }
+.wfm__logo img { width: 138px; height: auto; display: block; }
+.wfm__logo span { font-family: var(--font-family-02, Gelasio, Georgia, serif); font-size: .82rem; margin-top: .15rem; }
+.wfm__close {
+  width: 46px; height: 46px; border-radius: 50%; border: 1px solid var(--line); background: #fff;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; color: var(--ink);
+}
+.wfm__close svg, .wfm__toggle svg, .wfm__sublink svg, .wfm__cta svg, .wfm__contact svg {
+  fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+}
+.wfm__close svg { width: 20px; height: 20px; }
+
+.wfm__body { flex: 1; min-height: 0; overflow-y: auto; padding: .6rem 16px 1.6rem; -webkit-overflow-scrolling: touch; }
+.wfm__item { border-bottom: 1px solid var(--line); animation: wfm-in .45s cubic-bezier(.2, .7, .2, 1) both; animation-delay: calc(var(--i) * 45ms + 60ms); }
+@keyframes wfm-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+.wfm__row { display: flex; align-items: center; gap: .5rem; }
+.wfm .wfm__link {
+  flex: 1; display: flex; align-items: baseline; gap: .8rem; padding: 1.05rem 0;
+  font-family: var(--font-family-02, Gelasio, Georgia, serif); font-size: 1.6rem; line-height: 1.15;
+  color: var(--ink); text-decoration: none; border: 0;
+}
+.wfm__no { font-family: inherit; font-size: .72rem; letter-spacing: .12em; color: #a59e8d; min-width: 1.6rem; }
+.wfm__item.is-active .wfm__link { color: var(--green); }
+.wfm__item.is-active .wfm__no { color: var(--green); }
+.wfm__toggle {
+  flex: none; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line); background: #fff;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; color: var(--ink);
+  transition: background .2s, color .2s, border-color .2s;
+}
+.wfm__toggle svg { width: 18px; height: 18px; transition: transform .25s ease; }
+.wfm__item.is-expanded .wfm__toggle { background: var(--green); border-color: var(--green); color: #fff; }
+.wfm__item.is-expanded .wfm__toggle svg { transform: rotate(180deg); }
+/* Akkordeon über grid-template-rows (animiert auf auto-Höhe) */
+.wfm__sub { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s ease; }
+.wfm__item.is-expanded .wfm__sub { grid-template-rows: 1fr; }
+.wfm__subinner { overflow: hidden; display: flex; flex-direction: column; padding-left: 2.4rem; }
+.wfm__item.is-expanded .wfm__subinner { padding-bottom: .8rem; }
+.wfm .wfm__sublink {
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: .62rem .2rem; font-size: 1rem; font-weight: 600; color: var(--muted); text-decoration: none; border: 0;
+}
+.wfm__sublink svg { width: 16px; height: 16px; opacity: .45; }
+.wfm .wfm__sublink.is-current { color: var(--green); }
+.wfm .wfm__sublink.is-current svg { opacity: 1; }
+
+.wfm .wfm__cta {
+  display: flex; align-items: center; justify-content: center; gap: .6rem; margin: 1.6rem 0 1rem;
+  padding: 1rem 1.2rem; border-radius: 999px; background: var(--green); color: #fff;
+  font-weight: 700; font-size: 1rem; text-decoration: none; border: 0;
+  box-shadow: 0 10px 24px rgba(47, 93, 64, .25);
+}
+.wfm__cta svg { width: 18px; height: 18px; }
+.wfm__contact { display: grid; gap: .5rem; }
+.wfm .wfm__contact a {
+  display: flex; align-items: center; gap: .7rem; padding: .8rem 1rem; border-radius: 14px;
+  background: #fff; border: 1px solid var(--line); color: var(--ink); font-weight: 600; font-size: .95rem; text-decoration: none;
+}
+.wfm__contact svg { width: 18px; height: 18px; color: var(--green); flex: none; }
+
+.wfm__foot {
+  flex: none; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  padding: .9rem 16px calc(.9rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(255, 255, 255, .6);
+}
+.wfm__lang { display: inline-flex; padding: 3px; border-radius: 999px; border: 1px solid var(--line); background: #fff; }
+.wfm__lang a, .wfm__lang span {
+  min-width: 42px; padding: .4rem .7rem; border-radius: 999px; text-align: center;
+  font-size: .82rem; font-weight: 700; letter-spacing: .06em; color: var(--muted); text-decoration: none; border: 0;
+}
+.wfm__lang .is-active { background: var(--green); color: #fff; }
+.wfm__legal { display: flex; gap: 1rem; }
+.wfm .wfm__legal a { font-size: .82rem; color: var(--muted); text-decoration: none; border: 0; }
 </style>
