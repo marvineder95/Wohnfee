@@ -22,6 +22,7 @@ const isAdmin = computed(() => route.path.startsWith('/admin'))
       <AppFooter />
     </div>
     <AppCookiebar />
+    <AppCartDrawer />
   </template>
 </template>
 

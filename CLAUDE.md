@@ -21,6 +21,13 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Blog-Artikel aus dem Dashboard: Tabelle `blog_posts`, nur Sektion `trends-tipps`, nur DE.
   Öffentlich via `/api/blog`; Trends & Tipps, Aktuell und Sitemap werden daher live gerendert.
 
+## Furniture Leasing – Mietregeln
+- Zentral in `shared/rental-perks.ts`: Mindestmietwert € 100/Monat (Checkout gesperrt, auch
+  serverseitig), Gratis-Transport in Wien ab € 350/Monat (nur Positionen ≥ 3 Monate),
+  sonst −50 % auf Liefer-/Abholgebühr. Anzeige: `RentalPerks.vue` in Warenkorb und Checkout;
+  der Vorteil landet als Notiz in der Mietanfrage (Dashboard + Mail).
+- Warenkorb öffnet seitenweit ohne Weiterleitung (`AppCartDrawer.vue`, Event `wf:open-cart`).
+
 ## Design-System (neue Seiten)
 - Komponenten `components/Hs*.vue`: Start, Hero/Content (Home Staging), Audience (Bauträger/
   Makler/Privat), Prices, Faq, Redesign, BlogList, Article, Gallery, Team, Press, Contact,
@@ -43,5 +50,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - SMTP-Passwort (`NUXT_SMTP_PASSWORD`) fehlt → Mails werden nur geloggt.
 - Mietkatalog: Möbel ohne Fotos; danach Live-Produktvorschau auf der Startseite möglich.
 - Tippfehler im Pflegetext: Redesign „entseht“, Preise Paket 1/3 (Komma/€ am Ende).
+- Checkout: Mietdauer im Formular (1/3 Monate) ist unabhängig von der Mietdauer je Artikel
+  im Warenkorb – vereinheitlichen?
 - Noch nicht im neuen Design: Datenschutz, Furniture Leasing unterhalb des Heros, EN-Startseite
   hat englische Daten nur teilweise (Zielgruppen-Elemente ungenutzt).

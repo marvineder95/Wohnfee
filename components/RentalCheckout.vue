@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { rentalPerks, transportPerk, MIN_MONTHLY, OTHER_STATES_DISCOUNT } from '~~/shared/rental-perks'
 // WOHNFEE Furniture Leasing — eigene Checkout-Seite (Amazon-inspiriert):
 // links Kundendaten in klar getrennten Abschnitten, rechts fixierte
 // Bestellübersicht mit Absende-Button. Schritt 3 zeigt die Bestätigung.
@@ -113,6 +114,25 @@ function clearCart() {
 const cartMonthly = computed(() =>
   Math.round(cart.value.reduce((s, l) => s + (l.price ?? 0) * l.quantity, 0) * 100) / 100
 )
+// Mindestmietwert & Transport-Vorteil (abhängig von PLZ und Abwicklung)
+const perks = computed(() => rentalPerks(cart.value))
+const transport = computed(() => {
+  if (form.deliveryOption === 'self') return 'self'
+  const tp = transportPerk(cart.value, form.zip)
+  // ohne PLZ ist der Ort noch offen: freigeschaltet, aber Wien/Bundesland unklar
+  return tp !== 'none' && !form.zip.trim() ? 'unlocked' : tp
+})
+const transportText = computed(() => {
+  const pct = Math.round(OTHER_STATES_DISCOUNT * 100)
+  switch (transport.value) {
+    case 'free': return isEn.value ? 'Free (Vienna)' : 'Gratis (Wien)'
+    case 'discount': return isEn.value ? `−${pct}% on the fee` : `−${pct} % auf die Gebühr`
+    case 'unlocked': return isEn.value ? `Free in Vienna / −${pct}%` : `Wien gratis / −${pct} %`
+    case 'self': return isEn.value ? 'Self pick-up' : 'Selbstabholung'
+    default: return isEn.value ? 'per offer' : 'laut Angebot'
+  }
+})
+
 function eur(v: number | null | undefined): string {
   return v === null || v === undefined
     ? t.value.onRequest
@@ -140,6 +160,12 @@ const endDateStr = computed(() => {
 
 async function submit() {
   error.value = ''
+  if (!perks.value.minReached) {
+    error.value = isEn.value
+      ? `The minimum rental value is ${eur(MIN_MONTHLY)} per month.`
+      : `Der Mindestmietwert beträgt ${eur(MIN_MONTHLY)} pro Monat.`
+    return
+  }
   if (!form.lastName.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email)) {
     error.value = t.value.errName; return
   }
@@ -175,10 +201,19 @@ async function submit() {
 }
 
 onMounted(loadCart)
+
+// Sticky-Übersicht soll unter dem (sticky) Header kleben, nicht dahinter
+const coRoot = ref<HTMLElement | null>(null)
+function syncHeaderHeight() {
+  const h = document.querySelector<HTMLElement>('.headerwrap')?.offsetHeight
+  if (h && coRoot.value) coRoot.value.style.setProperty('--hs-head', `${h}px`)
+}
+onMounted(() => { syncHeaderHeight(); window.addEventListener('resize', syncHeaderHeight) })
+onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
 </script>
 
 <template>
-  <div class="co">
+  <div ref="coRoot" class="co">
     <!-- Schritt-Anzeige + Zurück-Link in einer Zeile, damit beide Cards
          (Formular links, Übersicht rechts) direkt darauf auf gleicher Höhe beginnen -->
     <div class="co__topbar">
@@ -255,7 +290,7 @@ onMounted(loadCart)
         <p v-if="error" class="co__error" role="alert">{{ error }}</p>
 
         <!-- Mobil: Absende-Button unter dem Formular -->
-        <button type="submit" class="co__submit co__submit--mobile" :disabled="loading">
+        <button type="submit" class="co__submit co__submit--mobile" :disabled="loading || !perks.minReached">
           {{ loading ? t.sending : t.submit }}
         </button>
       </form>
@@ -275,9 +310,14 @@ onMounted(loadCart)
               <span class="co__lprice">{{ l.price !== null ? eur(l.price * l.quantity) + ' / ' + (isEn ? 'mo.' : 'Mon.') : t.onRequest }}</span>
             </li>
           </ul>
+          <RentalPerks :lines="cart" />
           <p class="co__total"><span>{{ t.totalMonthly }}</span><strong>{{ eur(cartMonthly) }}</strong></p>
-          <p class="co__note">{{ t.feeNote }}</p>
-          <button type="button" class="co__submit" :disabled="loading" @click="submit">
+          <p class="co__transport" :class="{ 'is-free': transport === 'free' || transport === 'discount' || transport === 'unlocked' }">
+            <span>{{ isEn ? 'Delivery & pick-up' : 'Lieferung & Abholung' }}</span><strong>{{ transportText }}</strong>
+          </p>
+          <p v-if="transport === 'none'" class="co__note">{{ t.feeNote }}</p>
+          <p v-else-if="transport === 'discount'" class="co__note">{{ isEn ? 'Delivery address outside Vienna – the discounted fee is shown in your offer.' : 'Lieferadresse außerhalb Wiens – die reduzierte Gebühr steht in deinem Angebot.' }}</p>
+          <button type="button" class="co__submit" :disabled="loading || !perks.minReached" @click="submit">
             {{ loading ? t.sending : t.submit }}
           </button>
           <p class="co__note co__note--center">{{ t.billingNote }}</p>
@@ -357,7 +397,11 @@ onMounted(loadCart)
 .co__submit--mobile { display: none; margin-top: .4em; }
 
 /* Seitliche Übersicht */
-.co__side { position: sticky; top: 1.5em; }
+/* klebt mit Abstand unter dem Header; ist sie höher als der freie Platz, scrollt sie in sich */
+.co__side {
+  position: sticky; top: calc(var(--hs-head, 108px) + 1.2em);
+  max-height: calc(100vh - var(--hs-head, 108px) - 2.4em); overflow-y: auto; scrollbar-width: thin;
+}
 .co__summary { background: var(--cream); border: 1px solid var(--line); border-radius: 14px; padding: 1.3em 1.4em; }
 .co__sumh { font-family: Georgia, serif; font-weight: 500; font-size: 1.15em; margin: 0 0 .9em; color: var(--ink); }
 .co__lines { list-style: none; margin: 0 0 1em; padding: 0; }
@@ -371,6 +415,9 @@ onMounted(loadCart)
 .co__total { display: flex; justify-content: space-between; align-items: baseline; margin: .4em 0 .3em; font-size: .9em; color: var(--muted); }
 .co__total strong { font-size: 1.35em; color: var(--ink); }
 .co__note { font-size: .72em; color: var(--muted); margin: .5em 0 .9em; }
+.co__transport { display: flex; justify-content: space-between; align-items: baseline; gap: 1em; margin: 0 0 .3em; font-size: .82em; color: var(--muted); }
+.co__transport strong { color: var(--ink); font-weight: 600; text-align: right; }
+.co__transport.is-free strong { color: var(--green); }
 .co__note--center { text-align: center; margin: .7em 0 0; }
 .co__trust { list-style: none; margin: 1em 0 0; padding: .8em 0 0; border-top: 1px solid var(--line); display: grid; gap: .35em; }
 .co__trust li { display: flex; align-items: center; gap: .45em; font-size: .76em; color: var(--muted); }
@@ -396,7 +443,7 @@ onMounted(loadCart)
 
 @media (max-width: 860px) {
   .co__grid { grid-template-columns: 1fr; }
-  .co__side { position: static; order: -1; }
+  .co__side { position: static; order: -1; max-height: none; overflow: visible; }
   .co__summary { padding: 1em 1.1em; }
   .co__submit--mobile { display: block; }
   .co__side .co__submit { display: none; }

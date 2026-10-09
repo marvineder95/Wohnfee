@@ -1,4 +1,5 @@
 import { query, queryOne } from '../utils/db'
+import { rentalPerks, transportPerk, MIN_MONTHLY, OTHER_STATES_DISCOUNT } from '../../shared/rental-perks'
 
 function clean(v: any, max = 190): string | null {
   return String(v ?? '').trim().slice(0, max) || null
@@ -66,6 +67,20 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Keine der gewählten Positionen ist derzeit mietbar.' })
   }
 
+  // Mindestmietwert & Transport-Vorteil – serverseitig mit DB-Preisen geprüft
+  const perkLines = items.map((i) => ({ price: i.monthly_price, quantity: i.quantity, durationMonths: i.duration_months }))
+  if (!rentalPerks(perkLines).minReached) {
+    throw createError({ statusCode: 400, statusMessage: `Der Mindestmietwert beträgt € ${MIN_MONTHLY} pro Monat.` })
+  }
+  const selfPickup = /selbst/i.test(String(body?.deliveryOption ?? ''))
+  const perk = selfPickup ? 'none' : transportPerk(perkLines, zip)
+  const perkNote = perk === 'free'
+    ? 'Transport: GRATIS (Wien, Mietwert ab 3 Monaten erreicht)'
+    : perk === 'discount'
+      ? `Transport: −${Math.round(OTHER_STATES_DISCOUNT * 100)} % Rabatt auf Liefer-/Abholgebühr (außerhalb Wiens)`
+      : null
+  const notes = [perkNote, clean(body?.notes, 2000)].filter(Boolean).join('\n') || null
+
   // Enddatum aus Start + Dauer
   const start = new Date(String(startDate) + 'T00:00:00Z')
   const end = new Date(start)
@@ -89,7 +104,7 @@ export default defineEventHandler(async (event) => {
       dopt: clean(body?.deliveryOption, 64) || 'Lieferung & Abholung durch WOHNFEE',
       dnotes: clean(body?.deliveryNotes, 1000),
       total: Math.round(monthlyTotal * 100) / 100,
-      notes: clean(body?.notes, 2000)
+      notes
     }
   )
   const inquiryId = result.insertId
@@ -119,7 +134,7 @@ export default defineEventHandler(async (event) => {
       period: `${fmt(String(startDate))} – ${fmt(endDate)} (${duration} Monate)`,
       deliveryOption: clean(body?.deliveryOption, 64) || 'Lieferung & Abholung durch WOHNFEE',
       deliveryNotes: clean(body?.deliveryNotes, 1000),
-      notes: clean(body?.notes, 2000),
+      notes,
       items: items.map(i => ({ title: i.title, quantity: i.quantity, durationMonths: i.duration_months, monthlyPrice: i.monthly_price })),
       monthlyTotal: Math.round(monthlyTotal * 100) / 100
     })

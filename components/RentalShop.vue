@@ -4,6 +4,7 @@
 // SEO-Hinweis: H1, Titel und Texte werden serverseitig gerendert; nur die
 // Produktdaten laden clientseitig nach (bestehende SEO-Struktur bleibt).
 import { INVENTORY_CATEGORIES } from '~~/shared/inventory-categories'
+import { rentalPerks } from '~~/shared/rental-perks'
 
 interface RentalItem {
   id: number
@@ -159,11 +160,10 @@ const sideOpen = ref(false)
 const openGroups = ref<string[]>(['kat', 'avail', 'dur', 'price'])
 
 // ---------- Daten ----------
+const openCartOverlay = () => { cartOpen.value = true }
+onBeforeUnmount(() => window.removeEventListener('wf:open-cart', openCartOverlay))
 onMounted(async () => {
   // Header-Warenkorb-Icon: Overlay direkt öffnen (Event oder #warenkorb-Hash)
-  const openCartOverlay = () => {
-    cartOpen.value = true
-  }
   window.addEventListener('wf:open-cart', openCartOverlay)
   if (window.location.hash === '#warenkorb') {
     history.replaceState(null, '', window.location.pathname)
@@ -355,6 +355,7 @@ function persistCart() {
   window.dispatchEvent(new CustomEvent('wf:cart-changed'))
 }
 const cartCount = computed(() => cart.value.reduce((s, l) => s + l.quantity, 0))
+const perks = computed(() => rentalPerks(cart.value))
 const cartMonthly = computed(() =>
   Math.round(cart.value.reduce((s, l) => s + (l.price ?? 0) * l.quantity, 0) * 100) / 100
 )
@@ -396,6 +397,7 @@ function openDetail(i: RentalItem) {
 // eigenen Checkout-Seite (/furniture-leasing/checkout, EN: /en/…).
 const checkoutUrl = computed(() => isEn.value ? '/en/furniture-leasing/checkout' : '/furniture-leasing/checkout')
 function goCheckout() {
+  if (!perks.value.minReached) return
   cartOpen.value = false
   navigateTo(checkoutUrl.value)
 }
@@ -765,9 +767,10 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
           </li>
         </ul>
         <footer v-if="cart.length" class="fl__drfoot">
+          <RentalPerks :lines="cart" />
           <p class="fl__total"><span>{{ t.totalMonthly }}</span><strong>{{ eur(cartMonthly) }}</strong></p>
           <p class="fl__note">{{ t.feeNoteLong }}</p>
-          <button class="fl__add fl__add--lg" @click="goCheckout">{{ t.checkout }}</button>
+          <button class="fl__add fl__add--lg" :disabled="!perks.minReached" @click="goCheckout">{{ t.checkout }}</button>
         </footer>
       </aside>
     </div>

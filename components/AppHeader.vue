@@ -145,14 +145,10 @@ const refreshCart = () => {
     cartCount.value = lines.reduce((s: number, l: any) => s + (Number(l.quantity) || 0), 0)
   } catch { cartCount.value = 0 }
 }
+// Öffnet den Warenkorb an Ort und Stelle – im Shop dessen Drawer (RentalShop),
+// auf allen anderen Seiten den seitenweiten AppCartDrawer. Keine Weiterleitung.
 const openCart = () => {
-  const fl = currentLang.value === 'en' ? '/en/furniture-leasing.html' : '/furniture-leasing.html'
-  if (route.path === fl) {
-    // Bereits im Shop: Warenkorb-Overlay direkt öffnen
-    window.dispatchEvent(new CustomEvent('wf:open-cart'))
-  } else {
-    navigateTo(fl + '#warenkorb')
-  }
+  window.dispatchEvent(new CustomEvent('wf:open-cart'))
 }
 onMounted(() => {
   refreshCart()
