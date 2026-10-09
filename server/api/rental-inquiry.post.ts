@@ -34,7 +34,7 @@ export default defineEventHandler(async (event) => {
   if (!street || !zip || !city) {
     throw createError({ statusCode: 400, statusMessage: 'Bitte die Lieferadresse vervollständigen.' })
   }
-  if (!dateOk(startDate) || ![1, 3].includes(duration)) {
+  if (!dateOk(startDate) || !Number.isInteger(duration) || duration < 1 || duration > 48) {
     throw createError({ statusCode: 400, statusMessage: 'Bitte Mietbeginn und Mietdauer wählen.' })
   }
 

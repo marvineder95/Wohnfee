@@ -29,8 +29,10 @@ const DE = {
   deliveryOption: 'Abwicklung',
   dOptFull: 'Lieferung & Abholung durch WOHNFEE',
   dOptFullHint: 'Wir liefern, stellen auf und holen nach Mietende wieder ab.',
-  dOptSelf: 'Selbstabholung im Lager',
-  dOptSelfHint: 'Du holst die Möbel selbst ab und bringst sie zurück.',
+  shipTitle: 'Lieferung & Abholung durch unsere eigene Spedition',
+  shipText: 'Wir bringen deine Möbel mit unserem eigenen Team – sorgfältig verpackt, pünktlich geliefert und auf Wunsch fertig aufgebaut. Nach Mietende holen wir alles wieder ab.',
+  shipPoints: ['Eigenes, geschultes Team', 'Schonender Transport', 'Aufbau inklusive'],
+  pickDate: 'Datum wählen', durHint: 'Wähle, wie lange du die Möbel mieten möchtest.', year: 'Jahr', years: 'Jahre',
   deliveryNotes: 'Lieferhinweise (optional)',
   deliveryPh: 'z. B. Stockwerk, Aufzug, gewünschter Lieferzeitraum …',
   summary: 'Bestellübersicht', monthlyRent: 'Monatliche Miete',
@@ -71,8 +73,10 @@ const EN: typeof DE = {
   deliveryOption: 'Handling',
   dOptFull: 'Delivery & pick-up by WOHNFEE',
   dOptFullHint: 'We deliver, set everything up and collect it when the rental ends.',
-  dOptSelf: 'Self pick-up from our warehouse',
-  dOptSelfHint: 'You collect the furniture yourself and return it after the rental.',
+  shipTitle: 'Delivery & pick-up by our own logistics team',
+  shipText: 'Our own team brings your furniture – carefully packed, delivered on time and set up on request. When the rental ends, we collect everything again.',
+  shipPoints: ['Our own trained team', 'Careful transport', 'Set-up included'],
+  pickDate: 'Choose a date', durHint: 'Choose how long you would like to rent the furniture.', year: 'year', years: 'years',
   deliveryNotes: 'Delivery notes (optional)',
   deliveryPh: 'e.g. floor, elevator, preferred delivery time …',
   summary: 'Order summary', monthlyRent: 'Monthly rent',
@@ -153,6 +157,54 @@ function eur(v: number | null | undefined): string {
     ? t.value.onRequest
     : Number(v).toLocaleString(isEn.value ? 'en-IE' : 'de-AT', { style: 'currency', currency: 'EUR' })
 }
+// ---------- Mietbeginn (frühestens morgen) & Mietdauer 1–48 Monate ----------
+const minStart = (() => {
+  const d = new Date(); d.setDate(d.getDate() + 1)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+})()
+const dateInput = ref<HTMLInputElement | null>(null)
+function openDatePicker() {
+  const el = dateInput.value
+  if (!el) return
+  try { (el as any).showPicker ? (el as any).showPicker() : el.focus() } catch { el.focus() }
+}
+const startLabel = computed(() => {
+  if (!form.startDate) return ''
+  return new Date(form.startDate + 'T12:00:00').toLocaleDateString(isEn.value ? 'en-GB' : 'de-AT', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' })
+})
+
+const DURATIONS = Array.from({ length: 48 }, (_, i) => i + 1)
+const durOpen = ref(false)
+const durWrap = ref<HTMLElement | null>(null)
+const durList = ref<HTMLElement | null>(null)
+function durText(m: number) {
+  const base = `${m} ${m > 1 ? t.value.months : t.value.month1}`
+  if (m % 12 === 0) return `${base} · ${m / 12} ${m === 12 ? t.value.year : t.value.years}`
+  return base
+}
+function toggleDur() {
+  durOpen.value = !durOpen.value
+  if (durOpen.value) nextTick(() => durList.value?.querySelector<HTMLElement>('.is-sel')?.scrollIntoView({ block: 'center' }))
+}
+function pickDur(m: number) {
+  form.durationMonths = m
+  durOpen.value = false
+}
+function durKey(e: KeyboardEvent) {
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+    e.preventDefault()
+    form.durationMonths = Math.min(48, Math.max(1, form.durationMonths + (e.key === 'ArrowDown' ? 1 : -1)))
+    nextTick(() => durList.value?.querySelector<HTMLElement>('.is-sel')?.scrollIntoView({ block: 'nearest' }))
+  } else if (e.key === 'Escape' || e.key === 'Enter') {
+    if (durOpen.value) { e.preventDefault(); durOpen.value = false }
+  }
+}
+const onDocClick = (e: MouseEvent) => {
+  if (durOpen.value && durWrap.value && !durWrap.value.contains(e.target as Node)) durOpen.value = false
+}
+onMounted(() => document.addEventListener('click', onDocClick))
+onUnmounted(() => document.removeEventListener('click', onDocClick))
+
 function durLabel(m: number) {
   return `${m} ${m > 1 ? t.value.months : t.value.month1}`
 }
@@ -299,32 +351,46 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
               <div><h2 class="co__h2">{{ t.period }}</h2><p class="co__hint">{{ t.periodHint }}</p></div>
             </div>
             <div class="co__row">
-              <label class="co__fld"><span>{{ t.startDate }}</span><input v-model="form.startDate" type="date" required></label>
               <div class="co__fld">
-                <span>{{ t.duration }}</span>
-                <div class="co__seg" role="radiogroup" :aria-label="t.duration">
-                  <button v-for="m in [3, 1]" :key="m" type="button" role="radio" :aria-checked="form.durationMonths === m"
-                          :class="{ 'is-on': form.durationMonths === m }" @click="form.durationMonths = m">
-                    {{ m === 3 ? t.m3 : t.m1 }}
-                  </button>
-                </div>
+                <span>{{ t.startDate }}</span>
+                <label class="co__pick" :class="{ 'is-empty': !form.startDate }" @click.prevent="openDatePicker">
+                  <span class="co__pickicon"><WfIcon name="calendar" :size="18" /></span>
+                  <span class="co__picktext">{{ startLabel || t.pickDate }}</span>
+                  <WfIcon name="chevron" :size="14" class="co__pickchev" />
+                  <input ref="dateInput" v-model="form.startDate" type="date" class="co__pickinput" :min="minStart" required :aria-label="t.startDate">
+                </label>
+              </div>
+              <div ref="durWrap" class="co__fld co__dur">
+                <span id="co-dur-label">{{ t.duration }}</span>
+                <button type="button" class="co__pick" :class="{ 'is-open': durOpen }" aria-haspopup="listbox" :aria-expanded="durOpen"
+                        aria-labelledby="co-dur-label" @click="toggleDur" @keydown="durKey">
+                  <span class="co__pickicon"><WfIcon name="clock" :size="18" /></span>
+                  <span class="co__picktext">{{ durText(form.durationMonths) }}</span>
+                  <WfIcon name="chevron" :size="14" class="co__pickchev" />
+                </button>
+                <Transition name="co-pop">
+                  <ul v-if="durOpen" ref="durList" class="co__durlist" role="listbox" aria-labelledby="co-dur-label">
+                    <li v-for="m in DURATIONS" :key="m" role="option" :aria-selected="form.durationMonths === m"
+                        :class="{ 'is-sel': form.durationMonths === m, 'is-year': m % 12 === 0 }" @click="pickDur(m)">
+                      <span>{{ m }} {{ m > 1 ? t.months : t.month1 }}</span>
+                      <em v-if="m % 12 === 0">{{ m / 12 }} {{ m === 12 ? t.year : t.years }}</em>
+                      <WfIcon v-if="form.durationMonths === m" name="check" :size="14" />
+                    </li>
+                  </ul>
+                </Transition>
+                <small v-if="endDateStr" class="co__durend">{{ isEn ? 'until' : 'bis' }} {{ endDateStr }}</small>
               </div>
             </div>
 
-            <p class="co__flabel">{{ t.deliveryOption }}</p>
-            <div class="co__opts">
-              <label class="co__opt" :class="{ 'is-on': form.deliveryOption === 'full' }">
-                <input v-model="form.deliveryOption" type="radio" value="full">
-                <span class="co__opticon"><WfIcon name="truck" :size="20" /></span>
-                <span class="co__optmain"><strong>{{ t.dOptFull }}</strong><small>{{ t.dOptFullHint }}</small></span>
-                <span class="co__radio" aria-hidden="true"><WfIcon name="check" :size="12" /></span>
-              </label>
-              <label class="co__opt" :class="{ 'is-on': form.deliveryOption === 'self' }">
-                <input v-model="form.deliveryOption" type="radio" value="self">
-                <span class="co__opticon"><WfIcon name="box" :size="20" /></span>
-                <span class="co__optmain"><strong>{{ t.dOptSelf }}</strong><small>{{ t.dOptSelfHint }}</small></span>
-                <span class="co__radio" aria-hidden="true"><WfIcon name="check" :size="12" /></span>
-              </label>
+            <div class="co__ship">
+              <span class="co__shipicon"><WfIcon name="truck" :size="24" /></span>
+              <div>
+                <strong>{{ t.shipTitle }}</strong>
+                <p>{{ t.shipText }}</p>
+                <ul>
+                  <li v-for="pt in t.shipPoints" :key="pt"><WfIcon name="check" :size="13" /> {{ pt }}</li>
+                </ul>
+              </div>
             </div>
 
             <label class="co__fld co__fld--last"><span>{{ t.deliveryNotes }}</span>
@@ -473,34 +539,61 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
 .co__fld input:hover, .co__fld textarea:hover { border-color: #d6cfbd; }
 .co__fld input:focus, .co__fld textarea:focus { background: #fff; border-color: var(--green); box-shadow: 0 0 0 4px rgba(47, 93, 64, .1); }
 
-.co__seg { display: flex; padding: 4px; gap: 4px; border: 1px solid var(--line); border-radius: 14px; background: var(--field); }
-.co__seg button {
-  flex: 1; border: 0; border-radius: 10px; background: none; padding: .65em .6em; font: inherit; font-size: .9em;
-  font-weight: 600; color: var(--muted); cursor: pointer; transition: background .15s, color .15s;
+.co__pick {
+  position: relative; display: flex; align-items: center; gap: .7em; width: 100%; box-sizing: border-box;
+  padding: .6em .9em .6em .6em; font: inherit; font-size: .95em; text-align: left; color: var(--ink); cursor: pointer;
+  background: #fff; border: 1.5px solid var(--line); border-radius: 14px;
+  transition: border-color .15s, box-shadow .15s, transform .15s;
 }
-.co__seg button.is-on { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(47, 93, 64, .22); }
+.co__pick:hover { border-color: #b9c9bc; }
+.co__pick:focus-within, .co__pick:focus-visible, .co__pick.is-open { outline: none; border-color: var(--green); box-shadow: 0 0 0 4px rgba(47, 93, 64, .1); }
+.co__pickicon {
+  flex: none; width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center;
+  background: var(--green-soft); color: var(--green);
+}
+.co__picktext { flex: 1; min-width: 0; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.co__pick.is-empty .co__picktext { color: var(--green); }
+.co__pickchev { flex: none; color: var(--muted); transform: rotate(90deg); transition: transform .2s; }
+.co__pick.is-open .co__pickchev { transform: rotate(-90deg); }
+/* natives Datumsfeld liegt unsichtbar darunter – öffnet den Kalender des Browsers */
+.co__pickinput { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; border: 0; padding: 0; cursor: pointer; }
+.co__pickinput::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
 
-.co__flabel { margin: .2em 0 .6em; }
-.co__opts { display: grid; grid-template-columns: 1fr 1fr; gap: .8em; margin-bottom: 1.2em; }
-.co__opt {
-  position: relative; display: flex; flex-direction: column; gap: .7em; padding: 1.1em 1.1em 1em;
-  border: 1.5px solid var(--line); border-radius: 18px; cursor: pointer; background: #fff;
-  transition: border-color .15s, background .15s, transform .15s;
+.co__dur { position: relative; }
+.co__durlist {
+  position: absolute; z-index: 20; top: calc(100% - .6em); left: 0; right: 0; margin: 0; padding: .4em;
+  list-style: none; max-height: 18em; overflow-y: auto; background: #fff; border: 1px solid var(--line);
+  border-radius: 16px; box-shadow: 0 18px 40px rgba(43, 43, 40, .14); scrollbar-width: thin;
 }
-.co__opt:hover { border-color: #c9d8cc; transform: translateY(-1px); }
-.co__opt.is-on { border-color: var(--green); background: var(--green-soft); }
-.co__opt input { position: absolute; opacity: 0; pointer-events: none; }
-.co__opt:has(input:focus-visible) { box-shadow: 0 0 0 4px rgba(47, 93, 64, .15); }
-.co__opticon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--cream); color: var(--green); }
-.co__opt.is-on .co__opticon { background: #fff; }
-.co__optmain { display: flex; flex-direction: column; gap: .25em; padding-right: 1.4em; }
-.co__optmain strong { font-size: .92em; line-height: 1.3; }
-.co__optmain small { font-size: .78em; color: var(--muted); line-height: 1.45; }
-.co__radio {
-  position: absolute; top: 1em; right: 1em; width: 22px; height: 22px; border-radius: 50%;
-  border: 1.5px solid #d3cbb9; display: flex; align-items: center; justify-content: center; color: transparent; background: #fff;
+.co__durlist li {
+  display: flex; align-items: center; gap: .6em; padding: .55em .8em; border-radius: 10px; cursor: pointer;
+  font-size: .9em; color: var(--ink);
 }
-.co__opt.is-on .co__radio { background: var(--green); border-color: var(--green); color: #fff; }
+.co__durlist li span { flex: 1; }
+.co__durlist li em { font-style: normal; font-size: .78em; font-weight: 700; color: var(--green); background: var(--green-soft); border-radius: 999px; padding: .15em .6em; }
+.co__durlist li:hover { background: var(--cream); }
+.co__durlist li.is-sel { background: var(--green); color: #fff; font-weight: 700; }
+.co__durlist li.is-sel em { background: rgba(255, 255, 255, .18); color: #fff; }
+.co__durlist li.is-year + li { margin-top: .2em; }
+.co__durend { font-size: .76em; color: var(--muted); margin-top: -.1em; }
+.co-pop-enter-active, .co-pop-leave-active { transition: opacity .15s, transform .15s; }
+.co-pop-enter-from, .co-pop-leave-to { opacity: 0; transform: translateY(-6px); }
+
+.co__ship {
+  display: flex; gap: 1em; align-items: flex-start; margin: .3em 0 1.3em; padding: 1.2em 1.3em;
+  border-radius: 18px; background: var(--green-soft); border: 1px solid #d4e1d6;
+}
+.co__shipicon {
+  flex: none; width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+  background: var(--green); color: #fff;
+}
+.co__ship strong { display: block; font-size: .96em; margin-bottom: .3em; }
+.co__ship p { margin: 0 0 .7em; font-size: .85em; line-height: 1.6; color: var(--muted); }
+.co__ship ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .4em; }
+.co__ship li {
+  display: inline-flex; align-items: center; gap: .35em; padding: .3em .75em; border-radius: 999px;
+  background: #fff; font-size: .76em; font-weight: 600; color: var(--green);
+}
 
 .co__error { margin: 0; background: #fbeaea; color: #a33; border-radius: 14px; padding: .85em 1.1em; font-size: .9em; }
 
@@ -601,7 +694,8 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
   .co__progress li + li::before { width: 1.2em; }
   .co__card { padding: 1.4em 1.2em .6em; border-radius: 20px; }
   .co__num { font-size: 1.8em; }
-  .co__row, .co__row--zip, .co__opts, .co__next { grid-template-columns: 1fr; }
+  .co__row, .co__row--zip, .co__next { grid-template-columns: 1fr; }
+  .co__ship { flex-direction: column; }
   .co__empty, .co__success { padding: 2em 1.2em; }
 }
 </style>
