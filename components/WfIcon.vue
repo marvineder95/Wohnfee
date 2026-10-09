@@ -41,6 +41,9 @@ const PATHS: Record<string, string> = {
   diamond: 'M7 4h10l4 5-9 11L3 9l4-5Zm-4 5h18M9.5 4 8 9l4 11 4-11-1.5-5',
   truck: 'M2 6h11v10H2V6Zm11 4h4.5l3.5 3.5V16h-8m-6.5 3a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm11 0a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
   arrow: 'M5 12h14m-6-6 6 6-6 6',
+  print: 'M7 9V3h10v6M7 18H5a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M7 14h10v7H7v-7Z',
+  list: 'M9 6h11M9 12h11M9 18h11M4.5 6h.01M4.5 12h.01M4.5 18h.01',
+  alert: 'M12 9v4m0 4h.01M10.3 3.9 2.4 18a2 2 0 0 0 1.7 3h15.8a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z',
   globe: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm-9-9h18M12 3c2.6 2.6 3.8 5.6 3.8 9s-1.2 6.4-3.8 9c-2.6-2.6-3.8-5.6-3.8-9S9.4 5.6 12 3Z'
 }
 const d = computed(() => PATHS[props.name] || PATHS.leaf)

@@ -36,6 +36,8 @@ interface Detail extends Inquiry {
   deliveryOption: string | null
   deliveryNotes: string | null
   notes: string | null
+  offerId: number | null
+  offerNumber: string | null
 }
 
 const inquiries = ref<Inquiry[]>([])
@@ -157,6 +159,23 @@ async function setStatus(item: Inquiry, status: string, reload = true) {
   }
 }
 
+// Angebot aus der Anfrage erstellen (oder vorhandenes öffnen)
+const offerBusy = ref(false)
+async function makeOffer(item: Inquiry) {
+  if (!detail.value) return
+  if (detail.value.offerId) return navigateTo(`/admin/angebote?open=${detail.value.offerId}`)
+  offerBusy.value = true
+  actionError.value = ''
+  try {
+    const res = await $fetch<{ offerId: number }>(`/api/admin/rental-inquiries/${item.id}/offer`, { method: 'POST' })
+    await navigateTo(`/admin/angebote?open=${res.offerId}`)
+  } catch (e: any) {
+    actionError.value = e?.data?.statusMessage || 'Angebot konnte nicht erstellt werden.'
+  } finally {
+    offerBusy.value = false
+  }
+}
+
 onMounted(load)
 </script>
 
@@ -263,6 +282,10 @@ onMounted(load)
             </p>
 
             <div class="rental-inquiries__actions">
+              <button class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(item)">
+                <WfIcon name="file" :size="13" />
+                {{ detail.offerId ? `Angebot ${detail.offerNumber || ''} öffnen` : (offerBusy ? 'Erstelle …' : 'Angebot erstellen') }}
+              </button>
               <a v-if="item.status !== 'beantwortet'" class="wf-btn wf-btn--sm"
                  :href="`mailto:${detail.email}?subject=Ihre Mietanfrage ${detail.number} – WOHNFEE Furniture Leasing`">Per E-Mail antworten</a>
               <button v-if="item.status !== 'in_bearbeitung' && item.status !== 'archiviert'" class="wf-btn wf-btn--sm"

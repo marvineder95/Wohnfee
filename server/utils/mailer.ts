@@ -9,7 +9,7 @@ export function mailerConfigured(): boolean {
   return !!(config.smtpHost && config.smtpUser && config.smtpPassword)
 }
 
-export async function sendMail(to: string, subject: string, text: string, html: string, attachments?: Array<{ filename: string; content: Buffer }>) {
+export async function sendMail(to: string, subject: string, text: string, html: string, attachments?: Array<{ filename: string; content: Buffer }>, headers?: Record<string, string>) {
   const config = useRuntimeConfig()
   if (!mailerConfigured()) {
     console.log(`[mailer] SMTP nicht vollständig konfiguriert (Host/User/Password nötig) — Mail NICHT versendet an ${to}: "${subject}"`)
@@ -28,7 +28,8 @@ export async function sendMail(to: string, subject: string, text: string, html: 
     subject,
     text,
     html,
-    attachments
+    attachments,
+    headers
   })
   return true
 }
@@ -111,7 +112,7 @@ function escapeHtml(s: string): string {
 // Newsletter-Versand an Abonnenten: subject + Freitext, eingepackt in das
 // Wohnfee-Mail-Layout (dunkelgrüner Kopf mit Wortmarke, cremefarbener Grund,
 // Footer mit Firmendaten + Abmeldehinweis).
-export function newsletterMail(data: { subject: string; bodyText: string; lang: 'de' | 'en' }) {
+export function newsletterMail(data: { subject: string; bodyText: string; lang: 'de' | 'en'; unsubscribeUrl: string }) {
   const esc = escapeHtml
   const isEn = data.lang === 'en'
   // Absätze aus dem Freitext bilden (Leerzeilen als Trenner)
@@ -126,8 +127,8 @@ export function newsletterMail(data: { subject: string; bodyText: string; lang: 
   const text =
     `${data.bodyText}\n\n—\n` +
     (isEn
-      ? `WOHNFEE – Eder & Steiner GmbH\nObersdorferstraße 5, 2201 Seyring\noffice@wohnfee.at | +43 676 9202236 | wohnfee.at\n\nTo unsubscribe, simply reply with "Unsubscribe".`
-      : `WOHNFEE – Eder & Steiner GmbH\nObersdorferstraße 5, 2201 Seyring\noffice@wohnfee.at | +43 676 9202236 | wohnfee.at\n\nZum Abmelden einfach auf diese E-Mail mit „Abmelden" antworten.`)
+      ? `WOHNFEE – Eder & Steiner GmbH\nObersdorferstraße 5, 2201 Seyring\noffice@wohnfee.at | +43 676 9202236 | wohnfee.at\n\nUnsubscribe: ${data.unsubscribeUrl}`
+      : `WOHNFEE – Eder & Steiner GmbH\nObersdorferstraße 5, 2201 Seyring\noffice@wohnfee.at | +43 676 9202236 | wohnfee.at\n\nVom Newsletter abmelden: ${data.unsubscribeUrl}`)
 
   const html =
     `<div style="margin:0;padding:24px 12px;background:#f4f3ee;font-family:Georgia,'Times New Roman',serif">` +
@@ -149,8 +150,8 @@ export function newsletterMail(data: { subject: string; bodyText: string; lang: 
     `Obersdorferstraße 5, 2201 Seyring<br>` +
     `<a href="mailto:office@wohnfee.at" style="color:#26492f;text-decoration:none">office@wohnfee.at</a> | +43 676 9202236 | <a href="https://wohnfee.at" style="color:#26492f;text-decoration:none">wohnfee.at</a></p>` +
     `<p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:#a8a396">${isEn
-      ? 'You receive this e-mail because you subscribed to the WOHNFEE newsletter. To unsubscribe, simply reply with "Unsubscribe".'
-      : 'Du erhältst diese E-Mail, weil du dich beim WOHNFEE-Newsletter angemeldet hast. Zum Abmelden einfach mit „Abmelden“ antworten.'}</p>` +
+      ? `You receive this e-mail because you subscribed to the WOHNFEE newsletter. <a href="${esc(data.unsubscribeUrl)}" style="color:#8a857a">Unsubscribe</a>`
+      : `Du erhältst diese E-Mail, weil du dich beim WOHNFEE-Newsletter angemeldet hast. <a href="${esc(data.unsubscribeUrl)}" style="color:#8a857a">Vom Newsletter abmelden</a>`}</p>` +
     `</div>` +
     `</div>` +
     `</div>`
@@ -213,5 +214,23 @@ export function rentalInquiryMail(data: {
     `<p style="font-size:1.05em"><strong>Monatliche Gesamtsumme: ${total}&nbsp;€</strong> (zzgl. Liefer-/Abholgebühr)</p>` +
     (data.notes ? `<p><strong>Anmerkungen:</strong><br>${esc(data.notes)}</p>` : '') +
     `<p style="color:#777;font-size:.9em">Die Anfrage liegt im WOHNFEE Dashboard unter „Mietanfragen“ zur Bearbeitung bereit.</p>`
+  return { subject, text, html }
+}
+
+// Double-Opt-in: Bestätigungsmail nach der Anmeldung im Footer
+export function newsletterConfirmMail(data: { confirmUrl: string; lang: 'de' | 'en' }) {
+  const en = data.lang === 'en'
+  const subject = en ? 'Please confirm your WOHNFEE newsletter subscription' : 'Bitte bestätige deine Anmeldung zum WOHNFEE-Newsletter'
+  const text = en
+    ? `Hello,\n\nplease confirm that you would like to receive the WOHNFEE newsletter:\n${data.confirmUrl}\n\nIf you did not sign up, simply ignore this e-mail – you will not receive any further messages.\n\nWOHNFEE – Eder & Steiner GmbH`
+    : `Hallo,\n\nbitte bestätige, dass du den WOHNFEE-Newsletter erhalten möchtest:\n${data.confirmUrl}\n\nFalls du dich nicht angemeldet hast, ignoriere diese E-Mail einfach – du bekommst dann keine weiteren Nachrichten.\n\nWOHNFEE – Eder & Steiner GmbH`
+  const html =
+    `<div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;padding:24px;color:#45423a">` +
+    `<p style="font-size:20px;color:#26492f;margin:0 0 16px">WOHN<span style="color:#7fa07a">FEE</span></p>` +
+    `<p>${en ? 'Hello,' : 'Hallo,'}</p>` +
+    `<p>${en ? 'please confirm that you would like to receive the WOHNFEE newsletter:' : 'bitte bestätige, dass du den WOHNFEE-Newsletter erhalten möchtest:'}</p>` +
+    `<p><a href="${escapeHtml(data.confirmUrl)}" style="display:inline-block;background:#2f5d40;color:#fff;padding:12px 24px;border-radius:999px;text-decoration:none">${en ? 'Confirm subscription' : 'Anmeldung bestätigen'}</a></p>` +
+    `<p style="font-size:13px;color:#8a857a">${en ? 'If you did not sign up, simply ignore this e-mail.' : 'Falls du dich nicht angemeldet hast, ignoriere diese E-Mail einfach.'}</p>` +
+    `<p style="font-size:12px;color:#a8a396">WOHNFEE – Eder &amp; Steiner GmbH · Obersdorferstraße 5, 2201 Seyring</p></div>`
   return { subject, text, html }
 }

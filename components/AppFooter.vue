@@ -17,7 +17,7 @@ const t = computed(() => {
     nlText: 'Bleib auf dem Laufenden und erhalte Neuigkeiten, Inspirationen und exklusive Angebote.',
     nlPlaceholder: 'E-Mail-Adresse',
     nlConsent: 'Ich stimme zu, dass ich regelmäßig Neuigkeiten per E-Mail erhalte.',
-    nlThanks: 'Danke für deine Anmeldung!',
+    nlThanks: 'Fast geschafft! Bitte bestätige deine Anmeldung über den Link in der E-Mail, die wir dir gerade geschickt haben.',
     nlError: 'Bitte E-Mail-Adresse angeben und dem Erhalt zustimmen.',
     rights: 'Alle Rechte vorbehalten.',
     socials: { instagram: 'WOHNFEE auf Instagram', linkedin: 'WOHNFEE auf LinkedIn', pinterest: 'WOHNFEE auf Pinterest', facebook: 'WOHNFEE auf Facebook' }
@@ -32,7 +32,7 @@ const t = computed(() => {
     nlText: 'Stay up to date and receive news, inspiration and exclusive offers.',
     nlPlaceholder: 'E-mail address',
     nlConsent: 'I agree to receive news by e-mail on a regular basis.',
-    nlThanks: 'Thanks for signing up!',
+    nlThanks: 'Almost done! Please confirm your subscription via the link in the e-mail we just sent you.',
     nlError: 'Please enter your e-mail address and agree to receive the newsletter.',
     rights: 'All rights reserved.',
     socials: { instagram: 'WOHNFEE on Instagram', linkedin: 'WOHNFEE on LinkedIn', pinterest: 'WOHNFEE on Pinterest', facebook: 'WOHNFEE on Facebook' }

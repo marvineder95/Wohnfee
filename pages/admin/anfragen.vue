@@ -19,7 +19,7 @@ const counts = ref<Record<string, number>>({ neu: 0, gelesen: 0, archiviert: 0 }
 const filter = ref<'alle' | 'neu' | 'gelesen' | 'archiviert'>('alle')
 const loading = ref(true)
 const error = ref('')
-const detail = ref<{ id: number; message: string; createdAt: string } | null>(null)
+const detail = ref<{ id: number; message: string; createdAt: string; offerId: number | null; offerNumber: string | null; contactId: number | null } | null>(null)
 const detailLoading = ref(false)
 const expandedId = ref<number | null>(null)
 const actionError = ref('')
@@ -70,7 +70,10 @@ async function toggleDetail(item: Inquiry) {
   }
   try {
     const res = await $fetch<{ inquiry: any }>(`/api/admin/inquiries/${item.id}`)
-    detail.value = { id: res.inquiry.id, message: res.inquiry.message, createdAt: res.inquiry.createdAt }
+    detail.value = {
+      id: res.inquiry.id, message: res.inquiry.message, createdAt: res.inquiry.createdAt,
+      offerId: res.inquiry.offerId, offerNumber: res.inquiry.offerNumber, contactId: res.inquiry.contactId
+    }
   } catch (e: any) {
     detail.value = null
     expandedId.value = null
@@ -100,6 +103,22 @@ async function remove(item: Inquiry) {
     await load()
   } catch (e: any) {
     actionError.value = e?.data?.statusMessage || 'Löschen fehlgeschlagen.'
+  }
+}
+
+// Kontaktanfrage → Kontakt + Angebotsentwurf (oder vorhandenes Angebot öffnen)
+const offerBusy = ref(false)
+async function makeOffer(item: Inquiry) {
+  if (detail.value?.offerId) return navigateTo(`/admin/angebote?open=${detail.value.offerId}`)
+  offerBusy.value = true
+  actionError.value = ''
+  try {
+    const res = await $fetch<{ offerId: number }>(`/api/admin/inquiries/${item.id}/offer`, { method: 'POST' })
+    await navigateTo(`/admin/angebote?open=${res.offerId}`)
+  } catch (e: any) {
+    actionError.value = e?.data?.statusMessage || 'Angebot konnte nicht erstellt werden.'
+  } finally {
+    offerBusy.value = false
   }
 }
 
@@ -172,6 +191,13 @@ onMounted(load)
           </template>
 
           <div class="inquiries__actions">
+            <button v-if="detail" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(item)">
+              <WfIcon name="file" :size="13" />
+              {{ detail.offerId ? `Angebot ${detail.offerNumber || ''} öffnen` : (offerBusy ? 'Erstelle …' : 'Angebot erstellen') }}
+            </button>
+            <a class="wf-btn wf-btn--sm" :href="`mailto:${item.email}?subject=${encodeURIComponent('Re: ' + (item.subject || 'Ihre Anfrage') + ' – WOHNFEE')}`">
+              <WfIcon name="mail" :size="13" /> Antworten
+            </a>
             <button v-if="item.status !== 'gelesen'" class="wf-btn wf-btn--sm"
                     @click="setStatus(item, 'gelesen')">Als gelesen markieren</button>
             <button v-if="item.status !== 'archiviert'" class="wf-btn wf-btn--sm"

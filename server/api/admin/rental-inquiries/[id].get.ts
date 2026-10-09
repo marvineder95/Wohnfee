@@ -13,7 +13,8 @@ export default defineEventHandler(async (event) => {
             email, phone, street, zip, city, country,
             start_date AS startDate, end_date AS endDate, duration_months AS durationMonths,
             delivery_option AS deliveryOption, delivery_notes AS deliveryNotes,
-            monthly_total AS monthlyTotal, notes,
+            monthly_total AS monthlyTotal, notes, offer_id AS offerId,
+            (SELECT number FROM offers o WHERE o.id = rental_inquiries.offer_id) AS offerNumber,
             created_at AS createdAt
      FROM rental_inquiries WHERE id = :id`, { id }
   )

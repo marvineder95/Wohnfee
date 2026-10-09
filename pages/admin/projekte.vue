@@ -164,6 +164,22 @@ async function removeItem(itemId: number) {
   }
 }
 
+// Angebot „Mietverlängerung" aus den Möbeln des geöffneten Projekts
+const extBusy = ref(false)
+async function offerExtension() {
+  if (!editing.value) return
+  if (!confirm(`Angebot „Mietverlängerung" für ${editing.value.customer || editing.value.title} erstellen?\n\nAlle Möbel des Projekts werden mit ihrem Monatspreis übernommen.`)) return
+  extBusy.value = true
+  try {
+    const res = await $fetch<{ offerId: number }>(`/api/admin/projects/${editing.value.id}/extension-offer`, { method: 'POST' })
+    await navigateTo(`/admin/angebote?open=${res.offerId}`)
+  } catch (e: any) {
+    itemError.value = e?.data?.statusMessage || 'Angebot konnte nicht erstellt werden.'
+  } finally {
+    extBusy.value = false
+  }
+}
+
 async function load() {
   loading.value = true
   error.value = ''
@@ -487,9 +503,17 @@ onMounted(async () => {
                   <h3 class="proj__posh">Möbel im Einsatz</h3>
                   <p class="proj__possub">Alle diesem Projekt zugeordneten Möbel und Accessoires.</p>
                 </div>
-                <button class="wf-btn wf-btn--sm wf-btn--primary" @click="showAddItem = !showAddItem">
-                  <WfIcon name="plus" :size="14" /> Möbel hinzufügen
-                </button>
+                <span class="proj__posbtns">
+                  <NuxtLink v-if="projectItems.length" :to="`/admin/packliste/${editing.id}`" class="wf-btn wf-btn--sm" title="Druckbare Packliste">
+                    <WfIcon name="list" :size="14" /> Packliste
+                  </NuxtLink>
+                  <button v-if="projectItems.length" class="wf-btn wf-btn--sm" :disabled="extBusy" title="Angebot für die Verlängerung der Leihdauer" @click="offerExtension">
+                    <WfIcon name="file" :size="14" /> Verlängerung
+                  </button>
+                  <button class="wf-btn wf-btn--sm wf-btn--primary" @click="showAddItem = !showAddItem">
+                    <WfIcon name="plus" :size="14" /> Möbel hinzufügen
+                  </button>
+                </span>
               </div>
 
               <div class="proj__postools">
@@ -616,6 +640,7 @@ onMounted(async () => {
   font-size: 1.15em; line-height: 1; cursor: pointer; transition: color .15s, border-color .15s;
 }
 .proj__edclose:hover { color: var(--wf-red); border-color: var(--wf-red); }
+.proj__posbtns { display: flex; gap: .4em; flex-wrap: wrap; justify-content: flex-end; }
 .proj__edgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6em; align-items: start; }
 .proj__edgrid--solo { grid-template-columns: 1fr; }
 .proj__edsect { margin-bottom: 1.3em; }

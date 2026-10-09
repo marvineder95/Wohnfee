@@ -348,7 +348,7 @@ CREATE TABLE IF NOT EXISTS newsletter_subscribers (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(190) NOT NULL,
   lang ENUM('de','en') NOT NULL DEFAULT 'de',
-  status ENUM('aktiv','abgemeldet') NOT NULL DEFAULT 'aktiv',
+  status ENUM('ausstehend','aktiv','abgemeldet') NOT NULL DEFAULT 'ausstehend',
   ip_hash CHAR(64) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -364,6 +364,22 @@ CREATE TABLE IF NOT EXISTS newsletter_sends (
   sent_by VARCHAR(128) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_newsletter_sends_created (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS recurring_invoices (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  source_invoice_id INT UNSIGNED NOT NULL,
+  title VARCHAR(190) NULL,
+  next_date DATE NOT NULL,
+  end_date DATE NULL,
+  active TINYINT(1) NOT NULL DEFAULT 1,
+  created_count INT NOT NULL DEFAULT 0,
+  last_invoice_id INT UNSIGNED NULL,
+  created_by VARCHAR(128) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_recurring_next (active, next_date),
+  CONSTRAINT fk_recurring_source FOREIGN KEY (source_invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 CREATE TABLE IF NOT EXISTS blog_posts (
@@ -477,4 +493,36 @@ export async function migrateSchema() {
     await db.query('ALTER TABLE rental_inquiries ADD KEY idx_rental_inquiries_offer (offer_id)')
     console.log('[db-init] Migration: rental_inquiries.offer_id hinzugefuegt')
   }
+
+  // ---- Erweiterungen Dashboard (Anfrage→Angebot, Mahnwesen, Abo-Rechnungen, Newsletter) ----
+  const addCol = async (table: string, column: string, ddl: string) => {
+    const c = await queryOne<{ n: number }>(
+      `SELECT COUNT(*) AS n FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = :db AND TABLE_NAME = :table AND COLUMN_NAME = :column`,
+      { db: config.dbName, table, column }
+    )
+    if (Number(c?.n) === 0) {
+      await db.query(`ALTER TABLE ${table} ${ddl}`)
+      console.log(`[db-init] Migration: ${table}.${column} hinzugefuegt`)
+    }
+  }
+  await addCol('contact_inquiries', 'offer_id', 'ADD COLUMN offer_id INT UNSIGNED NULL')
+  await addCol('contact_inquiries', 'contact_id', 'ADD COLUMN contact_id INT UNSIGNED NULL')
+  await addCol('invoices', 'reminder_level', 'ADD COLUMN reminder_level TINYINT NOT NULL DEFAULT 0')
+  await addCol('invoices', 'last_reminder_at', 'ADD COLUMN last_reminder_at DATE NULL')
+  await addCol('invoices', 'recurring_id', 'ADD COLUMN recurring_id INT UNSIGNED NULL')
+  await addCol('newsletter_subscribers', 'confirm_token_hash', 'ADD COLUMN confirm_token_hash CHAR(64) NULL')
+  await addCol('newsletter_subscribers', 'unsub_token', 'ADD COLUMN unsub_token CHAR(32) NULL')
+  await addCol('newsletter_subscribers', 'confirmed_at', 'ADD COLUMN confirmed_at TIMESTAMP NULL')
+  const ns = await queryOne<{ t: string }>(
+    `SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = :db AND TABLE_NAME = 'newsletter_subscribers' AND COLUMN_NAME = 'status'`,
+    { db: config.dbName }
+  )
+  if (ns && !String(ns.t).includes('ausstehend')) {
+    await db.query("ALTER TABLE newsletter_subscribers MODIFY status ENUM('ausstehend','aktiv','abgemeldet') NOT NULL DEFAULT 'ausstehend'")
+    console.log('[db-init] Migration: newsletter_subscribers.status um AUSSTEHEND erweitert')
+  }
+  // Jeder Abonnent braucht einen persönlichen Abmelde-Token (für den Link in jeder Mail)
+  await db.query("UPDATE newsletter_subscribers SET unsub_token = LOWER(HEX(RANDOM_BYTES(16))) WHERE unsub_token IS NULL")
 }

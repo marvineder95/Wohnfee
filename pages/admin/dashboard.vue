@@ -48,7 +48,7 @@ const inquiries = ref<Inq[]>([])
 const projectCounts = ref<Record<string, number>>({})
 const expiring = ref<Expiring[]>([])
 const upcomingEvents = ref<CalendarEvent[]>([])
-const invoiceStats = ref({ open: 0, openSum: 0, thisMonth: 0 })
+const invoiceStats = ref({ open: 0, openSum: 0, thisMonth: 0, overdue: 0 })
 const rentalCounts = ref<Record<string, number>>({ neu: 0, in_bearbeitung: 0 })
 
 const INQ_LABELS: Record<string, string> = { neu: 'Neu', gelesen: 'Gelesen', archiviert: 'Archiviert' }
@@ -74,7 +74,7 @@ onMounted(async () => {
       $fetch<{ inquiries: Inq[]; counts: any }>('/api/admin/inquiries'),
       $fetch<{ counts: Record<string, number> }>('/api/admin/projects'),
       $fetch<{ invoices: Inv[] }>('/api/admin/invoices'),
-      $fetch<{ projects: Expiring[] }>('/api/admin/dashboard/expiring'),
+      $fetch<{ overdue: any[]; deadlines: any[] }>(`/api/admin/logistics?from=${todayIso}&to=${localIso(new Date(Date.now() + 14 * 86400000))}`),
       $fetch<{ events: CalendarEvent[] }>(`/api/admin/calendar?from=${todayIso}&to=${localIso(new Date(Date.now() + 30 * 86400000))}`),
       $fetch<{ counts: Record<string, number> }>('/api/admin/rental-inquiries').catch(() => ({ counts: {} }))
     ])
@@ -83,9 +83,18 @@ onMounted(async () => {
     inquiryCounts.value = inq.counts
     inquiries.value = inq.inquiries.slice(0, 5)
     projectCounts.value = proj.counts
-    expiring.value = exp.projects
+    // Rückgaben: überfällige zuerst, dann die nächsten 14 Tage (je Projekt einmal)
+    const seen = new Set<number>()
+    expiring.value = [...exp.overdue, ...exp.deadlines]
+      .filter((r: any) => !seen.has(r.projectId) && seen.add(r.projectId))
+      .slice(0, 6)
+      .map((r: any) => ({
+        id: r.projectId, category: r.projectCategory, customer: r.projectCustomer, title: r.projectTitle,
+        deadlineDate: String(r.date).slice(0, 10), deadlineText: r.deadlineText || null, itemCount: Number(r.pieceCount || r.itemCount)
+      }))
     const openInv = inv.invoices.filter(i => i.status === 'gesendet')
     invoiceStats.value = {
+      overdue: (inv.invoices as any[]).filter(i => (i.days_overdue ?? 0) > 0).length,
       open: openInv.length,
       openSum: openInv.reduce((s, i) => s + (Number(i.netto) || 0), 0),
       thisMonth: inv.invoices.filter(i => String(i.doc_date).slice(0, 7) === monthKey).length
@@ -118,10 +127,11 @@ const stats = computed(() => [
     delta: projectCounts.value.staging || 0, deltaLabel: 'davon Staging', tone: 'green'
   },
   {
-    icon: 'receipt', label: 'Offene Rechnungen', to: '/admin/rechnungen',
+    icon: 'receipt', label: 'Offene Rechnungen',
+    to: invoiceStats.value.overdue ? '/admin/rechnungen?filter=ueberfaellig' : '/admin/rechnungen',
     value: invoiceStats.value.open,
     delta: invoiceStats.value.open ? fmtEuro(invoiceStats.value.openSum) : null,
-    deltaLabel: 'netto ausständig', tone: 'blue'
+    deltaLabel: invoiceStats.value.overdue ? `netto · ${invoiceStats.value.overdue} überfällig` : 'netto ausständig', tone: 'blue'
   }
 ])
 
@@ -199,10 +209,10 @@ const quickActions = [
 
       <article class="dash-card wf-card">
         <header class="dash-card__head">
-          <h2>Bald fällig</h2>
-          <NuxtLink to="/admin/projekte" class="dash-card__all">Alle anzeigen <WfIcon name="chevron" :size="13" /></NuxtLink>
+          <h2>Rückgaben &amp; Abholungen</h2>
+          <NuxtLink to="/admin/touren" class="dash-card__all">Alle anzeigen <WfIcon name="chevron" :size="13" /></NuxtLink>
         </header>
-        <p v-if="!loading && !expiring.length" class="dash-empty">Keine Projekte mit nahendem Auslaufdatum.</p>
+        <p v-if="!loading && !expiring.length" class="dash-empty">Keine Abholungen in den nächsten 14 Tagen.</p>
         <ul v-else class="dash-list">
           <li v-for="p in expiring" :key="p.id">
             <NuxtLink :to="`/admin/projekte?open=${p.id}&cat=${p.category}`" class="dash-row">

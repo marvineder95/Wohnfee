@@ -95,13 +95,20 @@ const range = computed(() => {
 async function load() {
   loading.value = true
   try {
-    const [cal, proj] = await Promise.all([
+    const [cal, proj, log] = await Promise.all([
       $fetch<{ events: CalEvent[] }>('/api/admin/calendar', {
         query: { from: range.value.from, to: range.value.to }
       }),
-      $fetch<{ projects: any[] }>('/api/admin/projects')
+      $fetch<{ projects: any[] }>('/api/admin/projects'),
+      $fetch<{ deadlines: any[]; returns: any[] }>('/api/admin/logistics', {
+        query: { from: range.value.from, to: range.value.to }
+      }).catch(() => ({ deadlines: [], returns: [] }))
     ])
     events.value = cal.events
+    autoEntries.value = [
+      ...log.deadlines.map((d: any) => ({ ...d, kind: 'deadline' as const })),
+      ...log.returns.map((r: any) => ({ ...r, kind: 'rueckgabe' as const }))
+    ]
     projects.value = proj.projects.map(p => ({
       id: p.id,
       label: `${p.customer || p.title || 'Projekt #' + p.id}${p.title && p.customer ? ' – ' + p.title : ''}`,
@@ -115,6 +122,13 @@ async function load() {
 }
 watch([viewYear, viewMonth], load)
 onMounted(async () => { await load(); newParam.consume(() => openNew()) })
+
+// Automatische Einträge aus Projekten (Abholung fällig / Rückgaben) – nicht editierbar
+interface AutoEntry { kind: 'deadline' | 'rueckgabe'; date: string; projectId: number; projectCustomer: string | null; projectTitle: string | null; projectCategory: string; pieceCount: number }
+const autoEntries = ref<AutoEntry[]>([])
+function dayAuto(iso: string) {
+  return autoEntries.value.filter(a => String(a.date).slice(0, 10) === iso)
+}
 
 const eventsByDate = computed(() => {
   const m: Record<string, CalEvent[]> = {}
@@ -260,6 +274,11 @@ function timeLabel(ev: CalEvent) {
                 <template v-if="!ev.allDay && ev.startTime">{{ ev.startTime.slice(0, 5) }} </template>{{ ev.title }}
               </span>
               <span v-if="dayEvents(d.iso).length > 2" class="cal-more">+{{ dayEvents(d.iso).length - 2 }}</span>
+              <span v-for="a in dayAuto(d.iso).slice(0, 1)" :key="'a' + a.projectId" class="cal-chip cal-chip--auto"
+                    :title="`Abholung fällig: ${a.projectCustomer || a.projectTitle}`">
+                ⟲ {{ a.projectCustomer || a.projectTitle }}
+              </span>
+              <span v-if="dayAuto(d.iso).length > 1" class="cal-more">+{{ dayAuto(d.iso).length - 1 }} Abholung</span>
             </span>
           </button>
         </div>
@@ -277,7 +296,19 @@ function timeLabel(ev: CalEvent) {
           </button>
         </header>
 
-        <p v-if="!selectedEvents.length" class="cal-side__empty">
+        <ul v-if="dayAuto(selectedDate).length" class="cal-autolist">
+          <li v-for="a in dayAuto(selectedDate)" :key="a.kind + a.projectId">
+            <span class="wf-pill wf-pill--amber">{{ a.kind === 'deadline' ? 'Abholung fällig' : 'Rückgabe' }}</span>
+            <strong>{{ a.projectCustomer || a.projectTitle }}</strong>
+            <small>{{ Number(a.pieceCount) }} Stück · aus Projekt-Deadline</small>
+            <span class="cal-autolist__acts">
+              <NuxtLink :to="`/admin/packliste/${a.projectId}?modus=abholung`" class="wf-btn wf-btn--sm">Packliste</NuxtLink>
+              <NuxtLink :to="`/admin/projekte?open=${a.projectId}&cat=${a.projectCategory}`" class="wf-btn wf-btn--sm">Projekt</NuxtLink>
+            </span>
+          </li>
+        </ul>
+
+        <p v-if="!selectedEvents.length && !dayAuto(selectedDate).length" class="cal-side__empty">
           Keine Termine an diesem Tag.<br>Lege einen neuen Termin an.
         </p>
         <ul v-else class="cal-list">
@@ -636,4 +667,10 @@ function timeLabel(ev: CalEvent) {
   .cal-chip { font-size: .62em; }
   .cal-form { grid-template-columns: 1fr; }
 }
+.cal-chip--auto { background: #fdf3df !important; color: #8a5a12 !important; border: 1px dashed #e3c27e; }
+.cal-autolist { list-style: none; margin: 0 0 1em; padding: 0; display: grid; gap: .5em; }
+.cal-autolist li { display: flex; flex-wrap: wrap; align-items: center; gap: .4em .6em; padding: .6em .7em; border-radius: 10px; border: 1px dashed #e3c27e; background: #fffaf0; }
+.cal-autolist strong { font-size: .88em; flex: 1; min-width: 8em; }
+.cal-autolist small { width: 100%; font-size: .76em; color: var(--wf-muted); }
+.cal-autolist__acts { display: flex; gap: .35em; }
 </style>

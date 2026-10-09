@@ -39,6 +39,15 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Korrektur über Storno (serverseitig erzwungen).
 - Möbel ↔ Projekte: `server/utils/inventory-sync.ts` verhindert Doppelbelegung und setzt
   Lagerstatus (lager/vermietet); Shop zeigt nur freien Bestand.
+- Anfrage → Angebot: `server/utils/offer-create.ts` (Miet- und Kontaktanfragen), Angebote
+  öffnen per `/admin/angebote?open=ID`. Projekt → „Mietverlängerung" (`extension-offer.post.ts`).
+- Touren & Rückgaben (`/admin/touren`, API `/api/admin/logistics`): Kalendertermine +
+  Projekt-Deadlines mit Möbeln + Überfälliges; Packliste `/admin/packliste/:id` (druckbar).
+- Abo-Rechnungen: Tabelle `recurring_invoices`, Erzeugung `server/utils/recurring.ts`
+  (Plugin stündlich + beim Öffnen der Rechnungen) → immer als Entwurf.
+- Mahnwesen: `server/utils/dunning.ts` (Ziel 14 Tage, 3 Stufen, +7 Tage je Stufe).
+- Newsletter: Double-Opt-in (Status ausstehend/aktiv/abgemeldet), Seiten unter
+  `server/routes/newsletter/*`, persönlicher Abmeldelink + List-Unsubscribe-Header.
 - Sicherheit: Login max. 10 Fehlversuche/15 min je IP, „Passwort vergessen" 5/h,
   Mietanfragen 5/h (`server/utils/rate-limit.ts`). Reset-Links nie in API-Antworten.
   In Produktion `NUXT_SITE_URL` setzen (Basis für Links in Mails).
@@ -67,7 +76,6 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Tippfehler im Pflegetext: Redesign „entseht“, Preise Paket 1/3 (Komma/€ am Ende).
 - Rolle „Benutzer" hat derzeit dieselben Rechte wie „Admin" (nur Benutzerverwaltung ist
   Superadmin-only) – Rechtekonzept festlegen?
-- Newsletter: kein Abmeldelink/Double-Opt-in (Abmeldung nur per Antwort-Mail).
 - Checkout: Mietdauer im Formular (1/3 Monate) ist unabhängig von der Mietdauer je Artikel
   im Warenkorb – vereinheitlichen?
 - Noch nicht im neuen Design: Datenschutz, Furniture Leasing unterhalb des Heros, EN-Startseite

@@ -1,6 +1,7 @@
 import { requireAdmin } from '../../../utils/admin-auth'
 import { query } from '../../../utils/db'
 import { sendMail, newsletterMail, mailerConfigured } from '../../../utils/mailer'
+import { publicOrigin } from '../../../utils/site'
 
 // POST /api/admin/newsletter/send — Newsletter an alle aktiven Abonnenten.
 // Body: { subject: string, body: string }
@@ -18,7 +19,7 @@ export default defineEventHandler(async (event) => {
   }
 
   const recipients = await query<any>(
-    `SELECT email, lang FROM newsletter_subscribers WHERE status = 'aktiv' ORDER BY id`
+    `SELECT email, lang, unsub_token FROM newsletter_subscribers WHERE status = 'aktiv' ORDER BY id`
   )
   if (!recipients.length) {
     throw createError({ statusCode: 400, statusMessage: 'Keine aktiven Abonnenten vorhanden' })
@@ -33,8 +34,13 @@ export default defineEventHandler(async (event) => {
   if (configured) {
     for (const r of recipients) {
       try {
-        const mail = newsletterMail({ subject, bodyText, lang: r.lang === 'en' ? 'en' : 'de' })
-        await sendMail(r.email, mail.subject, mail.text, mail.html)
+        // persönlicher Abmeldelink + One-Click-Abmeldung im Mailprogramm (RFC 8058)
+        const unsubscribeUrl = `${publicOrigin(event)}/newsletter/abmelden?t=${r.unsub_token}`
+        const mail = newsletterMail({ subject, bodyText, lang: r.lang === 'en' ? 'en' : 'de', unsubscribeUrl })
+        await sendMail(r.email, mail.subject, mail.text, mail.html, undefined, {
+          'List-Unsubscribe': `<${unsubscribeUrl}>`,
+          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+        })
         sent++
       } catch (e) {
         console.error(`[newsletter] Versand an ${r.email} fehlgeschlagen`, e)

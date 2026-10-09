@@ -57,7 +57,7 @@ const previewHtml = computed(() => {
     `<div style="padding:18px 32px 24px;border-top:1px solid #ece7da;background:#faf8f2">` +
     `<p style="margin:0 0 4px;font-size:12px;line-height:1.6;color:#8a857a"><strong style="color:#55554e">WOHNFEE – Eder &amp; Steiner GmbH</strong><br>` +
     `Obersdorferstraße 5, 2201 Seyring<br>office@wohnfee.at | +43 676 9202236 | wohnfee.at</p>` +
-    `<p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:#a8a396">Du erhältst diese E-Mail, weil du dich beim WOHNFEE-Newsletter angemeldet hast. Zum Abmelden einfach mit „Abmelden“ antworten.</p>` +
+    `<p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:#a8a396">Du erhältst diese E-Mail, weil du dich beim WOHNFEE-Newsletter angemeldet hast. <u>Vom Newsletter abmelden</u></p>` +
     `</div></div></div>`
 })
 
@@ -184,17 +184,24 @@ onMounted(load)
       <!-- Abonnenten -->
       <section class="wf-card nl-admin__subs">
         <h2 class="wf-card-title">Abonnenten <span class="nl-admin__count">{{ activeCount }} aktiv</span></h2>
+        <p class="nl-admin__hint">Neue Anmeldungen müssen ihre Adresse per E-Mail bestätigen (Double-Opt-in) – erst dann bekommen sie den Newsletter. Jede Mail enthält einen persönlichen Abmeldelink.</p>
         <p v-if="loading" class="nl-admin__loading">Abonnenten werden geladen …</p>
         <p v-else-if="!subscribers.length" class="nl-admin__empty">
           Noch keine Anmeldungen – sie erscheinen hier, sobald sich jemand über das Footer-Formular einträgt.
         </p>
         <table v-else class="wf-table nl-admin__table">
           <thead>
-            <tr><th>E-Mail</th><th>Sprache</th><th>Angemeldet</th><th aria-label="Aktionen" /></tr>
+            <tr><th>E-Mail</th><th>Status</th><th>Sprache</th><th>Angemeldet</th><th aria-label="Aktionen" /></tr>
           </thead>
           <tbody>
             <tr v-for="s in subscribers" :key="s.id">
               <td><a :href="`mailto:${s.email}`">{{ s.email }}</a></td>
+              <td>
+                <span class="wf-pill" :class="s.status === 'aktiv' ? '' : s.status === 'ausstehend' ? 'wf-pill--amber' : 'wf-pill--gray'"
+                      :title="s.status === 'ausstehend' ? 'Hat den Link in der Bestätigungsmail noch nicht geklickt – bekommt keinen Newsletter' : ''">
+                  {{ s.status === 'aktiv' ? 'Bestätigt' : s.status === 'ausstehend' ? 'Unbestätigt' : 'Abgemeldet' }}
+                </span>
+              </td>
               <td>{{ s.lang === 'en' ? 'EN' : 'DE' }}</td>
               <td>{{ formatDate(s.created_at) }}</td>
               <td class="nl-admin__rowactions">
@@ -218,6 +225,7 @@ onMounted(load)
   margin-top: 1.2rem;
 }
 .nl-admin__subs { grid-column: 1 / -1; }
+.nl-admin__hint { margin: -.4rem 0 1rem; font-size: .82em; color: var(--wf-muted); }
 .nl-admin .wf-card { padding: 1.2rem 1.3rem; }
 .nl-admin .wf-card-title { margin: 0 0 1rem; font-size: 1.02em; color: var(--wf-ink); font-weight: 600; }
 

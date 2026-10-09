@@ -3,6 +3,7 @@ definePageMeta({ layout: 'admin' })
 
 useHead({ title: 'Angebote - WOHNFEE Dashboard' })
 const newParam = useNewParam()
+const openParam = useRoute().query.open
 
 interface OfferRow {
   id: number
@@ -350,7 +351,17 @@ async function doSend() {
   }
 }
 
-onMounted(async () => { await load(); newParam.consume(openNew) })
+onMounted(async () => {
+  await load()
+  newParam.consume(openNew)
+  // ?open=ID (z. B. aus einer Anfrage heraus erstellt) → Angebot direkt öffnen
+  const openId = Number(openParam)
+  if (openId > 0) {
+    const off = offers.value.find((o) => o.id === openId)
+    if (off) openEdit(off)
+    useRouter().replace({ query: {} })
+  }
+})
 </script>
 
 <template>

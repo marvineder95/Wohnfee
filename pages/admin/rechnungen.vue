@@ -17,6 +17,26 @@ interface InvoiceRow {
   vat_rate: number
   storno_of: number | null
   netto: number | null
+  reminder_level: number
+  last_reminder_at: string | null
+  recurring_id: number | null
+  active_recurring_id: number | null
+  due_date: string
+  days_overdue: number | null
+}
+
+interface RecurringRow {
+  id: number
+  sourceInvoiceId: number
+  title: string | null
+  nextDate: string
+  endDate: string | null
+  active: number
+  createdCount: number
+  sourceNumber: string
+  customerName: string
+  netto: number | null
+  lastNumber: string | null
 }
 
 interface ItemRow {
@@ -370,7 +390,96 @@ async function doSend() {
   }
 }
 
-onMounted(async () => { await load(); newParam.consume(openNew) })
+// ---------- Filter ----------
+const listFilter = ref<'alle' | 'offen' | 'ueberfaellig' | 'entwurf'>('alle')
+const overdueCount = computed(() => invoices.value.filter(i => (i.days_overdue ?? 0) > 0).length)
+const visibleInvoices = computed(() => {
+  if (listFilter.value === 'offen') return invoices.value.filter(i => i.status === 'gesendet' && !i.storno_of)
+  if (listFilter.value === 'ueberfaellig') return invoices.value.filter(i => (i.days_overdue ?? 0) > 0)
+  if (listFilter.value === 'entwurf') return invoices.value.filter(i => i.status === 'entwurf')
+  return invoices.value
+})
+
+// ---------- Mahnwesen ----------
+const REMINDER_LABELS = ['Zahlungserinnerung', '1. Mahnung', '2. Mahnung']
+const remindTarget = ref<InvoiceRow | null>(null)
+const remindTo = ref('')
+const remindBusy = ref(false)
+const remindError = ref('')
+function openRemind(inv: InvoiceRow) {
+  remindTarget.value = inv
+  remindTo.value = inv.contact_email || ''
+  remindError.value = ''
+}
+async function doRemind(markOnly: boolean) {
+  if (!remindTarget.value) return
+  remindBusy.value = true
+  remindError.value = ''
+  try {
+    await $fetch(`/api/admin/invoices/${remindTarget.value.id}/reminder`, {
+      method: 'POST', body: { to: remindTo.value.trim() || undefined, markOnly }
+    })
+    remindTarget.value = null
+    await load()
+  } catch (e: any) {
+    remindError.value = e?.data?.statusMessage || 'Erinnerung fehlgeschlagen.'
+  } finally {
+    remindBusy.value = false
+  }
+}
+
+// ---------- Monatliche Abo-Rechnungen ----------
+const recurring = ref<RecurringRow[]>([])
+async function loadRecurring() {
+  try {
+    const res = await $fetch<{ recurring: RecurringRow[]; generated: number }>('/api/admin/recurring')
+    recurring.value = res.recurring
+    if (res.generated) await load()
+  } catch { /* optional */ }
+}
+const recTarget = ref<InvoiceRow | null>(null)
+const recForm = reactive({ start_date: '', end_date: '', title: '' })
+const recBusy = ref(false)
+const recError = ref('')
+function addMonthIso(iso: string) {
+  const [y, m, d] = iso.slice(0, 10).split('-').map(Number)
+  const t = new Date(y, m, Math.min(d, new Date(y, m + 1, 0).getDate()))
+  return `${t.getFullYear()}-${String(t.getMonth() + 1).padStart(2, '0')}-${String(t.getDate()).padStart(2, '0')}`
+}
+function openRecurring(inv: InvoiceRow) {
+  recTarget.value = inv
+  Object.assign(recForm, { start_date: addMonthIso(inv.doc_date), end_date: '', title: '' })
+  recError.value = ''
+}
+async function saveRecurring() {
+  if (!recTarget.value) return
+  recBusy.value = true
+  recError.value = ''
+  try {
+    await $fetch('/api/admin/recurring', { method: 'POST', body: { invoice_id: recTarget.value.id, ...recForm } })
+    recTarget.value = null
+    await Promise.all([load(), loadRecurring()])
+  } catch (e: any) {
+    recError.value = e?.data?.statusMessage || 'Abo konnte nicht angelegt werden.'
+  } finally {
+    recBusy.value = false
+  }
+}
+async function toggleRecurring(r: RecurringRow) {
+  await $fetch(`/api/admin/recurring/${r.id}`, { method: 'PUT', body: { active: !r.active } })
+  await loadRecurring()
+}
+async function endRecurring(r: RecurringRow) {
+  if (!confirm(`Abo für „${r.customerName}" beenden?\n\nBereits erstellte Rechnungen bleiben erhalten.`)) return
+  await $fetch(`/api/admin/recurring/${r.id}`, { method: 'DELETE' })
+  await Promise.all([load(), loadRecurring()])
+}
+
+onMounted(async () => {
+  await Promise.all([load(), loadRecurring()])
+  newParam.consume(openNew)
+  if (useRoute().query.filter === 'ueberfaellig') listFilter.value = 'ueberfaellig'
+})
 </script>
 
 <template>
@@ -389,16 +498,47 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
       </div>
     </section>
 
+    <!-- Monatliche Abo-Rechnungen -->
+    <section v-if="recurring.length" class="inv__recur wf-card">
+      <h2 class="inv__recurh"><WfIcon name="clock" :size="16" /> Monatliche Mietrechnungen</h2>
+      <p class="inv__recursub">Zum Termin entsteht automatisch ein Rechnungsentwurf – prüfen und senden wie gewohnt.</p>
+      <ul class="inv__recurlist">
+        <li v-for="r in recurring" :key="r.id" :class="{ 'is-paused': !r.active }">
+          <strong>{{ r.customerName }}</strong>
+          <span class="inv__recurmeta">
+            {{ r.netto !== null ? fmtEuro(Number(r.netto)) + ' netto/Monat' : '' }} · Vorlage {{ r.sourceNumber }}
+            <template v-if="r.createdCount"> · {{ r.createdCount }} erstellt (zuletzt {{ r.lastNumber }})</template>
+          </span>
+          <span class="wf-pill" :class="r.active ? '' : 'wf-pill--gray'">
+            {{ r.active ? `nächste am ${fmtDate(r.nextDate)}` : 'pausiert' }}<template v-if="r.endDate"> · bis {{ fmtDate(r.endDate) }}</template>
+          </span>
+          <span class="inv__recuracts">
+            <button class="wf-btn wf-btn--sm" @click="toggleRecurring(r)">{{ r.active ? 'Pausieren' : 'Fortsetzen' }}</button>
+            <button class="wf-btn wf-btn--sm wf-btn--danger" @click="endRecurring(r)">Beenden</button>
+          </span>
+        </li>
+      </ul>
+    </section>
+
+    <div class="inv__filters" role="tablist">
+      <button v-for="f in ([['alle', 'Alle'], ['offen', 'Offen'], ['ueberfaellig', 'Überfällig'], ['entwurf', 'Entwürfe']] as const)" :key="f[0]"
+              class="inv__filter" :class="{ 'is-active': listFilter === f[0], 'is-alert': f[0] === 'ueberfaellig' && overdueCount }"
+              @click="listFilter = f[0]">
+        {{ f[1] }}<span v-if="f[0] === 'ueberfaellig' && overdueCount" class="inv__filtern">{{ overdueCount }}</span>
+      </button>
+    </div>
+
     <p v-if="error" class="inv__error" role="alert">{{ error }}</p>
     <p v-if="loading" class="inv__loading">Rechnungen werden geladen …</p>
     <p v-else-if="!invoices.length" class="inv__empty">Noch keine Rechnungen erstellt.</p>
 
     <table v-else class="wf-table">
       <thead>
-        <tr><th>Nummer</th><th>Kunde</th><th>Datum</th><th class="inv__num">Netto</th><th>Status</th><th /></tr>
+        <tr><th>Nummer</th><th>Kunde</th><th>Datum</th><th class="inv__num">Netto</th><th>Status</th><th>Fällig</th><th /></tr>
       </thead>
       <tbody>
-        <tr v-for="i in invoices" :key="i.id">
+        <tr v-if="!visibleInvoices.length"><td colspan="7" class="inv__empty">Keine Rechnungen in dieser Ansicht.</td></tr>
+        <tr v-for="i in visibleInvoices" :key="i.id">
           <td><button class="inv__number" @click="openEdit(i)">{{ i.number }}</button></td>
           <td>{{ i.customer_name }}</td>
           <td>{{ fmtDate(i.doc_date) }}</td>
@@ -406,6 +546,16 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
           <td>
             <span class="wf-pill" :class="i.status === 'gesendet' ? 'wf-pill--amber' : i.status === 'bezahlt' ? 'wf-pill--gray' : i.status === 'storniert' ? 'wf-pill--red' : ''">{{ STATUS_LABELS[i.status] || i.status }}</span>
             <span v-if="i.storno_of" class="wf-pill wf-pill--red wf-pill--plain" style="margin-left:.3em">Storno-Beleg</span>
+            <span v-if="i.recurring_id" class="wf-pill wf-pill--plain" style="margin-left:.3em" title="Aus monatlichem Abo erstellt">Abo</span>
+            <span v-if="i.active_recurring_id" class="wf-pill wf-pill--plain" style="margin-left:.3em" title="Vorlage eines laufenden Abos">↻ monatlich</span>
+          </td>
+          <td class="inv__due">
+            <template v-if="i.status === 'gesendet' && !i.storno_of">
+              <span :class="{ 'is-overdue': (i.days_overdue ?? 0) > 0 }">{{ fmtDate(i.due_date) }}</span>
+              <small v-if="(i.days_overdue ?? 0) > 0" class="is-overdue">seit {{ i.days_overdue }} Tag{{ i.days_overdue === 1 ? '' : 'en' }} überfällig</small>
+              <small v-if="i.reminder_level">{{ REMINDER_LABELS[i.reminder_level - 1] }} am {{ fmtDate(i.last_reminder_at) }}</small>
+            </template>
+            <template v-else>—</template>
           </td>
           <td class="inv__actions">
             <button class="wf-btn wf-btn--sm" title="Vorschau" @click="openPreview(i)"><WfIcon name="eye" :size="14" /></button>
@@ -418,6 +568,10 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
               @click="storno(i)"
             >Stornieren</button>
             <button v-if="i.status === 'gesendet' && !i.storno_of" class="wf-btn wf-btn--sm" title="Als bezahlt markieren" @click="setPaid(i)"><WfIcon name="check" :size="13" /> Bezahlt</button>
+            <button v-if="(i.days_overdue ?? 0) > 0 && (i.reminder_level || 0) < 3" class="wf-btn wf-btn--sm inv__remindbtn" @click="openRemind(i)">
+              <WfIcon name="bell" :size="13" /> {{ REMINDER_LABELS[i.reminder_level || 0] }}
+            </button>
+            <button v-if="!i.storno_of && i.status !== 'storniert' && !i.recurring_id && !i.active_recurring_id" class="wf-btn wf-btn--sm" title="Jeden Monat automatisch als Entwurf neu erstellen" @click="openRecurring(i)">↻</button>
             <button v-if="i.status === 'entwurf'" class="wf-btn wf-btn--sm wf-btn--danger" title="Entwurf löschen" @click="remove(i)"><WfIcon name="trash" :size="14" /></button>
           </td>
         </tr>
@@ -700,6 +854,53 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
         </div>
       </div>
     </div>
+    <!-- Erinnerung / Mahnung -->
+    <div v-if="remindTarget" class="wf-modal-overlay" @click.self="remindTarget = null">
+      <div class="wf-modal inv__sendmodal">
+        <h2>{{ REMINDER_LABELS[remindTarget.reminder_level || 0] }} – {{ remindTarget.number }}</h2>
+        <p class="inv__sendinfo">
+          {{ remindTarget.customer_name }} · fällig seit {{ fmtDate(remindTarget.due_date) }} ({{ remindTarget.days_overdue }} Tage).
+          Die Mail enthält die Rechnung als PDF und setzt eine neue Frist von 7 Tagen.
+        </p>
+        <label class="inv__field">
+          <span>E-Mail-Adresse Empfänger</span>
+          <input v-model="remindTo" type="email" placeholder="z. B. office@kunde.at">
+        </label>
+        <p v-if="remindError" class="inv__error" role="alert">{{ remindError }}</p>
+        <div class="inv__dialogactions">
+          <button class="wf-btn" @click="remindTarget = null">Abbrechen</button>
+          <button class="wf-btn" :disabled="remindBusy" title="z. B. telefonisch oder per Post erinnert" @click="doRemind(true)">Nur vermerken</button>
+          <button class="wf-btn wf-btn--primary" :disabled="remindBusy" @click="doRemind(false)">
+            <WfIcon name="mail" :size="14" /> {{ remindBusy ? 'Sendet …' : 'Per E-Mail senden' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Monatliches Abo einrichten -->
+    <div v-if="recTarget" class="wf-modal-overlay" @click.self="recTarget = null">
+      <div class="wf-modal inv__sendmodal">
+        <h2>Monatlich wiederholen – {{ recTarget.number }}</h2>
+        <p class="inv__sendinfo">
+          Ab dem ersten Termin wird jeden Monat automatisch ein Rechnungsentwurf für
+          <strong>{{ recTarget.customer_name }}</strong> mit denselben Positionen erstellt (Leistungszeitraum = jeweiliger Monat).
+        </p>
+        <div class="inv__formrow">
+          <label class="inv__field"><span>Erster Termin</span><input v-model="recForm.start_date" type="date"></label>
+          <label class="inv__field"><span>Ende (optional)</span><input v-model="recForm.end_date" type="date"></label>
+        </div>
+        <label class="inv__field">
+          <span>Betreff (optional, Monat wird angehängt)</span>
+          <input v-model="recForm.title" type="text" placeholder="z. B. Möbelmiete Musterwohnung Top 7">
+        </label>
+        <p v-if="recError" class="inv__error" role="alert">{{ recError }}</p>
+        <div class="inv__dialogactions">
+          <button class="wf-btn" @click="recTarget = null">Abbrechen</button>
+          <button class="wf-btn wf-btn--primary" :disabled="recBusy" @click="saveRecurring">{{ recBusy ? 'Speichere …' : 'Abo starten' }}</button>
+        </div>
+      </div>
+    </div>
+
     <!-- Versand-Dialog -->
     <div v-if="sendOpen" class="wf-modal-overlay" @click.self="sendOpen = false">
       <div class="wf-modal inv__sendmodal">
@@ -771,6 +972,25 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
   cursor: pointer; padding: .1em .3em; border-radius: 8px;
 }
 .inv__edclose:hover { color: var(--wf-ink); background: var(--wf-green-soft); }
+.inv__recur { padding: 1.1em 1.3em; margin-bottom: 1.2em; }
+.inv__recurh { display: flex; align-items: center; gap: .5em; font-size: 1.05em; margin: 0 0 .2em; }
+.inv__recursub { margin: 0 0 .8em; font-size: .82em; color: var(--wf-muted); }
+.inv__recurlist { list-style: none; margin: 0; padding: 0; display: grid; gap: .5em; }
+.inv__recurlist li { display: flex; align-items: center; gap: .8em; flex-wrap: wrap; padding: .6em .8em; border: 1px solid var(--wf-line); border-radius: 10px; background: #fff; }
+.inv__recurlist li.is-paused { opacity: .6; }
+.inv__recurmeta { flex: 1; min-width: 12em; font-size: .82em; color: var(--wf-muted); }
+.inv__recuracts { display: flex; gap: .4em; }
+.inv__filters { display: flex; gap: .5em; flex-wrap: wrap; margin-bottom: 1em; }
+.inv__filter {
+  display: inline-flex; align-items: center; gap: .45em; border: 1px solid var(--wf-line); background: var(--wf-card);
+  border-radius: 999px; font: inherit; font-size: .86em; padding: .45em 1em; cursor: pointer; color: var(--wf-ink);
+}
+.inv__filter.is-active { background: var(--wf-green); border-color: var(--wf-green); color: #fff; }
+.inv__filtern { background: var(--wf-red); color: #fff; border-radius: 999px; font-size: .78em; font-weight: 700; padding: .05em .5em; }
+.inv__due { white-space: nowrap; font-size: .9em; }
+.inv__due small { display: block; font-size: .78em; color: var(--wf-muted); }
+.inv__due .is-overdue { color: var(--wf-red); font-weight: 600; }
+.inv__remindbtn { border-color: #e9c46a; background: #fdf6e7; }
 .inv__lockset { border: 0; padding: 0; margin: 0; min-width: 0; }
 .inv__lockset:disabled { opacity: .72; }
 .inv__lockbar {

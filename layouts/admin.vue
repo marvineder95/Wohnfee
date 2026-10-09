@@ -54,7 +54,7 @@ async function doLogout() {
 }
 
 // Navigation nach Arbeitsbereichen gruppiert (Eingang → Planung → Kunden & Finanzen → Website)
-interface NavItem { to: string; label: string; icon: string; exact: boolean; super?: boolean; badge?: 'inquiries' | 'rental' }
+interface NavItem { to: string; label: string; icon: string; exact: boolean; super?: boolean; badge?: 'inquiries' | 'rental' | 'overdue' }
 const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
   { label: null, items: [
     { to: '/admin/dashboard', label: 'Übersicht', icon: 'home', exact: true }
@@ -65,6 +65,7 @@ const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
   ] },
   { label: 'Planung', items: [
     { to: '/admin/projekte', label: 'Projekte', icon: 'folder', exact: false },
+    { to: '/admin/touren', label: 'Touren & Rückgaben', icon: 'truck', exact: false, badge: 'overdue' },
     { to: '/admin/kalender', label: 'Kalender', icon: 'calendar', exact: false },
     { to: '/admin/inventar', label: 'Inventar', icon: 'box', exact: false }
   ] },
@@ -90,6 +91,7 @@ const navGroups = computed(() => NAV_GROUPS
 function badgeCount(item: NavItem) {
   if (item.badge === 'inquiries') return newInquiries.value
   if (item.badge === 'rental') return newRentalInquiries.value
+  if (item.badge === 'overdue') return overdueReturns.value
   return 0
 }
 
@@ -113,9 +115,20 @@ async function loadRentalInquiryCount() {
   } catch { /* Badge optional — Fehler ignorieren */ }
 }
 
+// Badge: Projekte, deren Leihmöbel überfällig beim Kunden sind
+const overdueReturns = ref(0)
+async function loadOverdueCount() {
+  if (!user.value) return
+  try {
+    const res = await $fetch<{ overdue: any[] }>('/api/admin/logistics')
+    overdueReturns.value = new Set(res.overdue.map((o: any) => o.projectId)).size
+  } catch { /* optional */ }
+}
+
 function loadBadges() {
   loadInquiryCount()
   loadRentalInquiryCount()
+  loadOverdueCount()
 }
 
 watch(user, (u) => { if (u) loadBadges() }, { immediate: true })
