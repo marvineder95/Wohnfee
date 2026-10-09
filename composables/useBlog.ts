@@ -1,14 +1,15 @@
 // Hilfsfunktionen für die Blog-Seiten (Trends & Tipps): Artikelauswahl je
 // Sektion, Datum, Lesezeit und bereinigte Inhaltselemente.
 import news from '~/data/news.json'
+import newsEn from '~/data/news-en.json'
 
-export const blogItems = (section: string): any[] =>
-  Object.values(news as Record<string, any>)
+export const blogItems = (section: string, lang: 'de' | 'en' = 'de'): any[] =>
+  Object.values((lang === 'en' ? newsEn : news) as Record<string, any>)
     .filter((n: any) => n.section === section)
     .sort((a: any, b: any) => Number(b.date) - Number(a.date))
 
-export const blogDate = (ts: string | number) =>
-  new Date(Number(ts) * 1000).toLocaleDateString('de-AT', { day: 'numeric', month: 'long', year: 'numeric' })
+export const blogDate = (ts: string | number, lang: 'de' | 'en' = 'de') =>
+  new Date(Number(ts) * 1000).toLocaleDateString(lang === 'en' ? 'en-GB' : 'de-AT', { day: 'numeric', month: 'long', year: 'numeric' })
 
 export const blogYear = (ts: string | number) => new Date(Number(ts) * 1000).getFullYear()
 
@@ -60,9 +61,12 @@ const DB_SECTIONS = ['trends-tipps']
  * veröffentlichte (Datenbank, via /api/blog). Ohne erreichbare DB bleiben die statischen.
  */
 export async function useBlogFeed(sections: string | string[]) {
+  const { lang } = useLang()
+  const l = lang.value
   const list = Array.isArray(sections) ? sections : [sections]
-  const dbList = list.filter(s => DB_SECTIONS.includes(s))
-  const { data } = await useAsyncData(`blog-feed-${list.join('+')}`,
+  // Dashboard-Artikel gibt es nur auf Deutsch
+  const dbList = l === 'de' ? list.filter(s => DB_SECTIONS.includes(s)) : []
+  const { data } = await useAsyncData(`blog-feed-${l}-${list.join('+')}`,
     async () => {
       if (!dbList.length) return []
       const res = await Promise.all(dbList.map(section =>
@@ -72,7 +76,7 @@ export async function useBlogFeed(sections: string | string[]) {
     { default: () => [] as any[] })
   return computed(() => {
     const seen = new Set<string>()
-    return [...(data.value || []), ...list.flatMap(s => blogItems(s))]
+    return [...(data.value || []), ...list.flatMap(s => blogItems(s, l))]
       .filter(n => !seen.has(n.route) && seen.add(n.route))
       .sort((a, b) => Number(b.date) - Number(a.date))
   })

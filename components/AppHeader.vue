@@ -418,6 +418,16 @@ onBeforeUnmount(() => {
 #header.wfh .inside { padding: .75rem 0 .85rem; }
 #header.wfh #logo img { width: 185px; }
 
+/* Sprachunabhängiges Layout: Logo und rechte Gruppe (Warenkorb, DE|EN, CTA) haben
+   feste Breiten, das Menü sitzt zentriert im verbleibenden Platz – beim Wechsel
+   DE ⇄ EN verschiebt sich dadurch nur die Schrift im Menü, nicht Logo oder Buttons. */
+#header.wfh #logo { flex: none; }
+#header.wfh .wfh-nav { flex: 1 1 auto; flex-basis: auto; min-width: 0; margin: 0 1rem; display: flex; justify-content: center; }
+#header.wfh .wfh-nav > ul.level_1 { justify-content: center; flex-wrap: nowrap; white-space: nowrap; }
+/* Mobil übernimmt das Burger-Menü – die Desktop-Navigation muss (wie im alten
+   media-queries.css) ausgeblendet bleiben, das display:flex oben überschreibt das sonst */
+@media (max-width: 767px) { #header.wfh .wfh-nav { display: none; } }
+
 #header.wfh .wfh-nav { font-family: var(--font-family-01, 'Open Sans', sans-serif); overflow: visible; }
 #header.wfh .wfh-nav > ul.level_1 {
   gap: .25em; margin: 0; padding-left: 0; align-items: center;
@@ -484,6 +494,8 @@ onBeforeUnmount(() => {
 #header.wfh .langswitch { margin-left: .8rem; font-size: .85em; }
 #header.wfh .wfh-cta {
   flex-shrink: 0; align-self: center; margin-left: 1rem;
+  /* feste Breite für den längsten Text („Beratung anfragen“) – EN ist kürzer */
+  min-width: 10.4rem; box-sizing: border-box; justify-content: center;
   display: inline-flex; align-items: center; padding: .7em 1.35em; border-radius: 999px;
   background: #2f5d40; color: #fff; text-decoration: none; white-space: nowrap;
   font-family: var(--font-family-01, 'Open Sans', sans-serif); font-size: .85em; font-weight: 600;
@@ -491,7 +503,15 @@ onBeforeUnmount(() => {
   transition: background .15s ease, transform .15s ease;
 }
 #header.wfh .wfh-cta:hover { background: #26492f; transform: translateY(-1px); }
-@media (max-width: 1180px) { #header.wfh .wfh-cta { display: none; } }
+/* Mittlere Breiten: CTA ausblenden (Kontakt bleibt über das Menü erreichbar) und
+   Menüabstände verringern, damit die Navigation einzeilig bleibt */
+@media (max-width: 1280px) { #header.wfh .wfh-cta { display: none; } }
+@media (max-width: 1100px) {
+  #header.wfh .wfh-nav { margin: 0 .5rem; }
+  #header.wfh .wfh-nav > ul.level_1 > li > a,
+  #header.wfh .wfh-nav > ul.level_1 > li > strong { padding: .5em .7em; font-size: .88em; }
+  #header.wfh .cartbtn { margin-left: .6rem; }
+}
 
 #header .cartbtn__badge {
   position: absolute;

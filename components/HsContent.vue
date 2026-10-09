@@ -1,53 +1,69 @@
 <script setup lang="ts">
 // Inhalt der Home-Staging-Seite im Hero-Design: Intro, Ablauf-Timeline,
-// Investitions-Band und Nutzen-Karten. Texte entsprechen den bisherigen
-// Contao-Elementen (45, 76, 77, 75, 80–81, 135–139, 69, 74).
+// Investitions-Band und Nutzen-Karten. Texte kommen aus den Seitendaten der
+// jeweiligen Sprache (pages.json / pages-en.json, Elemente 45, 76, 77, 75,
+// 80–81, 135–139, 69, 74) – nur kurze Beschriftungen sind hier übersetzt.
+const props = defineProps<{ page: any }>()
+const { t, lp } = useLang()
 const IMG = '/files/wohnfee/bilder/homestaging/'
 
-const solution = ['Licht- & Farbkonzept', 'Klare Raumfunktionen', 'Gezielte Reduktion', 'Leihmobiliar & Accessoires', 'Passende Beleuchtung']
+const els = computed<any[]>(() => props.page.columns?.main || [])
+const byId = (id: string) => els.value.find(e => e.id === id) || {}
+const strip = (h: string) => String(h || '').replace(/<br\s*\/?>/g, '\n').replace(/<[^>]+>/g, '').replace(/[ \t]+/g, ' ').trim()
+const paras = (h: string) => (String(h || '').match(/<p[^>]*>[\s\S]*?<\/p>/g) || []).map(strip).filter(Boolean)
+const heading = (h: string, tag = 'h3') => strip(String(h || '').match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`))?.[1] || '')
 
-const steps = [
-  {
-    icon: 'phone', title: 'Erstkontakt und Besichtigung',
-    text: 'Sie senden uns den Grundriss der Immobilie, einige Fotos und die Adresse. Nach einem ersten persönlichen Gespräch besichtigen wir das Objekt, fotografieren und geben eine erste Kostenschätzung ab.'
-  },
-  {
-    icon: 'file', title: 'Detailliertes Angebot',
-    text: 'Art und Größe der Immobilie sowie die Zielgruppe bestimmen den Umfang der sinnvollen HOME STAGING Maßnahmen. Sie erhalten von uns ein detailliertes Angebot mit einer Kostenübersicht und einen möglichen Staging-Termin.'
-  },
-  {
-    icon: 'truck', title: 'Durchführung', tag: 'an nur 1 Tag',
-    text: 'Nach Ihrer Beauftragung organisieren wir alle notwendigen Vorarbeiten und stagen mit dem gesamten Team an nur einem Tag die gesamte Immobilie. Die Profi-Fotoaufnahmen – gern auch ein individuelles Video – stehen bereits am nächsten Tag für die Vermarktung bereit.'
-  },
-  {
-    icon: 'diamond', title: 'Die Qualität unserer Stagings', tag: '80 – 150 Teile',
-    text: 'Wir achten auf eine hohe Qualität unserer Stagings und überraschen unsere Kunden immer wieder mit unterschiedlichen Inszenierungen. Jede Immobilie wird mit einem individuellen Mix aus echten Möbeln, Teppichen und Accessoires ausgestattet, der natürlich zur Zielgruppe passt! Hier liefern wir durchschnittlich 80 bis 150 Teile an. Jeder Lichtauslass wird mit Leuchten bestückt. Karton-Möbel gibt es bei uns nur in der Küche!'
-  },
-  {
-    icon: 'calendar', title: 'Vermarktungszeitraum', tag: 'mind. 2 Monate',
-    question: 'Holen Sie die Möbel gleich nach den Fotos wieder ab?',
-    text: 'Die Möbel, Accessoires und Beleuchtung bleiben über den gesamten Vermarktungszeitraum in der Immobilie – mindestens 2 Monate. Das ist auch der Vorteil eines echten HOME STAGINGS im Vergleich zu einem virtuellen Staging, wo der Interessent zwar wunderschöne Bilder sieht, aber die Besichtigung in einer leeren Immobilie stattfindet.'
-  },
-  {
-    icon: 'key', title: 'Nach dem Verkauf / nach der Vermietung',
-    text: 'Ist ein Käufer oder Mieter gefunden, genügt ein Anruf und es werden alle Möbel, Leuchten und Accessoires wieder demontiert und abgeholt.'
-  }
-]
+const intro = computed(() => {
+  const html = byId('45').html || ''
+  const [lead, ...rest] = (paras(html)[0] || '').split('\n').map(s => s.trim()).filter(Boolean)
+  return { title: heading(html, 'h1'), lead: lead || '', text: rest.join(' ') }
+})
+const problem = computed(() => ({ title: byId('76').headline || '', items: paras(byId('76').html) }))
+const solutionBlock = computed(() => ({ title: byId('77').headline || '', text: paras(byId('77').html).join(' ') }))
 
-const benefits = [
-  {
-    icon: 'camera', title: 'Perfektes Marketingmaterial',
-    text: 'Perfektion nicht nur vor Ort - wir halten das Ambiente auch im Bild und Video fest. So bekommen Sie das optimale Material für die Vermarktung.'
-  },
-  {
-    icon: 'home', title: 'Optimalen Immobilienwert',
-    text: 'Schöne Möbel, eine ansprechende Dekoration und Beleuchtung heben die Vorteile Ihrer Immobilie deutlich hervor und zeigen ihren Wert.'
-  },
-  {
-    icon: 'clock', title: 'Kurze Verkaufszeit',
-    text: 'Wenn Ihre InteressentInnen sich bei der Besichtigung wie zuhause fühlen, ist die Wohnung schnell verkauft.'
+const solution = computed(() => [
+  t('Licht- & Farbkonzept', 'Lighting & colour concept'),
+  t('Klare Raumfunktionen', 'Clear room functions'),
+  t('Gezielte Reduktion', 'Targeted decluttering'),
+  t('Leihmobiliar & Accessoires', 'Rental furniture & accessories'),
+  t('Passende Beleuchtung', 'Suitable lighting')
+])
+
+const STEP_META: Record<string, { icon: string, tag?: [string, string] }> = {
+  80: { icon: 'phone' },
+  81: { icon: 'file' },
+  135: { icon: 'truck', tag: ['an nur 1 Tag', 'in just 1 day'] },
+  136: { icon: 'diamond', tag: ['80 – 150 Teile', '80 – 150 pieces'] },
+  137: { icon: 'calendar', tag: ['mind. 2 Monate', 'min. 2 months'] },
+  138: { icon: 'key' }
+}
+const steps = computed(() => Object.keys(STEP_META).map((id) => {
+  const e = byId(id)
+  const html = String(e.html || '')
+  const q = html.match(/<p[^>]*>\s*<strong>([\s\S]*?)<\/strong>\s*<\/p>/)
+  const body = q ? html.replace(q[0], '') : html
+  const meta = STEP_META[id]
+  return {
+    icon: meta.icon,
+    title: heading(html).replace(/^\d+\.\s*/, ''),
+    tag: meta.tag ? t(meta.tag[0], meta.tag[1]) : '',
+    question: q ? strip(q[1]).replace(/^\(|\)$/g, '') : '',
+    text: paras(body).join(' ')
   }
-]
+}).filter(s => s.title))
+
+const invest = computed(() => {
+  const html = byId('139').html || ''
+  return { title: heading(html).replace(/Investition die/, 'Investition, die'), text: paras(html).join(' ') }
+})
+
+const BENEFIT_ICONS = ['camera', 'home', 'clock']
+const benefitsTitle = computed(() => byId('69').headline || '')
+const benefits = computed(() => (byId('74').children || []).map((c: any, i: number) => ({
+  icon: BENEFIT_ICONS[i] || 'check',
+  title: heading(c.html, 'h2').replace(/\s*\n\s*/g, ' '),
+  text: paras(c.html).join(' ')
+})))
 
 // Sanftes Einblenden beim Scrollen. Ohne JS (SSR/Prerender) bleibt alles sichtbar,
 // weil der Ausgangszustand erst über die Klasse .is-anim aktiviert wird.
@@ -77,45 +93,37 @@ onUnmounted(() => io?.disconnect())
     <section class="hsc__intro">
       <div class="hsc__wrap hsc__introgrid">
         <div class="hsc__introtext rv">
-          <p class="hsc__eyebrow">Warum Home Staging</p>
-          <h1 class="hsc__h1">Wozu Home Staging?</h1>
-          <p class="hsc__lead">
-            In einem Haus oder einer Wohnung zu leben unterscheidet sich ganz wesentlich von deren Vermarktung.
-          </p>
-          <p class="hsc__text">
-            Zum einen ist es das oft sehr individuelle Interieur und zum anderen die fehlende Atmosphäre
-            in ganz leeren Immobilien, die sich als Hürde beim Verkauf oder bei der Vermietung herausstellen.
-          </p>
+          <p class="hsc__eyebrow">{{ t('Warum Home Staging', 'Why home staging') }}</p>
+          <h1 class="hsc__h1">{{ intro.title }}</h1>
+          <p class="hsc__lead">{{ intro.lead }}</p>
+          <p class="hsc__text">{{ intro.text }}</p>
         </div>
         <div class="hsc__collage rv">
-          <NuxtImg :src="IMG + 'Archihaus WZ2.jpg'" alt="Inszenierter Wohnbereich mit Blick auf den Pool"
+          <NuxtImg :src="IMG + 'Archihaus WZ2.jpg'"       :alt="t('Inszenierter Wohnbereich mit Blick auf den Pool', 'Staged living area overlooking the pool')"
                    class="hsc__img hsc__img--main" sizes="xs:100vw sm:100vw md:60vw lg:560px xl:560px xxl:560px 2xl:560px" loading="lazy" />
-          <NuxtImg :src="IMG + 'SLIDER_HS_2_034.jpg'" alt="Gemütliche Leseecke nach dem Home Staging"
+          <NuxtImg :src="IMG + 'SLIDER_HS_2_034.jpg'"       :alt="t('Gemütliche Leseecke nach dem Home Staging', 'Cosy reading corner after home staging')"
                    class="hsc__img hsc__img--small" sizes="xs:60vw sm:50vw md:30vw lg:300px xl:300px xxl:300px 2xl:300px" loading="lazy" />
           <div class="hsc__badge">
-            <strong>1 Tag</strong>
-            <span>für das gesamte<br>Staging</span>
+            <strong>{{ t('1 Tag', '1 day') }}</strong>
+            <span v-html="t('für das gesamte<br>Staging', 'for the entire<br>staging')" />
           </div>
         </div>
       </div>
 
       <div class="hsc__wrap hsc__duo">
         <article class="hsc__panel rv">
-          <span class="hsc__label">Die Herausforderung</span>
-          <h2 class="hsc__h3">Nur wenige Menschen können sich einen Raum verändert vorstellen</h2>
+          <span class="hsc__label">{{ t('Die Herausforderung', 'The challenge') }}</span>
+          <h2 class="hsc__h3">{{ problem.title }}</h2>
           <ul class="hsc__problems">
-            <li><span class="hsc__dot"><WfIcon name="eye" :size="18" /></span>In leeren Räumen ist es oft schwierig, die Proportionen richtig einzuschätzen.</li>
-            <li><span class="hsc__dot"><WfIcon name="users" :size="18" /></span>Bei möblierten Objekten ist zumeist der individuelle Stil der aktuellen Besitzer zu stark präsent.</li>
+            <li v-for="(p, i) in problem.items" :key="i">
+              <span class="hsc__dot"><WfIcon :name="i === 0 ? 'eye' : 'users'" :size="18" /></span>{{ p }}
+            </li>
           </ul>
         </article>
         <article class="hsc__panel hsc__panel--green rv">
-          <span class="hsc__label">Unsere Lösung</span>
-          <h2 class="hsc__h3">Wir schaffen Atmosphäre</h2>
-          <p>
-            Home Staging betont die Vorzüge einer Immobilie, schafft Raum, entwickelt ein Licht- und Farbkonzept,
-            weist allen Räumen eine klare Funktion zu und „neutralisiert“ durch gezielte Reduktion persönlicher Dinge
-            und das Ergänzen mit passendem Leihmobiliar, Accessoires und Beleuchtung.
-          </p>
+          <span class="hsc__label">{{ t('Unsere Lösung', 'Our solution') }}</span>
+          <h2 class="hsc__h3">{{ solutionBlock.title }}</h2>
+          <p>{{ solutionBlock.text }}</p>
           <ul class="hsc__chips">
             <li v-for="s in solution" :key="s"><WfIcon name="check" :size="14" />{{ s }}</li>
           </ul>
@@ -127,9 +135,9 @@ onUnmounted(() => io?.disconnect())
     <section class="hsc__steps">
       <div class="hsc__wrap">
         <div class="hsc__head rv">
-          <p class="hsc__divider"><span>So geht's</span></p>
-          <h2 class="hsc__h2">Der Ablauf – in sechs Schritten</h2>
-          <p class="hsc__sub">Von der ersten Besichtigung bis zur Abholung: Wir kümmern uns um alles.</p>
+          <p class="hsc__divider"><span>{{ t('So geht\'s', 'How it works') }}</span></p>
+          <h2 class="hsc__h2">{{ t('Der Ablauf – in sechs Schritten', 'The process – in six steps') }}</h2>
+          <p class="hsc__sub">{{ t('Von der ersten Besichtigung bis zur Abholung: Wir kümmern uns um alles.', 'From the first viewing to collection: we take care of everything.') }}</p>
         </div>
 
         <ol class="hsc__timeline">
@@ -143,7 +151,7 @@ onUnmounted(() => io?.disconnect())
                 <h3>{{ s.title }}</h3>
                 <span v-if="s.tag" class="hsc__tag">{{ s.tag }}</span>
               </div>
-              <p v-if="s.question" class="hsc__question">„{{ s.question }}“</p>
+              <p v-if="s.question" class="hsc__question">{{ t('„', '“') }}{{ s.question }}{{ t('“', '”') }}</p>
               <p>{{ s.text }}</p>
             </div>
           </li>
@@ -156,21 +164,16 @@ onUnmounted(() => io?.disconnect())
       <div class="hsc__wrap hsc__investgrid rv">
         <div class="hsc__stat">
           <span class="hsc__statnum">1 – 2 %</span>
-          <span class="hsc__statlabel">vom Verkaufspreis</span>
-          <span class="hsc__statnote">inkl. aller Leihmöbel und Accessoires</span>
+          <span class="hsc__statlabel">{{ t('vom Verkaufspreis', 'of the sale price') }}</span>
+          <span class="hsc__statnote">{{ t('inkl. aller Leihmöbel und Accessoires', 'incl. all rental furniture and accessories') }}</span>
         </div>
         <div class="hsc__investtext">
-          <p class="hsc__eyebrow hsc__eyebrow--light">Kosten &amp; Nutzen</p>
-          <h2 class="hsc__h2 hsc__h2--light">Eine Investition, die sich rechnet</h2>
-          <p>
-            In der Regel betragen die Kosten für ein Home Staging inkl. aller Leihmöbel und Accessoires 1 – 2 %
-            vom Verkaufspreis – je nach Lage, Standard und Zustand der Immobilie. Diese Investition rechnet sich
-            für jede Art von Immobilie – ob 2-Zimmer-Wohnung, Einfamilienhaus oder Luxus-Penthouse – durch eine
-            wesentlich kürzere Verkaufszeit und meist auch einen besseren Verkaufspreis.
-          </p>
+          <p class="hsc__eyebrow hsc__eyebrow--light">{{ t('Kosten & Nutzen', 'Costs & benefits') }}</p>
+          <h2 class="hsc__h2 hsc__h2--light">{{ invest.title }}</h2>
+          <p>{{ invest.text }}</p>
           <div class="hsc__actions">
-            <NuxtLink to="/home-staging/preise.html" class="hsc__btn hsc__btn--light">Preise ansehen</NuxtLink>
-            <NuxtLink to="/kontakt.html" class="hsc__btn hsc__btn--outline">Beratung anfragen</NuxtLink>
+            <NuxtLink :to="lp('/home-staging/preise.html')" class="hsc__btn hsc__btn--light">{{ t('Preise ansehen', 'View prices') }}</NuxtLink>
+            <NuxtLink :to="lp('/kontakt.html')" class="hsc__btn hsc__btn--outline">{{ t('Beratung anfragen', 'Request a consultation') }}</NuxtLink>
           </div>
         </div>
       </div>
@@ -180,8 +183,8 @@ onUnmounted(() => io?.disconnect())
     <section class="hsc__benefits">
       <div class="hsc__wrap">
         <div class="hsc__head rv">
-          <p class="hsc__divider"><span>Ihre Vorteile</span></p>
-          <h2 class="hsc__h2">Was bringt WOHN.FEE Home Staging?</h2>
+          <p class="hsc__divider"><span>{{ t('Ihre Vorteile', 'Your benefits') }}</span></p>
+          <h2 class="hsc__h2">{{ benefitsTitle }}</h2>
         </div>
         <div class="hsc__bgrid">
           <article v-for="(b, i) in benefits" :key="b.title" class="hsc__benefit rv" :style="{ transitionDelay: `${i * 90}ms` }">

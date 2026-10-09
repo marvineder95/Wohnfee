@@ -3,6 +3,9 @@ import { HS_AUDIENCE_ROUTES } from '~~/shared/home-staging-audiences'
 const { pages, pagesEn, news, newsEn, site, categories } = useSiteData()
 const route = useRoute()
 
+// DE-Route der Seite – EN-Seiten (/en/…) nutzen dieselben neuen Layouts
+const pageRoute = computed(() => baseRoute(pageData.value))
+
 // Blog-Übersichten und -Sektionen im neuen Design
 const BLOG_LISTS: Record<string, string> = {
   '/aktuelles.html': 'aktuelles', '/projekte.html': 'projekte', '/trends-tipps.html': 'trends-tipps', '/events.html': 'events'
@@ -210,55 +213,60 @@ const regularMain = computed(() =>
     <ContentElements v-if="pageData.columns?.footer?.length" :elements="pageData.columns.footer" />
   </div>
 
+  <!-- Startseite: Angebot in der Reihenfolge Home Staging > Furniture Leasing > Redesign -->
+  <div v-else-if="pageRoute === '/start.html'" class="page-content" :data-route="pageData.route">
+    <HsStart :page="pageData" />
+  </div>
+
   <!-- Home Staging: Hero mit Zielgruppen-Karten + neu gestalteter Inhalt -->
-  <div v-else-if="pageData?.route === '/home-staging.html'" class="page-content" :data-route="pageData.route">
+  <div v-else-if="pageRoute === '/home-staging.html'" class="page-content" :data-route="pageData.route">
     <HsHero />
-    <HsContent />
+    <HsContent :page="pageData" />
   </div>
 
   <!-- Home-Staging-Zielgruppen (Bauträger / Makler / Privatpersonen) -->
-  <div v-else-if="pageData && HS_AUDIENCE_ROUTES.includes(pageData.route)" class="page-content" :data-route="pageData.route">
+  <div v-else-if="pageData && HS_AUDIENCE_ROUTES.includes(pageRoute)" class="page-content" :data-route="pageData.route">
     <HsAudience :page="pageData" />
   </div>
 
   <!-- Home-Staging-Preise: Paket-Karten + Ausstattung je Raum -->
-  <div v-else-if="pageData?.route === '/home-staging/preise.html'" class="page-content" :data-route="pageData.route">
+  <div v-else-if="pageRoute === '/home-staging/preise.html'" class="page-content" :data-route="pageData.route">
     <HsPrices :page="pageData" />
   </div>
 
   <!-- FAQ: Suche, Rubriken, Akkordeon + FAQPage-Strukturdaten -->
-  <div v-else-if="pageData?.route === '/faq.html'" class="page-content" :data-route="pageData.route">
+  <div v-else-if="pageRoute === '/faq.html'" class="page-content" :data-route="pageData.route">
     <HsFaq :page="pageData" />
   </div>
 
   <!-- Redesign: Hero, Bildstrecke, Ablauf, Investition, Trends -->
-  <div v-else-if="pageData?.route === '/redesign.html'" class="page-content" :data-route="pageData.route">
+  <div v-else-if="pageRoute === '/redesign.html'" class="page-content" :data-route="pageData.route">
     <HsRedesign :page="pageData" />
   </div>
 
   <!-- Blog-Übersichten (Aktuell, Projekte, Trends & Tipps, Events) -->
-  <div v-else-if="pageData && BLOG_LISTS[pageData.route]" class="page-content" :data-route="pageData.route">
-    <HsBlogList :page="pageData" :section="BLOG_LISTS[pageData.route]" />
+  <div v-else-if="pageData && BLOG_LISTS[pageRoute]" class="page-content" :data-route="pageData.route">
+    <HsBlogList :page="pageData" :section="BLOG_LISTS[pageRoute]" />
   </div>
 
   <!-- Team: Porträts, Zitate, Zahlen, Kontakt -->
-  <div v-else-if="pageData?.route === '/team.html'" class="page-content" :data-route="pageData.route">
+  <div v-else-if="pageRoute === '/team.html'" class="page-content" :data-route="pageData.route">
     <HsTeam :page="pageData" />
   </div>
 
   <!-- Pressespiegel: Zeitstrahl mit Filtern -->
-  <div v-else-if="pageData?.route === '/presse.html'" class="page-content" :data-route="pageData.route">
+  <div v-else-if="pageRoute === '/presse.html'" class="page-content" :data-route="pageData.route">
     <HsPress :page="pageData" />
   </div>
 
   <!-- Kontakt: Kontaktwege + Formular auf einen Blick -->
-  <div v-else-if="pageData?.route === '/kontakt.html'" class="page-content" :data-route="pageData.route">
+  <div v-else-if="pageRoute === '/kontakt.html'" class="page-content" :data-route="pageData.route">
     <HsContact :page="pageData" />
   </div>
 
   <!-- Impressum: Rechtstext-Karten -->
-  <div v-else-if="pageData?.route === '/impressum.html'" class="page-content" :data-route="pageData.route">
-    <HsLegal :page="pageData" eyebrow="Über uns" />
+  <div v-else-if="pageRoute === '/impressum.html'" class="page-content" :data-route="pageData.route">
+    <HsLegal :page="pageData" />
   </div>
 
   <!-- regular page -->
@@ -309,7 +317,7 @@ const regularMain = computed(() =>
   </div>
 
   <!-- Blog-Artikel (Trends, Projekte, Events, Aktuelles) im neuen Design (nur DE) -->
-  <HsArticle v-else-if="newsData && BLOG_ARTICLE_SECTIONS.includes(newsData.section) && !isEn" :article="newsData" />
+  <HsArticle v-else-if="newsData && BLOG_ARTICLE_SECTIONS.includes(newsData.section)" :article="newsData" />
 
   <!-- news detail -->
   <article v-else-if="newsData" class="news-reader" itemscope itemtype="http://schema.org/Article">

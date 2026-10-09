@@ -1,13 +1,16 @@
 <script setup lang="ts">
 import { HS_AUDIENCES } from '~~/shared/home-staging-audiences'
 // Hero + Zielgruppen-Karten für die Home-Staging-Seite (ersetzt das alte Slider-Bild)
-const usps = [
-  { icon: 'home', text: 'Schnellerer Verkauf\noder Vermietung' },
-  { icon: 'diamond', text: 'Hochwertige &\nstilvolle Einrichtung' },
-  { icon: 'truck', text: 'Alles aus\neiner Hand' }
-]
+const { t, lp } = useLang()
+const usps = computed(() => [
+  { icon: 'home', text: t('Schnellerer Verkauf\noder Vermietung', 'Faster sale\nor rental') },
+  { icon: 'diamond', text: t('Hochwertige &\nstilvolle Einrichtung', 'High-quality &\nstylish furnishing') },
+  { icon: 'truck', text: t('Alles aus\neiner Hand', 'Everything from\na single source') }
+])
 
-const cards = HS_AUDIENCES.map(a => ({ title: a.title, text: a.text, to: a.route, img: a.img }))
+const cards = computed(() => HS_AUDIENCES.map(a => ({
+  title: t(a.title, a.titleEn), text: t(a.text, a.textEn), to: lp(a.route), img: a.img
+})))
 
 // Hero füllt den Viewport unterhalb des (sticky) Headers – dessen Höhe variiert je Breakpoint
 const root = ref<HTMLElement | null>(null)
@@ -31,20 +34,19 @@ function scrollToContent(e: Event) {
   <div ref="root" class="hs">
     <section class="hs__hero">
       <NuxtImg class="hs__bg" src="/files/wohnfee/bilder/homestaging/Liam 61.jpg"
-               alt="Hell eingerichtetes Wohnzimmer nach einem WOHNFEE Home Staging"
+               :alt="t('Hell eingerichtetes Wohnzimmer nach einem WOHNFEE Home Staging', 'Bright living room after a WOHNFEE home staging')"
                sizes="xs:100vw sm:100vw md:100vw lg:100vw xl:100vw xxl:1600px 2xl:1920px"
                loading="eager" fetchpriority="high" />
       <div class="hs__inside">
         <p class="hs__eyebrow">Home Staging</p>
-        <h2 class="hs__title">Räume, die<br>mehr bewirken.</h2>
+        <h2 class="hs__title" v-html="t('Räume, die<br>mehr bewirken.', 'Spaces that<br>make a difference.')" />
         <p class="hs__lead">
-          Wir inszenieren Immobilien mit stilvollen Einrichtungskonzepten und schaffen Räume,
-          in denen sich Menschen sofort zuhause fühlen – für einen überzeugenden ersten Eindruck
-          und einen erfolgreichen Verkauf oder eine schnelle Vermietung.
+          {{ t('Wir inszenieren Immobilien mit stilvollen Einrichtungskonzepten und schaffen Räume, in denen sich Menschen sofort zuhause fühlen – für einen überzeugenden ersten Eindruck und einen erfolgreichen Verkauf oder eine schnelle Vermietung.',
+               'We stage properties with stylish furnishing concepts and create spaces where people instantly feel at home – for a convincing first impression and a successful sale or a quick rental.') }}
         </p>
         <div class="hs__actions">
-          <NuxtLink to="/kontakt.html" class="hs__btn hs__btn--primary">Jetzt Beratung anfragen</NuxtLink>
-          <a href="#hs-leistungen" class="hs__btn hs__btn--ghost" @click="scrollToContent">Unsere Leistungen</a>
+          <NuxtLink :to="lp('/kontakt.html')" class="hs__btn hs__btn--primary">{{ t('Jetzt Beratung anfragen', 'Request a consultation') }}</NuxtLink>
+          <a href="#hs-leistungen" class="hs__btn hs__btn--ghost" @click="scrollToContent">{{ t('Unsere Leistungen', 'Our services') }}</a>
         </div>
         <ul class="hs__usps">
           <li v-for="u in usps" :key="u.icon">
@@ -56,8 +58,8 @@ function scrollToContent(e: Event) {
     </section>
 
     <section class="hs__target">
-      <p class="hs__divider"><span>Für wen wir da sind</span></p>
-      <h2 class="hs__ttitle">Maßgeschneiderte Lösungen für jede Anforderung.</h2>
+      <p class="hs__divider"><span>{{ t('Für wen wir da sind', 'Who we work for') }}</span></p>
+      <h2 class="hs__ttitle">{{ t('Maßgeschneiderte Lösungen für jede Anforderung.', 'Tailored solutions for every requirement.') }}</h2>
       <div class="hs__cards">
         <NuxtLink v-for="c in cards" :key="c.to" :to="c.to" class="hs__card">
           <NuxtImg :src="c.img" :alt="c.title" class="hs__cardimg"

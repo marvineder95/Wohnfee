@@ -3,6 +3,7 @@
 // ruhige Lesespalte (Inhaltselemente aus news.json), Vor/Zurück und
 // „Weitere Beiträge“.
 const props = defineProps<{ article: any }>()
+const { lang, t, lp } = useLang()
 
 const all = await useBlogFeed(props.article.section)
 const idx = computed(() => all.value.findIndex(n => n.route === props.article.route))
@@ -24,9 +25,12 @@ const elements = computed(() => blogElements(props.article).map((e: any) => {
 const SECTION_LABELS: Record<string, string> = {
   'trends-tipps': 'Trends & Tipps', projekte: 'Projekte', events: 'Events', aktuelles: 'Aktuell'
 }
-const sectionLabel = computed(() => SECTION_LABELS[props.article.section] || 'Blog')
+const SECTION_LABELS_EN: Record<string, string> = {
+  'trends-tipps': 'Trends & Tips', projekte: 'Projects', events: 'Events', aktuelles: 'Current'
+}
+const sectionLabel = computed(() => t(SECTION_LABELS[props.article.section] || 'Blog', SECTION_LABELS_EN[props.article.section] || 'Blog'))
 const lead = computed(() => blogTeaser(props.article, 400))
-const backRoute = computed(() => `/${props.article.section}.html`)
+const backRoute = computed(() => lp(`/${props.article.section}.html`))
 
 // Lesefortschritt
 const progress = ref(0)
@@ -57,9 +61,9 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
           {{ sectionLabel }}
         </NuxtLink>
         <p class="hsa2__meta">
-          <time :datetime="new Date(Number(article.date) * 1000).toISOString()" itemprop="datePublished">{{ blogDate(article.date) }}</time>
+          <time :datetime="new Date(Number(article.date) * 1000).toISOString()" itemprop="datePublished">{{ blogDate(article.date, lang) }}</time>
           <span aria-hidden="true">·</span>
-          {{ blogReadingMinutes(article) }} Min. Lesezeit
+          {{ blogReadingMinutes(article) }} {{ t('Min. Lesezeit', 'min read') }}
         </p>
         <h1 class="hsa2__h1" itemprop="name">{{ article.headline }}</h1>
         <p v-if="lead" class="hsa2__lead" itemprop="description">{{ lead }}</p>
@@ -82,18 +86,18 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 
       <div class="hsa2__narrow">
         <div class="hsa2__share">
-          <span>Lust auf eine persönliche Beratung?</span>
-          <NuxtLink to="/kontakt.html" class="hsa2__btn">Beratung anfragen</NuxtLink>
+          <span>{{ t('Lust auf eine persönliche Beratung?', 'Would you like personal advice?') }}</span>
+          <NuxtLink :to="lp('/kontakt.html')" class="hsa2__btn">{{ t('Beratung anfragen', 'Request a consultation') }}</NuxtLink>
         </div>
 
-        <nav class="hsa2__pager" aria-label="Weitere Artikel">
+        <nav class="hsa2__pager" :aria-label="t('Weitere Artikel', 'More articles')">
           <NuxtLink v-if="older" :to="older.route" class="hsa2__pg hsa2__pg--prev">
-            <span class="hsa2__pglabel">← Älterer Beitrag</span>
+            <span class="hsa2__pglabel">← {{ t('Älterer Beitrag', 'Older post') }}</span>
             <span class="hsa2__pgtitle">{{ older.headline }}</span>
           </NuxtLink>
           <span v-else />
           <NuxtLink v-if="newer" :to="newer.route" class="hsa2__pg hsa2__pg--next">
-            <span class="hsa2__pglabel">Neuerer Beitrag →</span>
+            <span class="hsa2__pglabel">{{ t('Neuerer Beitrag', 'Newer post') }} →</span>
             <span class="hsa2__pgtitle">{{ newer.headline }}</span>
           </NuxtLink>
         </nav>
@@ -104,8 +108,8 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
     <section v-if="related.length" class="hsa2__related">
       <div class="hsa2__wrap">
         <div class="hsa2__rhead">
-          <h2 class="hsa2__h2">Weitere Beiträge</h2>
-          <NuxtLink :to="backRoute" class="hsa2__all">Zur Übersicht {{ sectionLabel }} <WfIcon name="arrow" :size="15" /></NuxtLink>
+          <h2 class="hsa2__h2">{{ t('Weitere Beiträge', 'More posts') }}</h2>
+          <NuxtLink :to="backRoute" class="hsa2__all">{{ t('Zur Übersicht', 'Back to') }} {{ sectionLabel }} <WfIcon name="arrow" :size="15" /></NuxtLink>
         </div>
         <div class="hsa2__grid">
           <NuxtLink v-for="n in related" :key="n.route" :to="n.route" class="hsa2__card">
@@ -115,7 +119,7 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
               <span v-else class="hsa2__ph"><WfIcon name="leaf" :size="30" /></span>
             </div>
             <div class="hsa2__cbody">
-              <span class="hsa2__cmeta">{{ blogDate(n.date) }}</span>
+              <span class="hsa2__cmeta">{{ blogDate(n.date, lang) }}</span>
               <h3>{{ n.headline }}</h3>
             </div>
           </NuxtLink>

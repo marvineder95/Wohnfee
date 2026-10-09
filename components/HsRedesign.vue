@@ -7,7 +7,8 @@
 //   icon_list-Elemente      → Ablauf-Schritte; „no_icon“ = Investitions-Band
 //   Newslist                → Trends als Kartenraster
 const props = defineProps<{ page: any }>()
-const { news } = useSiteData()
+const { news, newsEn } = useSiteData()
+const { isEn, t, lp } = useLang()
 
 const IMG = '/files/wohnfee/bilder/redesign/'
 const els = computed<any[]>(() => props.page.columns?.main || [])
@@ -35,7 +36,7 @@ const blockImg = [IMG + 'Redesign4_JUZI.jpg', IMG + 'XT200240.JPG']
 
 // Ablauf
 const stepsTitle = computed(() => {
-  const h = els.value.find(e => e.type === 'headline' && /ablauf/i.test(e.headline))?.headline || 'Der Ablauf'
+  const h = els.value.find(e => e.type === 'headline' && /ablauf|process/i.test(e.headline))?.headline || t('Der Ablauf', 'The process')
   return h.replace(/'\s+s\b/g, '’s').replace(/\s+-\s+/g, ' – ')
 })
 const STEP_ICONS = ['phone', 'edit', 'truck', 'calendar']
@@ -64,7 +65,7 @@ const trendsTitle = computed(() => els.value.find(e => e.type === 'headline' && 
 const trends = computed(() => {
   const el = els.value.find(e => e.type === 'newslist')
   if (!el) return []
-  return Object.values(news as Record<string, any>)
+  return Object.values((isEn.value ? newsEn : news) as Record<string, any>)
     .filter((n: any) => el.archives?.includes(n.archive))
     .filter((n: any) => !el.category || (n.categories || []).map(String).includes(String(el.category)))
     .sort((a: any, b: any) => Number(b.date) - Number(a.date))
@@ -123,7 +124,7 @@ function scrollToId(id: string, e: Event) {
   <div ref="root" class="hsr">
     <!-- ── Hero ─────────────────────────────────────── -->
     <section class="hsr__hero">
-      <NuxtImg class="hsr__bg" :src="IMG + 'Ferienapartment-0008.jpg'" alt="Neu gestalteter Wohn- und Essbereich nach einem WOHNFEE Redesign"
+      <NuxtImg class="hsr__bg" :src="IMG + 'Ferienapartment-0008.jpg'" :alt="t('Neu gestalteter Wohn- und Essbereich nach einem WOHNFEE Redesign', 'Redesigned living and dining area after a WOHNFEE redesign')"
                sizes="xs:100vw sm:100vw md:100vw lg:100vw xl:100vw xxl:1600px 2xl:1920px"
                loading="eager" fetchpriority="high" />
       <div class="hsr__inside">
@@ -131,12 +132,12 @@ function scrollToId(id: string, e: Event) {
         <h1 class="hsr__h1">{{ h1 }}</h1>
         <p class="hsr__lead">{{ lead }}</p>
         <div class="hsr__actions">
-          <NuxtLink to="/kontakt.html" class="hsr__btn hsr__btn--primary">Jetzt Beratung anfragen</NuxtLink>
-          <a href="#ablauf" class="hsr__btn hsr__btn--ghost" @click="scrollToId('ablauf', $event)">Zum Ablauf</a>
+          <NuxtLink :to="lp('/kontakt.html')" class="hsr__btn hsr__btn--primary">{{ t('Jetzt Beratung anfragen', 'Request a consultation') }}</NuxtLink>
+          <a href="#ablauf" class="hsr__btn hsr__btn--ghost" @click="scrollToId('ablauf', $event)">{{ t('Zum Ablauf', 'The process') }}</a>
         </div>
       </div>
       <a href="#skizze" class="hsr__cue" @click="scrollToId('skizze', $event)">
-        Mehr entdecken
+        {{ t('Mehr entdecken', 'Discover more') }}
         <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span>
       </a>
     </section>
@@ -145,7 +146,7 @@ function scrollToId(id: string, e: Event) {
     <section v-if="gallery.length" id="skizze" class="hsr__journey">
       <div class="hsr__wrap hsr__jhead rv">
         <div>
-          <p class="hsr__divider hsr__divider--left"><span>Von der Skizze zum Wohngefühl</span></p>
+          <p class="hsr__divider hsr__divider--left"><span>{{ t('Von der Skizze zum Wohngefühl', 'From sketch to feeling at home') }}</span></p>
           <p class="hsr__jsteps">
             <template v-for="(g, i) in gallery" :key="g.src">
               <span>{{ g.caption }}</span><em v-if="i < gallery.length - 1">→</em>
@@ -153,8 +154,8 @@ function scrollToId(id: string, e: Event) {
           </p>
         </div>
         <div class="hsr__arrows">
-          <button type="button" aria-label="Zurück" @click="slide(-1)"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg></button>
-          <button type="button" aria-label="Weiter" @click="slide(1)"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" /></svg></button>
+          <button type="button" :aria-label="t('Zurück', 'Previous')" @click="slide(-1)"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6" /></svg></button>
+          <button type="button" :aria-label="t('Weiter', 'Next')" @click="slide(1)"><svg viewBox="0 0 24 24"><path d="m9 6 6 6-6 6" /></svg></button>
         </div>
       </div>
       <div ref="stripEl" class="hsr__strip">
@@ -190,7 +191,7 @@ function scrollToId(id: string, e: Event) {
     <section v-if="steps.length" id="ablauf" class="hsr__steps">
       <div class="hsr__wrap">
         <div class="hsr__head rv">
-          <p class="hsr__divider"><span>In {{ steps.length === 4 ? 'vier' : steps.length }} Schritten</span></p>
+          <p class="hsr__divider"><span>{{ t(`In ${steps.length === 4 ? 'vier' : steps.length} Schritten`, `In ${steps.length === 4 ? 'four' : steps.length} steps`) }}</span></p>
           <h2 class="hsr__h2 hsr__h2--center">{{ stepsTitle }}</h2>
         </div>
         <ol class="hsr__sgrid">
@@ -211,14 +212,14 @@ function scrollToId(id: string, e: Event) {
       <div class="hsr__wrap hsr__igrid rv">
         <div class="hsr__iicon" aria-hidden="true">
           <svg viewBox="0 0 24 24"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18Zm0-13v5l3.5 2" /></svg>
-          <span>Zeit gewonnen</span>
+          <span>{{ t('Zeit gewonnen', 'Time saved') }}</span>
         </div>
         <div>
-          <p class="hsr__eyebrow hsr__eyebrow--light">Kosten &amp; Nutzen</p>
+          <p class="hsr__eyebrow hsr__eyebrow--light">{{ t('Kosten & Nutzen', 'Costs & benefits') }}</p>
           <h2 class="hsr__h2 hsr__h2--light">{{ invest.title }}</h2>
           <div class="hsr__itext" v-html="invest.html" />
           <div class="hsr__actions">
-            <NuxtLink to="/kontakt.html" class="hsr__btn hsr__btn--light">Beratung anfragen</NuxtLink>
+            <NuxtLink :to="lp('/kontakt.html')" class="hsr__btn hsr__btn--light">{{ t('Beratung anfragen', 'Request a consultation') }}</NuxtLink>
             <a href="tel:+436769202236" class="hsr__btn hsr__btn--outline">+43 676 9202236</a>
           </div>
         </div>
@@ -230,10 +231,10 @@ function scrollToId(id: string, e: Event) {
       <div class="hsr__wrap">
         <div class="hsr__head hsr__thead rv">
           <div>
-            <p class="hsr__divider hsr__divider--left"><span>Inspiration</span></p>
+            <p class="hsr__divider hsr__divider--left"><span>{{ t('Inspiration', 'Inspiration') }}</span></p>
             <h2 class="hsr__h2">{{ trendsTitle }}</h2>
           </div>
-          <NuxtLink to="/trends-tipps.html" class="hsr__more">Alle Trends &amp; Tipps <WfIcon name="arrow" :size="15" /></NuxtLink>
+          <NuxtLink :to="lp('/trends-tipps.html')" class="hsr__more">{{ t('Alle Trends & Tipps', 'All trends & tips') }} <WfIcon name="arrow" :size="15" /></NuxtLink>
         </div>
         <div class="hsr__tgrid">
           <NuxtLink v-for="(n, i) in trends" :key="n.route" :to="n.route" class="hsr__trend rv"
@@ -245,7 +246,7 @@ function scrollToId(id: string, e: Event) {
             <div class="hsr__tbody">
               <h3>{{ n.headline }}</h3>
               <p>{{ teaser(n) }}</p>
-              <span class="hsr__tlink">Weiterlesen <WfIcon name="arrow" :size="14" /></span>
+              <span class="hsr__tlink">{{ t('Weiterlesen', 'Read more') }} <WfIcon name="arrow" :size="14" /></span>
             </div>
           </NuxtLink>
         </div>

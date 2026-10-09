@@ -37,7 +37,8 @@ const DE = {
   month: 'Monat', months: 'Monate', month1: 'Monat', monAbbr: 'Mon.',
   headline: 'Stilvolle Möbel für zeitlich flexible Wohnkonzepte.',
   sub: 'Hochwertige Möbel & Accessoires zur Miete – für Home Staging, temporäre Wohnlösungen und mehr.',
-  cta: 'Produkte entdecken →', all: 'Alle', allProducts: 'Alle Produkte',
+  cta: 'Produkte entdecken', all: 'Alle', allProducts: 'Alle Produkte',
+  howItWorks: 'So funktioniert’s', heroAlt: 'Elegant eingerichteter Wohnraum mit Mietmöbeln von WOHNFEE', toProducts: 'Zum Sortiment',
   searchPh: 'Produkte suchen …', availFilter: 'Verfügbarkeit', availLow: 'Nur noch wenige',
   sortRel: 'Sortieren: Relevanz', sortAsc: 'Preis aufsteigend', sortDesc: 'Preis absteigend', sortName: 'Name A–Z',
   loading: 'Sortiment wird geladen …',
@@ -81,7 +82,8 @@ const EN: typeof DE = {
   month: 'month', months: 'months', month1: 'month', monAbbr: 'mo.',
   headline: 'Stylish furniture for flexible living — on your terms.',
   sub: 'High-quality furniture & accessories for rent – for home staging, temporary homes and more.',
-  cta: 'Discover products →', all: 'All', allProducts: 'All products',
+  cta: 'Discover products', all: 'All', allProducts: 'All products',
+  howItWorks: 'How it works', heroAlt: 'Elegantly furnished living room with rental furniture by WOHNFEE', toProducts: 'To the products',
   searchPh: 'Search products …', availFilter: 'Availability', availLow: 'Only a few left',
   sortRel: 'Sort: Relevance', sortAsc: 'Price (low to high)', sortDesc: 'Price (high to low)', sortName: 'Name A–Z',
   loading: 'Loading the catalogue …',
@@ -398,6 +400,30 @@ function goCheckout() {
   navigateTo(checkoutUrl.value)
 }
 
+function scrollToHowItWorks() {
+  const el = document.querySelector('.hiw')
+  if (!el) return
+  const header = document.querySelector('.headerwrap')
+  const offset = (header?.getBoundingClientRect().height || 0) + 14
+  smoothScrollTo(el.getBoundingClientRect().top + window.scrollY - offset)
+}
+
+// Hero füllt den Viewport unter dem Sticky-Header (wie auf den übrigen Seiten)
+const flRoot = ref<HTMLElement | null>(null)
+function syncHeroHeight() {
+  const h = document.querySelector<HTMLElement>('.headerwrap')?.offsetHeight
+  if (h && flRoot.value) flRoot.value.style.setProperty('--hs-head', `${h}px`)
+}
+onMounted(() => { syncHeroHeight(); window.addEventListener('resize', syncHeroHeight) })
+onUnmounted(() => window.removeEventListener('resize', syncHeroHeight))
+
+const heroUsps = computed(() => [
+  { icon: 'truck', text: t.value.trust[0] },
+  { icon: 'calendar', text: t.value.trust[1] },
+  { icon: 'diamond', text: t.value.trust[2] },
+  { icon: 'users', text: t.value.trust[3] }
+])
+
 function scrollToProducts() {
   // Ziel: „Alle Produkte"-Titel landet direkt unter dem Sticky-Header,
   // darunter Toolbar + erste Produktkarten. Sanftes Custom-Scrolling.
@@ -446,21 +472,30 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 </script>
 
 <template>
-  <div class="fl">
+  <div ref="flRoot" class="fl">
     <!-- ── HERO ─────────────────────────────────────────── -->
     <section class="fl__hero">
+      <img class="fl__herobg" src="/files/wohnfee/bilder/furniture-leasing/Furniture_Leasing_2.jpg"
+           :alt="t.heroAlt" loading="eager" fetchpriority="high">
       <div class="fl__heroinside">
-        <div class="fl__herotext">
-          <h1 class="fl__kicker">Furniture Leasing</h1>
-          <h2 class="fl__headline">{{ t.headline }}</h2>
-          <p class="fl__sub">{{ t.sub }}</p>
-          <button class="fl__cta" @click="scrollToProducts">{{ t.cta }}</button>
+        <h1 class="fl__kicker">Furniture Leasing</h1>
+        <p class="fl__headline">{{ t.headline }}</p>
+        <p class="fl__sub">{{ t.sub }}</p>
+        <div class="fl__heroactions">
+          <button type="button" class="fl__cta" @click="scrollToProducts">{{ t.cta }} <span aria-hidden="true">→</span></button>
+          <button type="button" class="fl__cta fl__cta--ghost" @click="scrollToHowItWorks">{{ t.howItWorks }}</button>
         </div>
-        <figure class="fl__heromedia">
-          <img src="/files/wohnfee/bilder/furniture-leasing/Furniture_Leasing_2.jpg"
-               alt="Elegant eingerichteter Wohnraum mit Mietmöbeln von WOHNFEE" loading="eager">
-        </figure>
+        <ul class="fl__usps">
+          <li v-for="u in heroUsps" :key="u.text">
+            <span class="fl__uspicon"><WfIcon :name="u.icon" :size="18" /></span>
+            <span>{{ u.text }}</span>
+          </li>
+        </ul>
       </div>
+      <button type="button" class="fl__cue" @click="scrollToProducts">
+        {{ t.toProducts }}
+        <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span>
+      </button>
     </section>
 
     <!-- ── SHOP: SIDEBAR + PRODUKTGRID ──────────────────── -->
@@ -743,38 +778,65 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 /* ── Grundgerüst & Farbwelt ─────────────────────────── */
 .fl { --green: #2f5d40; --green-soft: #eef3ee; --ink: #2b2b28; --muted: #7a7568; --line: #e6e0d2; --cream: #f7f4ec; }
 
-/* Hero: volle Viewporthöhe, Inhalt vertikal zentriert */
+/* Hero im Stil der übrigen Seiten: Vollbild-Foto mit hellem Verlauf, Inhalt links */
 .fl__hero {
-  background: var(--cream); border-bottom: 1px solid var(--line);
-  min-height: 100vh; min-height: 100svh;
-  display: flex; align-items: center;
+  position: relative; overflow: hidden; display: flex; align-items: center;
+  min-height: max(600px, calc(100vh - var(--hs-head, 108px)));
+  min-height: max(600px, calc(100svh - var(--hs-head, 108px)));
+  background: var(--cream);
+}
+.fl__herobg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 55%; }
+.fl__hero::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background:
+    linear-gradient(90deg, rgba(247, 244, 236, .97) 0%, rgba(247, 244, 236, .9) 33%,
+      rgba(247, 244, 236, .45) 52%, rgba(247, 244, 236, 0) 68%),
+    linear-gradient(0deg, var(--cream) 0%, rgba(247, 244, 236, 0) 16%);
 }
 .fl__heroinside {
-  width: 100%;
-  max-width: 1180px; margin: 0 auto; padding: 3.2em 1.5em;
-  display: grid; grid-template-columns: 1.05fr 1fr; gap: 3em; align-items: center;
+  position: relative; z-index: 1; width: 100%; max-width: 1240px; margin: 0 auto;
+  padding: 3em 1.5em 5em; box-sizing: border-box; text-align: left;
 }
+.fl__heroinside > * { max-width: 34rem; }
 .fl__kicker {
-  font-size: .8em; letter-spacing: .22em; text-transform: uppercase;
-  color: var(--green); font-weight: 700; margin: 0 0 1.4em;
+  display: flex; align-items: center; gap: 1em; margin: 0 0 1.3em !important; padding: 0 !important; border: 0 !important;
+  font-family: var(--font-family-01, 'Open Sans', sans-serif) !important; font-size: .72em !important; letter-spacing: .22em;
+  text-transform: uppercase; font-weight: 600 !important; color: var(--ink) !important; text-align: left !important;
 }
+.fl__kicker::after { content: ""; width: 3.5em; height: 1px; background: var(--green); }
 .fl__headline {
-  font-family: Georgia, 'Times New Roman', serif; font-weight: 500;
-  font-size: 2.5em; line-height: 1.18; color: var(--ink); margin: 0 0 .6em;
+  font-family: var(--font-family-02, Gelasio, Georgia, serif); font-weight: 500;
+  font-size: clamp(2.3em, 4.6vw, 3.5em); line-height: 1.08; letter-spacing: -.01em; color: var(--ink); margin: 0 0 .5em;
 }
-.fl__sub { font-size: 1.05em; line-height: 1.7; color: var(--muted); margin: 0 0 1.6em; max-width: 30em; }
+.fl__sub { font-size: 1.05em; line-height: 1.7; color: #5f5b52; margin: 0 0 1.8em; }
+.fl__heroactions { display: flex; flex-wrap: wrap; gap: .8em; margin-bottom: 2.4em; }
 .fl__cta {
-  display: inline-block; border: 0; cursor: pointer; font: inherit; font-weight: 600;
-  background: var(--green); color: #fff; border-radius: 999px; padding: .8em 1.9em;
-  transition: background .15s;
+  display: inline-flex; align-items: center; gap: .45em; border: 1px solid var(--green); cursor: pointer;
+  font: inherit; font-weight: 600; font-size: .9em; background: var(--green); color: #fff;
+  border-radius: 999px; padding: .85em 1.9em; transition: background .15s, color .15s, border-color .15s, transform .15s;
 }
-.fl__cta:hover { background: #26492f; }
-.fl__heromedia { margin: 0; }
-.fl__heromedia img {
-  width: 100%; aspect-ratio: 4 / 3.4; object-fit: cover; display: block;
-  border-radius: 18px; box-shadow: 0 18px 45px rgba(60, 50, 30, .18);
+.fl__cta:hover { background: #26492f; transform: translateY(-1px); }
+.fl__cta--ghost { background: rgba(255, 255, 255, .65); color: var(--ink); border-color: var(--ink); }
+.fl__cta--ghost:hover { background: #fff; color: var(--green); border-color: var(--green); }
+.fl__usps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: .8em 1.4em; }
+.fl__usps li { display: flex; align-items: center; gap: .7em; font-size: .88em; color: var(--ink); }
+.fl__uspicon {
+  flex: none; width: 2.5em; height: 2.5em; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, .75); border: 1px solid #d9d3c4; color: var(--green);
 }
-
+.fl__cue {
+  position: absolute; left: 50%; bottom: 1.6em; z-index: 2; transform: translateX(-50%);
+  display: flex; flex-direction: column; align-items: center; gap: .5em; border: 0; background: none; cursor: pointer;
+  font: inherit; font-size: .68em; letter-spacing: .22em; text-transform: uppercase; font-weight: 600; color: var(--ink);
+}
+.fl__cue span {
+  width: 2.6em; height: 2.6em; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  border: 1px solid var(--ink); background: rgba(255, 255, 255, .6); transition: background .15s, color .15s, border-color .15s;
+}
+.fl__cue svg { width: 1.3em; height: 1.3em; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; animation: fl-bob 1.8s ease-in-out infinite; }
+.fl__cue:hover span { background: var(--green); border-color: var(--green); color: #fff; }
+@keyframes fl-bob { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
+@media (prefers-reduced-motion: reduce) { .fl__cue svg { animation: none; } }
 
 /* Shop-Layout: Sidebar + Inhalt */
 .fl__shop { max-width: 1240px; margin: 0 auto; padding: 2em 1.5em 3em; }
@@ -1105,8 +1167,15 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 
 /* Responsive */
 @media (max-width: 860px) {
-  .fl__heroinside { grid-template-columns: 1fr; gap: 1.8em; padding: 2.2em 1.2em; }
-  .fl__headline { font-size: 1.9em; }
+  .fl__hero { min-height: 0; align-items: flex-end; }
+  .fl__herobg { height: 20em; }
+  .fl__hero::after {
+    inset: 0 0 auto 0; height: 20em;
+    background: linear-gradient(0deg, var(--cream) 0%, rgba(247, 244, 236, .85) 30%, rgba(247, 244, 236, 0) 65%);
+  }
+  .fl__heroinside { padding: 13em 1em 2.5em; }
+  .fl__usps { grid-template-columns: 1fr; }
+  .fl__cue { display: none; }
   .fl__dgrid { grid-template-columns: 1fr; gap: 1.2em; }
   .fl__detail { padding: 1.2em 1.2em; }
   .fl__grid { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .9em; }

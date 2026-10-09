@@ -4,11 +4,12 @@
 // `category` kommt von den alten Kategorie-URLs (/presse/category/….html)
 // und setzt den passenden Filter voraus.
 const props = defineProps<{ page: any, category?: string | null }>()
-const { news, categories } = useSiteData()
+const { news, newsEn, categories } = useSiteData()
+const { isEn, lang, t } = useLang()
 
 const TYPE_CATS: Record<string, 'online' | 'pdf'> = { 7: 'online', 8: 'pdf' }
 
-const items = computed(() => Object.values(news as Record<string, any>)
+const items = computed(() => Object.values((isEn.value ? newsEn : news) as Record<string, any>)
   .filter((n: any) => n.archive === '8')
   .sort((a: any, b: any) => Number(b.date) - Number(a.date))
   .map((n: any) => {
@@ -44,7 +45,7 @@ const groups = computed(() => {
 })
 const countType = (t: 'online' | 'pdf') => items.value.filter(i => i.type === t).length
 
-const label = (i: any) => i.type === 'pdf' ? 'PDF öffnen' : i.type === 'online' ? 'Artikel lesen' : ''
+const label = (i: any) => i.type === 'pdf' ? t('PDF öffnen', 'Open PDF') : i.type === 'online' ? t('Artikel lesen', 'Read article') : ''
 
 // Hero-Höhe + Reveal
 const root = ref<HTMLElement | null>(null)
@@ -95,20 +96,20 @@ function pickYear(y: number | null) {
     <section class="hsp2__hero">
       <div class="hsp2__inside">
         <div class="hsp2__intro">
-          <p class="hsp2__eyebrow">Über uns</p>
-          <h1 class="hsp2__h1">Pressespiegel</h1>
+          <p class="hsp2__eyebrow">{{ t('Über uns', 'About us') }}</p>
+          <h1 class="hsp2__h1">{{ t('Pressespiegel', 'Press review') }}</h1>
           <p class="hsp2__lead">
-            WOHNFEE in den Medien: Berichte, Interviews und Reportagen rund um Home Staging,
-            Einrichtung und Wohntrends.
+            {{ t('WOHNFEE in den Medien: Berichte, Interviews und Reportagen rund um Home Staging, Einrichtung und Wohntrends.',
+                 'WOHNFEE in the media: articles, interviews and reports on home staging, interior design and living trends.') }}
           </p>
           <ul class="hsp2__stats">
-            <li><strong>{{ items.length }}</strong><span>Berichte</span></li>
-            <li><strong>{{ span }}</strong><span>im Archiv</span></li>
+            <li><strong>{{ items.length }}</strong><span>{{ t('Berichte', 'articles') }}</span></li>
+            <li><strong>{{ span }}</strong><span>{{ t('im Archiv', 'in the archive') }}</span></li>
             <li><strong>{{ countType('online') }}</strong><span>online</span></li>
           </ul>
           <div class="hsp2__actions">
-            <a href="#archiv" class="hsp2__btn hsp2__btn--primary" @click="scrollToId('archiv', $event)">Zum Archiv</a>
-            <a href="mailto:office@wohnfee.at" class="hsp2__btn hsp2__btn--ghost">Presseanfrage</a>
+            <a href="#archiv" class="hsp2__btn hsp2__btn--primary" @click="scrollToId('archiv', $event)">{{ t('Zum Archiv', 'To the archive') }}</a>
+            <a href="mailto:office@wohnfee.at" class="hsp2__btn hsp2__btn--ghost">{{ t('Presseanfrage', 'Press enquiry') }}</a>
           </div>
         </div>
         <div class="hsp2__stack" aria-hidden="true">
@@ -121,7 +122,7 @@ function pickYear(y: number | null) {
         </div>
       </div>
       <a href="#archiv" class="hsp2__cue" @click="scrollToId('archiv', $event)">
-        Alle Berichte
+        {{ t('Alle Berichte', 'All articles') }}
         <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span>
       </a>
     </section>
@@ -130,24 +131,24 @@ function pickYear(y: number | null) {
     <section id="archiv" class="hsp2__archive">
       <div class="hsp2__wrap">
         <div class="hsp2__filters">
-          <div class="hsp2__seg" role="group" aria-label="Art">
-            <button type="button" :class="{ 'is-active': type === 'alle' }" @click="type = 'alle'">Alle <em>{{ items.length }}</em></button>
+          <div class="hsp2__seg" role="group" :aria-label="t('Art', 'Type')">
+            <button type="button" :class="{ 'is-active': type === 'alle' }" @click="type = 'alle'">{{ t('Alle', 'All') }} <em>{{ items.length }}</em></button>
             <button type="button" :class="{ 'is-active': type === 'online' }" @click="type = 'online'">
               <WfIcon name="globe" :size="14" /> Online <em>{{ countType('online') }}</em>
             </button>
             <button type="button" :class="{ 'is-active': type === 'pdf' }" @click="type = 'pdf'">
-              <WfIcon name="file" :size="14" /> Print / PDF <em>{{ countType('pdf') }}</em>
+              <WfIcon name="file" :size="14" /> {{ t('Print / PDF', 'Print / PDF') }} <em>{{ countType('pdf') }}</em>
             </button>
           </div>
-          <div class="hsp2__years" role="group" aria-label="Jahr">
-            <button type="button" :class="{ 'is-active': !year }" @click="pickYear(null)">Alle Jahre</button>
+          <div class="hsp2__years" role="group" :aria-label="t('Jahr', 'Year')">
+            <button type="button" :class="{ 'is-active': !year }" @click="pickYear(null)">{{ t('Alle Jahre', 'All years') }}</button>
             <button v-for="y in years" :key="y" type="button" :class="{ 'is-active': year === y }" @click="pickYear(y)">{{ y }}</button>
           </div>
         </div>
 
         <p v-if="!groups.length" class="hsp2__empty">
-          Keine Berichte für diese Auswahl.
-          <button type="button" @click="type = 'alle'; year = null">Filter zurücksetzen</button>
+          {{ t('Keine Berichte für diese Auswahl.', 'No articles for this selection.') }}
+          <button type="button" @click="type = 'alle'; year = null">{{ t('Filter zurücksetzen', 'Reset filters') }}</button>
         </p>
 
         <div v-for="g in groups" :key="g.year" class="hsp2__year">
@@ -163,11 +164,11 @@ function pickYear(y: number | null) {
                 <span v-else class="hsp2__ph"><WfIcon name="file" :size="30" /></span>
                 <span class="hsp2__badge" :class="`is-${i.type}`">
                   <WfIcon :name="i.type === 'online' ? 'globe' : 'file'" :size="12" />
-                  {{ i.type === 'online' ? 'Online' : i.type === 'pdf' ? 'Print' : 'Archiv' }}
+                  {{ i.type === 'online' ? 'Online' : i.type === 'pdf' ? 'Print' : t('Archiv', 'Archive') }}
                 </span>
               </div>
               <div class="hsp2__cbody">
-                <span class="hsp2__cmeta">{{ blogDate(i.date) }}<template v-if="i.host"> · {{ i.host }}</template></span>
+                <span class="hsp2__cmeta">{{ blogDate(i.date, lang) }}<template v-if="i.host"> · {{ i.host }}</template></span>
                 <h3>{{ i.headline }}</h3>
                 <p>{{ blogTeaser(i, 150) }}</p>
                 <span v-if="i.url" class="hsp2__clink">
@@ -187,9 +188,9 @@ function pickYear(y: number | null) {
         <div class="hsp2__pbox rv">
           <div class="hsp2__picon" aria-hidden="true"><WfIcon name="mail" :size="30" /></div>
           <div>
-            <h2 class="hsp2__h2">Presseanfragen</h2>
-            <p>Sie schreiben über Home Staging, Einrichtung oder Wohntrends? Wir stehen gerne für Interviews,
-              Fotos und Hintergrundinformationen zur Verfügung.</p>
+            <h2 class="hsp2__h2">{{ t('Presseanfragen', 'Press enquiries') }}</h2>
+            <p>{{ t('Sie schreiben über Home Staging, Einrichtung oder Wohntrends? Wir stehen gerne für Interviews, Fotos und Hintergrundinformationen zur Verfügung.',
+                    'Writing about home staging, interior design or living trends? We are happy to provide interviews, photos and background information.') }}</p>
           </div>
           <div class="hsp2__pactions">
             <a href="mailto:office@wohnfee.at" class="hsp2__btn hsp2__btn--light">office@wohnfee.at</a>

@@ -59,12 +59,12 @@ const plain = computed(() => section.value && !section.value.child && section.va
 // Home-Staging-Übersicht, Preise, FAQ, Blog-Übersichten, Team, Presse, Kontakt, Impressum und Zielgruppen-Seiten: Hero-Karten bzw. Header-Dropdown
 // ersetzen das Untermenü
 const hidden = computed(() =>
-  route.path === '/home-staging.html' || route.path === '/home-staging/preise.html'
-  || route.path === '/faq.html' || route.path === '/team.html'
-  || ['/aktuelles.html', '/projekte.html', '/trends-tipps.html', '/events.html'].includes(route.path)
-  || route.path.startsWith('/projekte/category/')
-  || route.path === '/kontakt.html' || route.path === '/impressum.html' || route.path === '/presse.html' || route.path.startsWith('/presse/category/')
-  || HS_AUDIENCE_ROUTES.includes(route.path))
+  dePath.value === '/home-staging.html' || dePath.value === '/home-staging/preise.html'
+  || dePath.value === '/faq.html' || dePath.value === '/team.html'
+  || ['/aktuelles.html', '/projekte.html', '/trends-tipps.html', '/events.html'].includes(dePath.value)
+  || dePath.value.startsWith('/projekte/category/')
+  || dePath.value === '/kontakt.html' || dePath.value === '/impressum.html' || dePath.value === '/presse.html' || dePath.value.startsWith('/presse/category/')
+  || HS_AUDIENCE_ROUTES.includes(dePath.value))
 
 const liClass = (r: string) => plain.value ? '' : [
   r === dePath.value ? 'active' : 'sibling',

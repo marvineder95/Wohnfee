@@ -4,22 +4,31 @@
 // Newsletter-Band (Element 506 aus pages.json). `category` kommt von alten
 // Kategorie-URLs (/projekte/category/….html) und setzt den Filter voraus.
 const props = defineProps<{ page: any, section: string, category?: string | null }>()
+const { lang, t } = useLang()
 
 type FilterKind = 'year' | 'category' | 'type'
-interface Cfg { sections: string[], lead: string, filter: FilterKind, eyebrow?: string }
+interface Cfg { sections: string[], lead: [string, string], filter: FilterKind }
 const CFG: Record<string, Cfg> = {
-  'trends-tipps': { sections: ['trends-tipps'], filter: 'year', lead: 'Einrichtungstrends, Farben des Jahres, Design-Entdeckungen und Tipps aus der Praxis von WOHNFEE.' },
-  projekte: { sections: ['projekte'], filter: 'category', lead: 'Ausgewählte Home-Staging-Projekte – von der Musterwohnung über das Penthouse bis zur Villa.' },
-  events: { sections: ['events'], filter: 'year', lead: 'Messen, Design-Events und besondere Momente – hier waren die WOHNFEEn unterwegs.' },
-  aktuelles: { sections: ['aktuelles', 'projekte', 'events', 'trends-tipps', 'presse'], filter: 'type', lead: 'Neuigkeiten aus der WOHNFEE-Welt: aktuelle Projekte, Events, Trends und Presseberichte auf einen Blick.' }
+  'trends-tipps': { sections: ['trends-tipps'], filter: 'year', lead: ['Einrichtungstrends, Farben des Jahres, Design-Entdeckungen und Tipps aus der Praxis von WOHNFEE.', 'Interior trends, colours of the year, design discoveries and practical tips from WOHNFEE.'] },
+  projekte: { sections: ['projekte'], filter: 'category', lead: ['Ausgewählte Home-Staging-Projekte – von der Musterwohnung über das Penthouse bis zur Villa.', 'Selected home staging projects – from show flats and penthouses to villas.'] },
+  events: { sections: ['events'], filter: 'year', lead: ['Messen, Design-Events und besondere Momente – hier waren die WOHNFEEn unterwegs.', 'Fairs, design events and special moments – where the WOHNFEE team has been.'] },
+  aktuelles: { sections: ['aktuelles', 'projekte', 'events', 'trends-tipps', 'presse'], filter: 'type', lead: ['Neuigkeiten aus der WOHNFEE-Welt: aktuelle Projekte, Events, Trends und Presseberichte auf einen Blick.', 'News from the world of WOHNFEE: current projects, events, trends and press coverage at a glance.'] }
 }
 const cfg = computed(() => CFG[props.section] || CFG['trends-tipps'])
 
 // Projekt-Kategorien (categories.json, Seite „projekte“)
-const PROJECT_CATS = [{ id: '2', label: 'Bauträger' }, { id: '1', label: 'Makler' }, { id: '3', label: 'Privatpersonen' }]
-const TYPE_LABELS: Record<string, string> = {
+const PROJECT_CATS = [
+  { id: '2', label: ['Bauträger', 'Property developers'] },
+  { id: '1', label: ['Makler', 'Estate agents'] },
+  { id: '3', label: ['Privatpersonen', 'Private individuals'] }
+]
+const TYPE_LABELS_DE: Record<string, string> = {
   aktuelles: 'News', projekte: 'Projekt', events: 'Event', 'trends-tipps': 'Trends & Tipps', presse: 'Presse'
 }
+const TYPE_LABELS_EN: Record<string, string> = {
+  aktuelles: 'News', projekte: 'Project', events: 'Event', 'trends-tipps': 'Trends & Tips', presse: 'Press'
+}
+const typeLabel = (sec: string) => (lang.value === 'en' ? TYPE_LABELS_EN : TYPE_LABELS_DE)[sec] || 'Blog'
 
 const items = await useBlogFeed(cfg.value.sections)
 // Aufmacher: neuester Beitrag mit Foto – Presse-Ausschnitte eignen sich nicht als Hero-Bild
@@ -29,8 +38,10 @@ const rest = computed(() => items.value.filter(n => n !== featured.value))
 // Ziel eines Beitrags: Presseberichte verlinken auf Quelle/PDF, alle anderen auf die Artikelseite
 const href = (n: any) => (n.section === 'presse' && n.url && n.url !== '#') ? n.url : n.route
 const isExternal = (n: any) => /^https?:|\.pdf$/i.test(href(n))
-const linkLabel = (n: any) => n.section === 'presse' ? (/\.pdf$/i.test(href(n)) ? 'PDF öffnen' : 'Bericht lesen') : 'Weiterlesen'
-const badge = (n: any) => cfg.value.filter === 'type' ? TYPE_LABELS[n.section] || 'Blog' : String(blogYear(n.date))
+const linkLabel = (n: any) => n.section === 'presse'
+  ? (/\.pdf$/i.test(href(n)) ? t('PDF öffnen', 'Open PDF') : t('Bericht lesen', 'Read article'))
+  : t('Weiterlesen', 'Read more')
+const badge = (n: any) => cfg.value.filter === 'type' ? typeLabel(n.section) : String(blogYear(n.date))
 
 const newsletter = computed(() => (props.page.columns?.main || []).find((e: any) => String(e.cssClass || '').includes('bg-nl')))
 // Contao-Inline-Styles (text-align) entfernen – Ausrichtung übernimmt das Band
@@ -40,11 +51,11 @@ const nlHtml = computed(() => (newsletter.value?.html || '').replace(/\sstyle="[
 const filterOptions = computed<Array<{ value: string, label: string }>>(() => {
   if (cfg.value.filter === 'category') {
     return PROJECT_CATS.filter(c => rest.value.some(n => (n.categories || []).map(String).includes(c.id)))
-      .map(c => ({ value: c.id, label: c.label }))
+      .map(c => ({ value: c.id, label: t(c.label[0], c.label[1]) }))
   }
   if (cfg.value.filter === 'type') {
     return cfg.value.sections.filter(sec => rest.value.some(n => n.section === sec))
-      .map(sec => ({ value: sec, label: TYPE_LABELS[sec] }))
+      .map(sec => ({ value: sec, label: typeLabel(sec) }))
   }
   return [...new Set(rest.value.map(n => String(blogYear(n.date))))].map(y => ({ value: y, label: y }))
 })
@@ -57,7 +68,8 @@ const matches = (n: any) => {
 }
 // Bei aktivem Filter auch den Aufmacher einbeziehen, damit nichts fehlt
 const visible = computed(() => active.value ? items.value.filter(matches) : rest.value)
-const filterLabel = computed(() => cfg.value.filter === 'category' ? 'Nach Zielgruppe filtern' : cfg.value.filter === 'type' ? 'Nach Art filtern' : 'Nach Jahr filtern')
+const filterLabel = computed(() => cfg.value.filter === 'category' ? t('Nach Zielgruppe filtern', 'Filter by target group')
+  : cfg.value.filter === 'type' ? t('Nach Art filtern', 'Filter by type') : t('Nach Jahr filtern', 'Filter by year'))
 
 const PAGE = 9
 const shown = ref(PAGE)
@@ -111,14 +123,14 @@ function scrollToId(id: string, e?: Event) {
         <div class="hsb__intro">
         <p class="hsb__eyebrow">Blog</p>
         <h1 class="hsb__h1">{{ page.title }}</h1>
-        <p class="hsb__lead">{{ cfg.lead }}</p>
+        <p class="hsb__lead">{{ t(cfg.lead[0], cfg.lead[1]) }}</p>
 
         <NuxtLink v-if="featured" :to="href(featured)" :external="isExternal(featured)" :target="isExternal(featured) ? '_blank' : undefined" class="hsb__feature">
-          <span class="hsb__badge">{{ cfg.filter === 'type' ? `Neuester Beitrag · ${badge(featured)}` : 'Neuester Beitrag' }}</span>
-          <span class="hsb__meta">{{ blogDate(featured.date) }} · {{ blogReadingMinutes(featured) }} Min. Lesezeit</span>
+          <span class="hsb__badge">{{ t('Neuester Beitrag', 'Latest post') }}{{ cfg.filter === 'type' ? ` · ${badge(featured)}` : '' }}</span>
+          <span class="hsb__meta">{{ blogDate(featured.date, lang) }} · {{ blogReadingMinutes(featured) }} {{ t('Min. Lesezeit', 'min read') }}</span>
           <span class="hsb__ftitle">{{ featured.headline }}</span>
           <span class="hsb__fteaser">{{ blogTeaser(featured, 180) }}</span>
-          <span class="hsb__flink">{{ featured.section === 'presse' ? linkLabel(featured) : 'Artikel lesen' }} <WfIcon name="arrow" :size="15" /></span>
+          <span class="hsb__flink">{{ featured.section === 'presse' ? linkLabel(featured) : t('Artikel lesen', 'Read article') }} <WfIcon name="arrow" :size="15" /></span>
         </NuxtLink>
         </div>
         <NuxtLink v-if="featured?.image" :to="href(featured)" :external="isExternal(featured)" :target="isExternal(featured) ? '_blank' : undefined" class="hsb__fimg" tabindex="-1" aria-hidden="true">
@@ -128,7 +140,7 @@ function scrollToId(id: string, e?: Event) {
         </NuxtLink>
       </div>
       <a href="#beitraege" class="hsb__cue" @click="scrollToId('beitraege', $event)">
-        Alle Beiträge
+        {{ t('Alle Beiträge', 'All posts') }}
         <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span>
       </a>
     </section>
@@ -138,11 +150,11 @@ function scrollToId(id: string, e?: Event) {
       <div class="hsb__wrap">
         <div class="hsb__head rv">
           <div>
-            <p class="hsb__divider"><span>Archiv</span></p>
-            <h2 class="hsb__h2">Alle Beiträge</h2>
+            <p class="hsb__divider"><span>{{ t('Archiv', 'Archive') }}</span></p>
+            <h2 class="hsb__h2">{{ t('Alle Beiträge', 'All posts') }}</h2>
           </div>
           <div v-if="filterOptions.length > 1" class="hsb__filters" role="group" :aria-label="filterLabel">
-            <button type="button" :class="{ 'is-active': !active }" @click="active = null">Alle</button>
+            <button type="button" :class="{ 'is-active': !active }" @click="active = null">{{ t('Alle', 'All') }}</button>
             <button v-for="o in filterOptions" :key="o.value" type="button" :class="{ 'is-active': active === o.value }" @click="active = o.value">{{ o.label }}</button>
           </div>
         </div>
@@ -158,7 +170,7 @@ function scrollToId(id: string, e?: Event) {
               <span class="hsb__year">{{ badge(n) }}</span>
             </div>
             <div class="hsb__cbody">
-              <span class="hsb__cmeta">{{ blogDate(n.date) }} · {{ blogReadingMinutes(n) }} Min.</span>
+              <span class="hsb__cmeta">{{ blogDate(n.date, lang) }} · {{ blogReadingMinutes(n) }} {{ t('Min.', 'min') }}</span>
               <h3>{{ n.headline }}</h3>
               <p>{{ blogTeaser(n) }}</p>
               <span class="hsb__clink">{{ linkLabel(n) }} <WfIcon name="arrow" :size="14" /></span>
@@ -168,7 +180,7 @@ function scrollToId(id: string, e?: Event) {
 
         <div v-if="visible.length > shown" class="hsb__more">
           <button type="button" class="hsb__btn hsb__btn--ghost" @click="shown += PAGE">
-            Weitere Beiträge laden <span>({{ visible.length - shown }})</span>
+            {{ t('Weitere Beiträge laden', 'Load more posts') }} <span>({{ visible.length - shown }})</span>
           </button>
         </div>
       </div>

@@ -2,6 +2,7 @@
 // Kontaktseite im Design der übrigen Seiten. Kontaktdaten kommen aus pages.json
 // (Seite 10): „So erreichen Sie uns“ (dl), „Office“ (Adresse), „im Netz“ (Links).
 const props = defineProps<{ page: any }>()
+const { lang, t, lp } = useLang()
 
 const flat = (els: any[]): any[] => els.flatMap(e => [e, ...flat(e.children || [])])
 const els = computed(() => flat(props.page.columns?.main || []))
@@ -38,11 +39,11 @@ const socials = computed(() => {
 const TEAM = '/files/wohnfee/team/'
 const faces = [TEAM + 'WohnFee_Brandingfotos_23-26.jpg', TEAM + 'WohnFee_Brandingfotos_23-6.jpg']
 
-const shortcuts = [
-  { to: '/faq.html', icon: 'search', title: 'Häufige Fragen', text: 'Ablauf, Kosten & Leistungen – vieles ist schon beantwortet.' },
-  { to: '/home-staging/preise.html', icon: 'euro', title: 'Preise & Pakete', text: 'Unsere Home-Staging-Pakete im Überblick.' },
-  { to: '/team.html', icon: 'users', title: 'Unser Team', text: 'Lernen Sie die Menschen hinter WOHNFEE kennen.' }
-]
+const shortcuts = computed(() => [
+  { to: lp('/faq.html'), icon: 'search', title: t('Häufige Fragen', 'FAQ'), text: t('Ablauf, Kosten & Leistungen – vieles ist schon beantwortet.', 'Process, costs & services – many questions are already answered.') },
+  { to: lp('/home-staging/preise.html'), icon: 'euro', title: t('Preise & Pakete', 'Prices & packages'), text: t('Unsere Home-Staging-Pakete im Überblick.', 'Our home staging packages at a glance.') },
+  { to: lp('/team.html'), icon: 'users', title: t('Unser Team', 'Our team'), text: t('Lernen Sie die Menschen hinter WOHNFEE kennen.', 'Meet the people behind WOHNFEE.') }
+])
 
 const root = ref<HTMLElement | null>(null)
 function syncHeaderHeight() {
@@ -62,11 +63,11 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
       <div class="hsc2__wrap hsc2__grid">
         <!-- ── Kontaktwege ── -->
         <div class="hsc2__info">
-          <p class="hsc2__eyebrow">Über uns</p>
+          <p class="hsc2__eyebrow">{{ t('Über uns', 'About us') }}</p>
           <h1 class="hsc2__h1">{{ h1 }}</h1>
           <p class="hsc2__lead">
-            Erzählen Sie uns von Ihrem Projekt – ob Home Staging, Redesign oder Furniture Leasing.
-            Wir freuen uns auf Ihre Nachricht.
+            {{ t('Erzählen Sie uns von Ihrem Projekt – ob Home Staging, Redesign oder Furniture Leasing. Wir freuen uns auf Ihre Nachricht.',
+                 'Tell us about your project – whether home staging, redesign or furniture leasing. We look forward to hearing from you.') }}
           </p>
 
           <div class="hsc2__people">
@@ -75,7 +76,7 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
                 <HsImg :src="f" alt="" sizes="xs:120px sm:120px md:120px lg:120px xl:120px xxl:120px 2xl:120px" />
               </span>
             </span>
-            <span>Ihre Ansprechpartnerinnen – <NuxtLink to="/team.html">das Team kennenlernen</NuxtLink></span>
+            <span>{{ t('Ihre Ansprechpartnerinnen', 'Your contacts') }} – <NuxtLink :to="lp('/team.html')">{{ t('das Team kennenlernen', 'meet the team') }}</NuxtLink></span>
           </div>
 
           <ul class="hsc2__channels">
@@ -96,7 +97,7 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
           </ul>
 
           <div v-if="socials.length" class="hsc2__social">
-            <span>Folgen Sie uns</span>
+            <span>{{ t('Folgen Sie uns', 'Follow us') }}</span>
             <a v-for="s in socials" :key="s.href" :href="s.href" target="_blank" rel="noopener" :aria-label="s.label">
               <svg v-if="s.icon === 'instagram'" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><path d="M17.5 6.5h.01" /></svg>
               <svg v-else viewBox="0 0 24 24" aria-hidden="true"><path d="M15 3h-2.5A4.5 4.5 0 0 0 8 7.5V10H5.5v3.5H8V21h3.5v-7.5H14l.5-3.5h-3V7.8c0-.7.5-1.3 1.3-1.3H15V3Z" /></svg>
@@ -107,7 +108,7 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
 
         <!-- ── Formular ── -->
         <div class="hsc2__form">
-          <AppContactForm lang="de" />
+          <AppContactForm :lang="lang" />
         </div>
       </div>
     </section>
@@ -115,7 +116,7 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
     <!-- ── Abkürzungen ── -->
     <section class="hsc2__more">
       <div class="hsc2__wrap">
-        <p class="hsc2__divider"><span>Vorab informieren</span></p>
+        <p class="hsc2__divider"><span>{{ t('Vorab informieren', 'Find out more first') }}</span></p>
         <div class="hsc2__sgrid">
           <NuxtLink v-for="s in shortcuts" :key="s.to" :to="s.to" class="hsc2__short">
             <span class="hsc2__icon"><WfIcon :name="s.icon" :size="20" /></span>

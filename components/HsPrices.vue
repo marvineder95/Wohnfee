@@ -7,6 +7,7 @@
 //   Element ohne Titel  → Hinweis „wie in Paket n und zusätzlich“
 //   „Preis: …“-Headline → Paketpreis
 const props = defineProps<{ page: any }>()
+const { isEn, t, lp } = useLang()
 
 const strip = (h: string) => h.replace(/<br\s*\/?>/g, ' ').replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim()
 const items = (h: string) => (h.match(/<li[^>]*>([\s\S]*?)<\/li>/g) || []).map(strip)
@@ -19,7 +20,7 @@ const parsed = computed(() => {
   const general = els[0] || {}
   const html: string = general.html || ''
   const notes = (html.match(/<p[^>]*>[\s\S]*?<\/p>/g) || [])
-    .map(strip).filter(t => t && !/^Allgemein:?$/.test(t))
+    .map(strip).filter(t => t && !/^(Allgemein|General):?$/i.test(t))
     // zwei <strong> direkt hintereinander („bzw. “ + „individuell …“) sauber zusammenführen
     .map(t => t.replace(/\s+/g, ' '))
 
@@ -27,18 +28,18 @@ const parsed = computed(() => {
   let cur: Pack | null = null
   for (const e of els.slice(1)) {
     const head = String(e.headline || '')
-    if (/^PAKET\s*\d+/i.test(head)) {
+    if (/^(PAKET|PACKAGE)\s*\d+/i.test(head)) {
       const no = Number(head.match(/\d+/)![0])
       // Tippfehler-Reste im Pflegetext („ ,“, Komma bzw. „€“ am Ende) nur in der Anzeige glätten
       const scope = strip(e.html || '').replace(/\s+,/g, ',').replace(/[,\s€]+$/, '')
-      const sqm = scope.match(/max\.\s*(\d+)\s*qm/i)?.[1] || ''
+      const sqm = scope.match(/max\.\s*(\d+)\s*(qm|sqm|m²)/i)?.[1] || ''
       cur = { no, label: head, scope, sqm, price: '', note: '', rooms: [] }
       packs.push(cur)
       continue
     }
     if (!cur) continue
-    if (e.type === 'headline' && /^Preis/i.test(head)) {
-      cur.price = head.replace(/^Preis:\s*/i, '').trim()
+    if (e.type === 'headline' && /^(Preis|Price)/i.test(head)) {
+      cur.price = head.replace(/^(Preis|Price):\s*/i, '').trim()
       continue
     }
     const h4 = (e.html || '').match(/^\s*<h4[^>]*>([\s\S]*?)<\/h4>/)
@@ -56,11 +57,13 @@ const parsed = computed(() => {
 const allRooms = computed(() => parsed.value.packs.flatMap(p => p.rooms))
 const included = (p: Pack) => allRooms.value.filter(r => r.from <= p.no)
 
+// „€ 2990,00“ (DE) bzw. „€ 2990.00“ (EN) → je Sprache formatiert (€ 2.990,00 / € 2,990.00)
 const fmtPrice = (raw: string) => {
-  const m = raw.match(/([\d.]+),(\d{2})/)
+  const m = raw.match(/(\d[\d.,]*?)[.,](\d{2})(?!\d)/)
   if (!m) return { main: raw, cents: '' }
-  const int = Number(m[1].replace(/\./g, ''))
-  return { main: '€ ' + String(int).replace(/\B(?=(\d{3})+(?!\d))/g, '.'), cents: ',' + m[2] }
+  const int = String(Number(m[1].replace(/[.,]/g, '')))
+  const thousands = isEn.value ? ',' : '.'
+  return { main: '€ ' + int.replace(/\B(?=(\d{3})+(?!\d))/g, thousands), cents: (isEn.value ? '.' : ',') + m[2] }
 }
 
 // Icons für Räume und Bedingungen (Stroke-Stil wie WfIcon)
@@ -73,14 +76,17 @@ const ROOM_ICON: Record<string, string> = {
   bad: 'M4 12h16v3a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4v-3Zm2 0V6a2 2 0 0 1 4 0M7 19l-1 2m11-2 1 2',
   weitere: 'M4 20V9h16v11M4 9l8-5 8 5M9 20v-6h6v6'
 }
+// englische Raumnamen auf die gleichen Icons abbilden
+const ROOM_EN: Record<string, string> = { living: 'wohn', dining: 'ess', kitchen: 'küche', entrance: 'vor', bedroom: 'schlaf', bath: 'bad' }
 const roomIcon = (name: string) => {
-  const n = name.toLowerCase()
+  const raw = name.toLowerCase()
+  const n = ROOM_EN[Object.keys(ROOM_EN).find(k => raw.startsWith(k)) || ''] || raw
   const key = Object.keys(ROOM_ICON).find(k => n.startsWith(k)) || 'weitere'
   return ROOM_ICON[key]
 }
-const condIcon = (t: string) => /leih|monat/i.test(t) ? 'calendar'
-  : /anzahl|zahlung/i.test(t) ? 'euro'
-    : /ust|steuer/i.test(t) ? 'receipt' : 'bell'
+const condIcon = (c: string) => /leih|monat|rental period|month/i.test(c) ? 'calendar'
+  : /anzahl|zahlung|deposit|payment/i.test(c) ? 'euro'
+    : /ust|steuer|vat/i.test(c) ? 'receipt' : 'bell'
 
 // Hero-Höhe + Scroll-Reveal wie auf den übrigen Home-Staging-Seiten
 const root = ref<HTMLElement | null>(null)
@@ -122,24 +128,24 @@ function scrollTo(id: string, e: Event) {
                sizes="xs:100vw sm:100vw md:100vw lg:100vw xl:100vw xxl:1600px 2xl:1920px"
                loading="eager" fetchpriority="high" />
       <div class="hsp__inside">
-        <NuxtLink to="/home-staging.html" class="hsp__eyebrow">
+        <NuxtLink :to="lp('/home-staging.html')" class="hsp__eyebrow">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
           Home Staging
         </NuxtLink>
         <h1 class="hsp__h1">{{ parsed.title }}</h1>
         <div class="hsp__actions">
-          <a href="#pakete" class="hsp__btn hsp__btn--primary" @click="scrollTo('pakete', $event)">Pakete ansehen</a>
-          <NuxtLink to="/kontakt.html" class="hsp__btn hsp__btn--ghost">Beratung anfragen</NuxtLink>
+          <a href="#pakete" class="hsp__btn hsp__btn--primary" @click="scrollTo('pakete', $event)">{{ t('Pakete ansehen', 'View packages') }}</a>
+          <NuxtLink :to="lp('/kontakt.html')" class="hsp__btn hsp__btn--ghost">{{ t('Beratung anfragen', 'Request a consultation') }}</NuxtLink>
         </div>
-        <ul class="hsp__conds" aria-label="Allgemein">
+        <ul class="hsp__conds" :aria-label="t('Allgemein', 'General')">
           <li v-for="c in parsed.conditions" :key="c">
             <span class="hsp__condicon"><WfIcon :name="condIcon(c)" :size="18" /></span>
             <span>{{ c }}</span>
           </li>
         </ul>
       </div>
-      <a href="#pakete" class="hsp__cue" aria-label="Zu den Paketen scrollen" @click="scrollTo('pakete', $event)">
-        Zu den Paketen
+      <a href="#pakete" class="hsp__cue" :aria-label="t('Zu den Paketen scrollen', 'Scroll to the packages')" @click="scrollTo('pakete', $event)">
+        {{ t('Zu den Paketen', 'To the packages') }}
         <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span>
       </a>
     </section>
@@ -148,7 +154,7 @@ function scrollTo(id: string, e: Event) {
     <section id="pakete" class="hsp__packs">
       <div class="hsp__wrap">
         <div class="hsp__head rv">
-          <p class="hsp__divider"><span>Unsere Pakete</span></p>
+          <p class="hsp__divider"><span>{{ t('Unsere Pakete', 'Our packages') }}</span></p>
         </div>
         <div class="hsp__grid">
           <article v-for="p in parsed.packs" :key="p.no" class="hsp__pack rv"
@@ -156,13 +162,13 @@ function scrollTo(id: string, e: Event) {
                    :style="{ transitionDelay: `${(p.no - 1) * 90}ms` }">
             <div class="hsp__packtop">
               <h2 class="hsp__packlabel">{{ p.label }}</h2>
-              <span v-if="p.sqm" class="hsp__sqm">bis {{ p.sqm }} m²</span>
+              <span v-if="p.sqm" class="hsp__sqm">{{ t('bis', 'up to') }} {{ p.sqm }} m²</span>
             </div>
             <p class="hsp__scope">{{ p.scope }}</p>
             <div class="hsp__price">
-              <span class="hsp__pricelabel">Preis</span>
-              <span class="hsp__priceval"><em>ab</em>{{ fmtPrice(p.price).main }}<small>{{ fmtPrice(p.price).cents }}</small></span>
-              <span class="hsp__pricenote">zzgl. USt. · endgültiger Preis je nach Objekt</span>
+              <span class="hsp__pricelabel">{{ t('Preis', 'Price') }}</span>
+              <span class="hsp__priceval"><em>{{ t('ab', 'from') }}</em>{{ fmtPrice(p.price).main }}<small>{{ fmtPrice(p.price).cents }}</small></span>
+              <span class="hsp__pricenote">{{ t('zzgl. USt. · endgültiger Preis je nach Objekt', 'plus VAT · final price depends on the property') }}</span>
             </div>
             <p v-if="p.note" class="hsp__note">{{ p.note }}</p>
             <ul class="hsp__rooms">
@@ -171,11 +177,11 @@ function scrollTo(id: string, e: Event) {
                   <path v-if="r.from <= p.no" d="m4.5 12.5 5 5 10-11" />
                   <path v-else d="M6 12h12" />
                 </svg>
-                <span>{{ r.name }}</span>
+                <span :data-new="t('neu', 'new')">{{ r.name }}</span>
               </li>
             </ul>
-            <NuxtLink :to="{ path: '/kontakt.html', query: { thema: 'staging', nachricht: `Anfrage zu ${p.label} (${p.scope})` } }" class="hsp__packcta">
-              {{ p.label }} anfragen <WfIcon name="arrow" :size="15" />
+            <NuxtLink :to="{ path: lp('/kontakt.html'), query: { thema: 'staging', nachricht: t(`Anfrage zu ${p.label} (${p.scope})`, `Enquiry about ${p.label} (${p.scope})`) } }" class="hsp__packcta">
+              {{ t(`${p.label} anfragen`, `Enquire about ${p.label}`) }} <WfIcon name="arrow" :size="15" />
             </NuxtLink>
           </article>
         </div>
@@ -191,7 +197,7 @@ function scrollTo(id: string, e: Event) {
     <section class="hsp__detail">
       <div class="hsp__wrap">
         <div class="hsp__head rv">
-          <p class="hsp__divider"><span>Im Detail</span></p>
+          <p class="hsp__divider"><span>{{ t('Im Detail', 'In detail') }}</span></p>
         </div>
         <div class="hsp__rgrid">
           <article v-for="r in allRooms" :key="r.name" class="hsp__room rv">
@@ -200,7 +206,7 @@ function scrollTo(id: string, e: Event) {
                 <svg viewBox="0 0 24 24" aria-hidden="true"><path :d="roomIcon(r.name)" /></svg>
               </span>
               <h3>{{ r.name }}</h3>
-              <span class="hsp__from">ab Paket {{ r.from }}</span>
+              <span class="hsp__from">{{ t('ab Paket', 'from package') }} {{ r.from }}</span>
             </div>
             <ul>
               <li v-for="it in r.items" :key="it">{{ it }}</li>
@@ -336,7 +342,7 @@ function scrollTo(id: string, e: Event) {
 }
 .hsp__rooms li.is-new span { font-weight: 700; }
 .hsp__rooms li.is-new span::after {
-  content: "neu"; margin-left: .5em; font-size: .68em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  content: attr(data-new); margin-left: .5em; font-size: .68em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
   color: #fff; background: var(--green); border-radius: 999px; padding: .15em .55em; vertical-align: middle;
 }
 .hsp__rooms li.is-off { color: #b3ad9f; }

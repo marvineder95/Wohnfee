@@ -6,10 +6,12 @@
 import { HS_AUDIENCES } from '~~/shared/home-staging-audiences'
 
 const props = defineProps<{ page: any }>()
-const { news } = useSiteData()
+const { news, newsEn } = useSiteData()
+const { isEn, t, lp } = useLang()
 
-const audience = computed(() => HS_AUDIENCES.find(a => a.route === props.page.route)!)
-const others = computed(() => HS_AUDIENCES.filter(a => a.route !== props.page.route))
+const audience = computed(() => HS_AUDIENCES.find(a => a.route === baseRoute(props.page))!)
+const others = computed(() => HS_AUDIENCES.filter(a => a.route !== baseRoute(props.page))
+  .map(a => ({ ...a, route: lp(a.route), title: t(a.title, a.titleEn), text: t(a.text, a.textEn) })))
 
 const elements = computed<any[]>(() => props.page.columns?.main || [])
 const h1 = computed(() => elements.value.find(e => e.type === 'headline')?.headline || props.page.title)
@@ -40,7 +42,7 @@ const blocks = computed(() => elements.value.filter(e => e.type === 'text').map(
 const projects = computed(() => {
   const el = list.value
   if (!el) return []
-  return Object.values(news as Record<string, any>)
+  return Object.values((isEn.value ? newsEn : news) as Record<string, any>)
     .filter((n: any) => el.archives?.includes(n.archive))
     .filter((n: any) => !el.category || (n.categories || []).map(String).includes(String(el.category)))
     .sort((a: any, b: any) => Number(b.date) - Number(a.date))
@@ -98,15 +100,15 @@ function scrollToProjects(e: Event) {
                sizes="xs:100vw sm:100vw md:100vw lg:100vw xl:100vw xxl:1600px 2xl:1920px"
                loading="eager" fetchpriority="high" />
       <div class="hsa__inside">
-        <NuxtLink to="/home-staging.html" class="hsa__eyebrow">
+        <NuxtLink :to="lp('/home-staging.html')" class="hsa__eyebrow">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
           Home Staging
         </NuxtLink>
         <h1 class="hsa__h1">{{ h1 }}</h1>
         <div class="hsa__actions">
-          <NuxtLink to="/kontakt.html" class="hsa__btn hsa__btn--primary">Jetzt Beratung anfragen</NuxtLink>
+          <NuxtLink :to="lp('/kontakt.html')" class="hsa__btn hsa__btn--primary">{{ t('Jetzt Beratung anfragen', 'Request a consultation') }}</NuxtLink>
           <a v-if="projects.length" href="#projekte" class="hsa__btn hsa__btn--ghost" @click="scrollToProjects">
-            {{ list?.headline || 'Projektbeispiele' }}
+            {{ list?.headline || t('Projektbeispiele', 'Project examples') }}
             <span class="hsa__count">{{ projects.length }}</span>
           </a>
         </div>
@@ -133,8 +135,8 @@ function scrollToProjects(e: Event) {
     <section v-if="projects.length" id="projekte" class="hsa__projects">
       <div class="hsa__wrap">
         <div class="hsa__head rv">
-          <p class="hsa__divider"><span>Referenzen</span></p>
-          <h2 class="hsa__h2 hsa__h2--center">{{ list?.headline || 'Projektbeispiele' }}</h2>
+          <p class="hsa__divider"><span>{{ t('Referenzen', 'References') }}</span></p>
+          <h2 class="hsa__h2 hsa__h2--center">{{ list?.headline || t('Projektbeispiele', 'Project examples') }}</h2>
         </div>
         <div class="hsa__grid">
           <NuxtLink v-for="(n, i) in projects" v-show="showAll || i < VISIBLE" :key="n.route"
@@ -151,7 +153,7 @@ function scrollToProjects(e: Event) {
         </div>
         <div v-if="projects.length > VISIBLE" class="hsa__more">
           <button type="button" class="hsa__btn hsa__btn--ghost" @click="showAll = !showAll">
-            {{ showAll ? 'Weniger anzeigen' : `Alle ${projects.length} Projekte anzeigen` }}
+            {{ showAll ? t('Weniger anzeigen', 'Show less') : t(`Alle ${projects.length} Projekte anzeigen`, `Show all ${projects.length} projects`) }}
           </button>
         </div>
       </div>
@@ -161,7 +163,7 @@ function scrollToProjects(e: Event) {
     <section class="hsa__others">
       <div class="hsa__wrap">
         <div class="hsa__head rv">
-          <p class="hsa__divider"><span>Weitere Lösungen</span></p>
+          <p class="hsa__divider"><span>{{ t('Weitere Lösungen', 'More solutions') }}</span></p>
         </div>
         <div class="hsa__ogrid">
           <NuxtLink v-for="o in others" :key="o.route" :to="o.route" class="hsa__other rv">
@@ -170,7 +172,7 @@ function scrollToProjects(e: Event) {
             <div class="hsa__oover">
               <h3>{{ o.title }}</h3>
               <p>{{ o.text }}</p>
-              <span class="hsa__olink">Mehr erfahren <WfIcon name="arrow" :size="15" /></span>
+              <span class="hsa__olink">{{ t('Mehr erfahren', 'Learn more') }} <WfIcon name="arrow" :size="15" /></span>
             </div>
           </NuxtLink>
         </div>

@@ -3,6 +3,7 @@
 // pages.json (Seite 37, Elemente mit cssClass „teamfoto“): <h2> = Name,
 // erster Absatz = Einstieg, <blockquote> = Zitate, <h3>Kontakt</h3> + Absatz = Kontakt.
 const props = defineProps<{ page: any }>()
+const { t, lp } = useLang()
 
 const TEAM = '/files/wohnfee/team/'
 const els = computed<any[]>(() => props.page.columns?.main || [])
@@ -20,7 +21,7 @@ const members = computed(() => els.value
     html = html.replace(/<h2[^>]*>[\s\S]*?<\/h2>/, '')
 
     // Kontaktblock (alles ab <h3>Kontakt</h3>) → Links als Buttons
-    const contactIdx = html.search(/<h3[^>]*>\s*Kontakt/i)
+    const contactIdx = html.search(/<h3[^>]*>\s*(Kontakt|Contact)/i)
     const contactHtml = contactIdx >= 0 ? html.slice(contactIdx) : ''
     if (contactIdx >= 0) html = html.slice(0, contactIdx)
     const contacts = [...contactHtml.matchAll(/<a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/g)]
@@ -44,12 +45,12 @@ const members = computed(() => els.value
   }))
 
 // Kennzahlen (Website-Angaben; Einsatzgebiet bewusst offen: eigene Spedition)
-const facts = [
-  { value: '2011', label: 'gegründet – seitdem inszenieren wir Immobilien' },
-  { value: '1 Tag', label: 'für das Staging einer gesamten Immobilie' },
-  { value: '80–150', label: 'Teile liefern wir durchschnittlich pro Staging an' },
-  { value: 'Flexibel', label: 'standortunabhängig im Einsatz – dank eigener Spedition' }
-]
+const facts = computed(() => [
+  { value: '2011', label: t('gegründet – seitdem inszenieren wir Immobilien', 'founded – staging properties ever since') },
+  { value: t('1 Tag', '1 day'), label: t('für das Staging einer gesamten Immobilie', 'to stage an entire property') },
+  { value: '80–150', label: t('Teile liefern wir durchschnittlich pro Staging an', 'pieces delivered per staging on average') },
+  { value: t('Flexibel', 'Flexible'), label: t('standortunabhängig im Einsatz – dank eigener Spedition', 'location-independent – thanks to our own transport service') }
+])
 
 // Hero-Höhe + Reveal
 const root = ref<HTMLElement | null>(null)
@@ -92,32 +93,32 @@ function scrollToId(id: string, e: Event) {
     <section class="hst__hero">
       <div class="hst__inside">
         <div class="hst__intro">
-          <p class="hst__eyebrow">Über uns</p>
+          <p class="hst__eyebrow">{{ t('Über uns', 'About us') }}</p>
           <h1 class="hst__h1">{{ h1 }}</h1>
           <p class="hst__lead">
-            Seit 2011 inszenieren wir Immobilien – standortunabhängig und flexibel dank eigener Spedition,
-            mit Leidenschaft für Raumgestaltung, viel Erfahrung und einem Auge fürs Detail.
+            {{ t('Seit 2011 inszenieren wir Immobilien – standortunabhängig und flexibel dank eigener Spedition, mit Leidenschaft für Raumgestaltung, viel Erfahrung und einem Auge fürs Detail.',
+                 'Since 2011 we have been staging properties – location-independent and flexible thanks to our own transport service, with a passion for interior design, lots of experience and an eye for detail.') }}
           </p>
           <div class="hst__actions">
-            <a href="#team" class="hst__btn hst__btn--primary" @click="scrollToId('team', $event)">Team kennenlernen</a>
-            <NuxtLink to="/kontakt.html" class="hst__btn hst__btn--ghost">Kontakt aufnehmen</NuxtLink>
+            <a href="#team" class="hst__btn hst__btn--primary" @click="scrollToId('team', $event)">{{ t('Team kennenlernen', 'Meet the team') }}</a>
+            <NuxtLink :to="lp('/kontakt.html')" class="hst__btn hst__btn--ghost">{{ t('Kontakt aufnehmen', 'Get in touch') }}</NuxtLink>
           </div>
-          <ul class="hst__faces" aria-label="Unser Team">
+          <ul class="hst__faces" :aria-label="t('Unser Team', 'Our team')">
             <li v-for="m in members" :key="m.id">
               <a :href="`#person-${m.id}`" :title="m.name" @click="scrollToId(`person-${m.id}`, $event)">
                 <HsImg :src="m.img" :alt="m.name" sizes="xs:120px sm:120px md:120px lg:120px xl:120px xxl:120px 2xl:120px" />
               </a>
             </li>
-            <li class="hst__facestext">{{ members.map(m => m.first).join(' & ') }}<br><small>freuen sich auf Ihr Projekt</small></li>
+            <li class="hst__facestext">{{ members.map(m => m.first).join(' & ') }}<br><small>{{ t('freuen sich auf Ihr Projekt', 'look forward to your project') }}</small></li>
           </ul>
         </div>
         <figure class="hst__heroimg">
-          <HsImg :src="TEAM + 'Wohn.Fee Brandingfotos_23-18.jpg'" alt="Das WOHNFEE Team bei der Planung im Showroom"
+          <HsImg :src="TEAM + 'Wohn.Fee Brandingfotos_23-18.jpg'" :alt="t('Das WOHNFEE Team bei der Planung im Showroom', 'The WOHNFEE team planning in the showroom')"
                  sizes="xs:100vw sm:100vw md:60vw lg:720px xl:720px xxl:720px 2xl:720px" loading="eager" fetchpriority="high" />
         </figure>
       </div>
       <a href="#team" class="hst__cue" @click="scrollToId('team', $event)">
-        Das Team
+        {{ t('Das Team', 'The team') }}
         <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span>
       </a>
     </section>
@@ -127,7 +128,7 @@ function scrollToId(id: string, e: Event) {
       <article v-for="(m, i) in members" :id="`person-${m.id}`" :key="m.id"
                class="hst__wrap hst__person rv" :class="{ 'is-rev': i % 2 === 1 }">
         <figure class="hst__portrait">
-          <HsImg :src="m.img" :alt="`Porträt von ${m.name}`"
+          <HsImg :src="m.img" :alt="t(`Porträt von ${m.name}`, `Portrait of ${m.name}`)"
                  sizes="xs:100vw sm:100vw md:50vw lg:520px xl:520px xxl:520px 2xl:520px" />
           <figcaption>
             <strong>{{ m.name }}</strong>
@@ -164,7 +165,7 @@ function scrollToId(id: string, e: Event) {
     <!-- ── Zahlen ───────────────────────────────────── -->
     <section class="hst__facts">
       <div class="hst__wrap">
-        <p class="hst__divider rv"><span>WOHNFEE in Zahlen</span></p>
+        <p class="hst__divider rv"><span>{{ t('WOHNFEE in Zahlen', 'WOHNFEE in numbers') }}</span></p>
         <ul class="hst__fgrid">
           <li v-for="(f, i) in facts" :key="f.value" class="rv" :style="{ transitionDelay: `${i * 80}ms` }">
             <strong>{{ f.value }}</strong>
@@ -179,15 +180,15 @@ function scrollToId(id: string, e: Event) {
       <div class="hst__wrap">
         <div class="hst__ctabox rv">
           <figure class="hst__ctaimg">
-            <HsImg :src="TEAM + 'sharpen_WohnFee_Brandingfotos_23-22.jpg'" alt="Das WOHNFEE Team mit bunten Kissen"
+            <HsImg :src="TEAM + 'sharpen_WohnFee_Brandingfotos_23-22.jpg'" :alt="t('Das WOHNFEE Team mit bunten Kissen', 'The WOHNFEE team with colourful cushions')"
                    sizes="xs:100vw sm:100vw md:50vw lg:600px xl:600px xxl:600px 2xl:600px" />
           </figure>
           <div class="hst__ctatext">
-            <p class="hst__eyebrow hst__eyebrow--light">Persönlich für Sie da</p>
-            <h2 class="hst__h2">Lernen wir uns kennen</h2>
-            <p>Erzählen Sie uns von Ihrer Immobilie – wir beraten Sie gerne persönlich und finden die passende Lösung.</p>
+            <p class="hst__eyebrow hst__eyebrow--light">{{ t('Persönlich für Sie da', 'Personally there for you') }}</p>
+            <h2 class="hst__h2">{{ t('Lernen wir uns kennen', "Let's get to know each other") }}</h2>
+            <p>{{ t('Erzählen Sie uns von Ihrer Immobilie – wir beraten Sie gerne persönlich und finden die passende Lösung.', 'Tell us about your property – we are happy to advise you personally and find the right solution.') }}</p>
             <div class="hst__actions">
-              <NuxtLink to="/kontakt.html" class="hst__btn hst__btn--light">Beratung anfragen</NuxtLink>
+              <NuxtLink :to="lp('/kontakt.html')" class="hst__btn hst__btn--light">{{ t('Beratung anfragen', 'Request a consultation') }}</NuxtLink>
               <a href="tel:+436769202236" class="hst__btn hst__btn--outline">+43 676 9202236</a>
             </div>
           </div>

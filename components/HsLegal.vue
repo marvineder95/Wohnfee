@@ -3,6 +3,7 @@
 // Der Inhalt bleibt ein HTML-Block in pages.json; jede <h2>-Sektion wird zu
 // einer Karte, <dl>-Listen zu übersichtlichen Zeilen.
 const props = defineProps<{ page: any, eyebrow?: string }>()
+const { t } = useLang()
 
 const block = computed(() => (props.page.columns?.main || []).find((e: any) => e.type === 'text') || {})
 const title = computed(() => block.value.headline || props.page.title)
@@ -32,9 +33,9 @@ function jump(slug: string, e: Event) {
   <div class="hsl">
     <section class="hsl__head">
       <div class="hsl__wrap">
-        <p class="hsl__eyebrow">{{ eyebrow || 'Rechtliches' }}</p>
+        <p class="hsl__eyebrow">{{ eyebrow || t('Über uns', 'About us') }}</p>
         <h1 class="hsl__h1">{{ title }}</h1>
-        <nav v-if="sections.filter(s => s.heading).length > 1" class="hsl__toc" aria-label="Inhalt">
+        <nav v-if="sections.filter(s => s.heading).length > 1" class="hsl__toc" :aria-label="t('Inhalt', 'Contents')">
           <a v-for="s in sections.filter(x => x.heading)" :key="s.slug" :href="`#${s.slug}`" @click="jump(s.slug, $event)">{{ s.heading }}</a>
         </nav>
       </div>

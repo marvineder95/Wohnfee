@@ -29,20 +29,24 @@ export default defineEventHandler(async (event) => {
 
   if (website) return { ok: true } // Bot — still erschlagen, aber Eintrag verwerfen
 
+  // Fehlermeldungen in der Sprache des Formulars
+  const en = body?.lang === 'en'
+  const msg = (de: string, enText: string) => (en ? enText : de)
+
   if (!name || name.length > 128) {
-    throw createError({ statusCode: 400, statusMessage: 'Bitte geben Sie Ihren Namen an.' })
+    throw createError({ statusCode: 400, statusMessage: msg('Bitte geben Sie Ihren Namen an.', 'Please enter your name.') })
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 190) {
-    throw createError({ statusCode: 400, statusMessage: 'Bitte geben Sie eine gültige E-Mail-Adresse an.' })
+    throw createError({ statusCode: 400, statusMessage: msg('Bitte geben Sie eine gültige E-Mail-Adresse an.', 'Please enter a valid e-mail address.') })
   }
   if (phone.length > 64) {
-    throw createError({ statusCode: 400, statusMessage: 'Telefonnummer ist zu lang.' })
+    throw createError({ statusCode: 400, statusMessage: msg('Telefonnummer ist zu lang.', 'The phone number is too long.') })
   }
   if (!message || message.length > 5000) {
-    throw createError({ statusCode: 400, statusMessage: 'Bitte geben Sie eine Nachricht ein (max. 5000 Zeichen).' })
+    throw createError({ statusCode: 400, statusMessage: msg('Bitte geben Sie eine Nachricht ein (max. 5000 Zeichen).', 'Please enter a message (max. 5000 characters).') })
   }
   if (!body?.privacy) {
-    throw createError({ statusCode: 400, statusMessage: 'Bitte bestätigen Sie die Datenschutzerklärung.' })
+    throw createError({ statusCode: 400, statusMessage: msg('Bitte bestätigen Sie die Datenschutzerklärung.', 'Please confirm the privacy policy.') })
   }
 
   const ip = getRequestIP(event, { xForwardedFor: true }) || 'unbekannt'
@@ -56,7 +60,7 @@ export default defineEventHandler(async (event) => {
     { ip: ipHash }
   ).catch(() => null)
   if (recent) {
-    throw createError({ statusCode: 429, statusMessage: 'Bitte warten Sie einen Moment, bevor Sie erneut senden.' })
+    throw createError({ statusCode: 429, statusMessage: msg('Bitte warten Sie einen Moment, bevor Sie erneut senden.', 'Please wait a moment before sending again.') })
   }
 
   const subject = SUBJECTS[subjectKey] || SUBJECTS.allgemein

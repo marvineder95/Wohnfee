@@ -4,6 +4,7 @@
 // html = Antwort, category = Rubrik). Live-Suche, Rubriken-Navigation,
 // Deep-Links (#faq-n) und FAQPage-Strukturdaten für Google.
 const props = defineProps<{ page: any }>()
+const { t, lp } = useLang()
 
 const els = computed<any[]>(() => props.page.columns?.main || [])
 const title = computed(() => els.value.find(e => e.type === 'headline')?.headline || props.page.title)
@@ -25,15 +26,15 @@ const filtered = computed(() => {
 const categories = computed(() => {
   const order: string[] = []
   for (const i of items.value) {
-    const c = i.category || 'Allgemein'
+    const c = i.category || t('Allgemein', 'General')
     if (!order.includes(c)) order.push(c)
   }
   return order
 })
 const groups = computed(() => categories.value
-  .map(c => ({ name: c, slug: 'rubrik-' + norm(c).replace(/[^a-z0-9]+/g, '-'), items: filtered.value.filter(i => (i.category || 'Allgemein') === c) }))
+  .map(c => ({ name: c, slug: 'rubrik-' + norm(c).replace(/[^a-z0-9]+/g, '-'), items: filtered.value.filter(i => (i.category || t('Allgemein', 'General')) === c) }))
   .filter(g => g.items.length))
-const countFor = (c: string) => filtered.value.filter(i => (i.category || 'Allgemein') === c).length
+const countFor = (c: string) => filtered.value.filter(i => (i.category || t('Allgemein', 'General')) === c).length
 
 // ── Akkordeon ──
 const open = ref<Set<string>>(new Set(items.value[0] ? [items.value[0].id] : []))
@@ -133,19 +134,19 @@ useHead(() => ({
                sizes="xs:100vw sm:100vw md:100vw lg:100vw xl:100vw xxl:1600px 2xl:1920px"
                loading="eager" fetchpriority="high" />
       <div class="hsf__inside">
-        <NuxtLink to="/team.html" class="hsf__eyebrow">
+        <NuxtLink :to="lp('/team.html')" class="hsf__eyebrow">
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
-          Über uns
+          {{ t('Über uns', 'About us') }}
         </NuxtLink>
         <h1 class="hsf__h1">{{ title }}</h1>
         <p class="hsf__lead">
-          Alles Wichtige zu Ablauf, Kosten und Leistungen – kurz und klar beantwortet.
+          {{ t('Alles Wichtige zu Ablauf, Kosten und Leistungen – kurz und klar beantwortet.', 'Everything you need to know about process, costs and services – answered briefly and clearly.') }}
         </p>
         <label class="hsf__search">
           <WfIcon name="search" :size="20" />
-          <input v-model="query" type="search" placeholder="Frage suchen, z. B. „Kosten“ oder „Dauer“"
-                 aria-label="FAQ durchsuchen" @keydown.enter.prevent="scrollToFaq">
-          <button v-if="query" type="button" class="hsf__clear" aria-label="Suche löschen" @click="query = ''">×</button>
+          <input v-model="query" type="search" :placeholder="t('Frage suchen, z. B. „Kosten“ oder „Dauer“', 'Search questions, e.g. “costs” or “duration”')"
+                 :aria-label="t('FAQ durchsuchen', 'Search FAQ')" @keydown.enter.prevent="scrollToFaq">
+          <button v-if="query" type="button" class="hsf__clear" :aria-label="t('Suche löschen', 'Clear search')" @click="query = ''">×</button>
         </label>
         <ul class="hsf__chips">
           <li v-for="c in categories" :key="c">
@@ -155,7 +156,7 @@ useHead(() => ({
         </ul>
       </div>
       <a href="#fragen" class="hsf__cue" @click="scrollToFaq">
-        {{ items.length }} Antworten
+        {{ items.length }} {{ t('Antworten', 'answers') }}
         <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span>
       </a>
     </section>
@@ -164,8 +165,8 @@ useHead(() => ({
     <section id="fragen" class="hsf__body">
       <div class="hsf__wrap hsf__layout">
         <aside class="hsf__side">
-          <p class="hsf__sidelabel">Themen</p>
-          <nav aria-label="FAQ-Themen">
+          <p class="hsf__sidelabel">{{ t('Themen', 'Topics') }}</p>
+          <nav :aria-label="t('FAQ-Themen', 'FAQ topics')">
             <a v-for="c in categories" :key="c"
                :href="'#rubrik-' + norm(c).replace(/[^a-z0-9]+/g, '-')"
                :class="{ 'is-active': activeCat === 'rubrik-' + norm(c).replace(/[^a-z0-9]+/g, '-'), 'is-empty': !countFor(c) }"
@@ -174,7 +175,7 @@ useHead(() => ({
             </a>
           </nav>
           <div class="hsf__sidecta">
-            <p>Noch Fragen?</p>
+            <p>{{ t('Noch Fragen?', 'Any questions?') }}</p>
             <a href="tel:+436769202236">+43 676 9202236</a>
             <a href="mailto:office@wohnfee.at">office@wohnfee.at</a>
           </div>
@@ -182,7 +183,7 @@ useHead(() => ({
 
         <div class="hsf__main">
           <p v-if="query.trim()" class="hsf__result">
-            <strong>{{ filtered.length }}</strong> {{ filtered.length === 1 ? 'Treffer' : 'Treffer' }} für „{{ query.trim() }}“
+            <strong>{{ filtered.length }}</strong> {{ t(`Treffer für „${query.trim()}“`, `${filtered.length === 1 ? 'result' : 'results'} for “${query.trim()}”`) }}
           </p>
 
           <div v-for="g in groups" :id="g.slug" :key="g.slug" class="hsf__group rv">
@@ -205,8 +206,8 @@ useHead(() => ({
           </div>
 
           <div v-if="!filtered.length" class="hsf__empty">
-            <p>Zu „{{ query.trim() }}“ haben wir leider keine Antwort gefunden.</p>
-            <button type="button" class="hsf__btn hsf__btn--ghost" @click="query = ''">Suche zurücksetzen</button>
+            <p>{{ t(`Zu „${query.trim()}“ haben wir leider keine Antwort gefunden.`, `Unfortunately we couldn't find an answer for “${query.trim()}”.`) }}</p>
+            <button type="button" class="hsf__btn hsf__btn--ghost" @click="query = ''">{{ t('Suche zurücksetzen', 'Reset search') }}</button>
           </div>
         </div>
       </div>
@@ -217,14 +218,14 @@ useHead(() => ({
       <div class="hsf__wrap">
         <div class="hsf__cbox rv">
           <div>
-            <p class="hsf__eyebrow hsf__eyebrow--light">Persönliche Beratung</p>
-            <h2 class="hsf__h2 hsf__h2--light">Ihre Frage war nicht dabei?</h2>
-            <p class="hsf__ctext">Wir beraten Sie gerne persönlich – telefonisch, per E-Mail oder direkt bei Ihnen vor Ort.</p>
+            <p class="hsf__eyebrow hsf__eyebrow--light">{{ t('Persönliche Beratung', 'Personal advice') }}</p>
+            <h2 class="hsf__h2 hsf__h2--light">{{ t('Ihre Frage war nicht dabei?', 'Didn’t find your question?') }}</h2>
+            <p class="hsf__ctext">{{ t('Wir beraten Sie gerne persönlich – telefonisch, per E-Mail oder direkt bei Ihnen vor Ort.', 'We are happy to advise you personally – by phone, by e-mail or directly on site.') }}</p>
           </div>
           <div class="hsf__cactions">
             <a href="tel:+436769202236" class="hsf__cline"><WfIcon name="phone" :size="18" />+43 676 9202236</a>
             <a href="mailto:office@wohnfee.at" class="hsf__cline"><WfIcon name="mail" :size="18" />office@wohnfee.at</a>
-            <NuxtLink to="/kontakt.html" class="hsf__btn hsf__btn--light">Kontakt aufnehmen</NuxtLink>
+            <NuxtLink :to="lp('/kontakt.html')" class="hsf__btn hsf__btn--light">{{ t('Kontakt aufnehmen', 'Get in touch') }}</NuxtLink>
           </div>
         </div>
       </div>
