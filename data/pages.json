@@ -349,77 +349,6 @@
        "html": "<h2><span class=\"icon\">  </span> Kurze<br>Verkaufszeit</h2>\n<p>Wenn Ihre InteressentInnen sich bei der Besichtigung wie zuhause fühlen, ist die Wohnung schnell verkauft.</p>"
       }
      ]
-    },
-    {
-     "type": "article",
-     "elements": [
-      {
-       "id": "16",
-       "type": "headline",
-       "headline": "Erwecken Sie Ihre Immobilie aus dem Dornröschenschlaf.",
-       "headlineUnit": "h1",
-       "cssClass": "no-flex"
-      },
-      {
-       "type": "wrapper",
-       "cssClass": "flex projekte",
-       "id": "22",
-       "headline": null,
-       "headlineUnit": "h2",
-       "children": [
-        {
-         "id": "17",
-         "type": "text",
-         "headline": "",
-         "headlineUnit": "h2",
-         "cssClass": "",
-         "html": "<h2><a href=\"/fuer-bautraeger-2.html\">Bauträger</a></h2>\n<p>In nur einem Tag verwandeln wir Ihre leere Musterwohnung in ein gemütliches Heim.</p>",
-         "src": "files/wohnfee/bilder/zielgruppen/BAUTRAEGER.jpg",
-         "alt": "Link zu Bauträger-Projekten",
-         "title": null,
-         "caption": "Mehr erfahren",
-         "floating": "above",
-         "size": null,
-         "fullsize": false,
-         "link": "/fuer-bautraeger-2.html"
-        },
-        {
-         "id": "18",
-         "type": "text",
-         "headline": "",
-         "headlineUnit": "h2",
-         "cssClass": "",
-         "html": "<h2><a href=\"/fuer-makler.html\">Makler</a></h2>\n<p>WOHNFEE Home Staging macht das volle Potential Ihrer Immobilie sichtbar.</p>",
-         "src": "files/wohnfee/bilder/zielgruppen/MAKLER.jpg",
-         "alt": "Link zu Makler-Projekten",
-         "title": null,
-         "caption": "Mehr erfahren",
-         "floating": "above",
-         "size": null,
-         "fullsize": false,
-         "link": "/fuer-makler.html"
-        },
-        {
-         "id": "19",
-         "type": "text",
-         "headline": "",
-         "headlineUnit": "h2",
-         "cssClass": "",
-         "html": "<h2><a href=\"/fuer-privatpersonen-2.html\">Privatpersonen</a></h2>\n<p>Ob Staging zum Verkauf oder Redesign Ihrer Räume - wir bringen das gewisse Etwas.</p>",
-         "src": "files/wohnfee/bilder/zielgruppen/REDESIGN.jpg",
-         "alt": "Link zu Privat-Projekten",
-         "title": null,
-         "caption": "Mehr erfahren",
-         "floating": "above",
-         "size": null,
-         "fullsize": false,
-         "link": "/fuer-privatpersonen-2.html"
-        }
-       ]
-      }
-     ],
-     "id": "50",
-     "cssClass": "half-grey thirds"
     }
    ],
    "slider": [
@@ -852,7 +781,7 @@
   "title": "Impressum",
   "alias": "impressum",
   "pageTitle": "",
-  "description": null,
+  "description": "Impressum der Eder & Steiner GmbH – Marke WOHNFEE: Home Staging, Furniture Leasing & Redesign.",
   "robots": "index,follow",
   "hide": false,
   "parent": "8",
@@ -864,7 +793,7 @@
      "headline": "Impressum",
      "headlineUnit": "h1",
      "cssClass": "",
-     "html": "<h2>Offenlegung gemäß § 25 Abs 5 MedienG</h2>\n<dl>\n<dt>Firmenwortlaut</dt>\n<dd>WOHN.FEE GmbH</dd>\n<dt>Unternehmens­gegenstand</dt>\n<dd>Lebensraum-Consulting, Handel mit Möbeln und Raumausstattungswaren</dd>\n<dt>UID</dt>\n<dd>ATU78831249</dd>\n<dt>Firmenbuchgericht</dt>\n<dd>Handelsgericht Wien</dd>\n<dt>Firmensitz</dt>\n<dd>Heumühlgasse 12/4, 1040 Wien, ÖSTERREICH</dd>\n<dt>Telefon</dt>\n<dd>+43 676 9202236</dd>\n<dt>Fax</dt>\n<dd>k.A.</dd>\n<dt>E-Mail</dt>\n<dd><a href=\"mailto:office@wohnfee.at\">office@wohnfee.at</a></dd>\n<dt>Website</dt>\n<dd><a href=\"https://www.wohnfee.at/\">www.wohnfee.at</a></dd>\n<dt>Mitgliedschaften bei der WK-Organisation</dt>\n<dd>Mitglied der Wirtschaftskammer Wien</dd>\n<dt>Anwendbare Rechtsvorschriften und Zugang dazu</dt>\n<dd><a href=\"http://www.ris.bka.gv.at/\">Gewerbeordnung</a></dd>\n<dt>Aufsichtsbehörde, Gewerbebehörde</dt>\n<dd>Magistratisches Bezirksamt des IX. Bezirkes</dd>\n<dt>Berufsbezeichnung</dt>\n<dd>Home Staging Professional, Interior Designer</dd>\n<dt>Verleihungsstaat</dt>\n<dd>Österreich</dd>\n<dt>Handelsrechtliche Geschäftsführerin:</dt>\n<dd>Paola Moreira</dd>\n<dt>Erklärung über die grundlegende Richtung des Mediums</dt>\n<dd>Diese Website stellt Informationen zu Leistungen des Unternehmens dar.</dd>\n</dl>\n<h2>WKO-Link</h2>\n<p><a rel=\"noopener\" href=\"http://www.wkoecg.at/Web/Ecg.aspx?FirmaID=8f5322dd-8c38-467b-a1d5-2829080dae47\" target=\"_blank\"><img style=\"border: 0px none; display: block; margin-left: auto; margin-right: auto;\" src=\"http://www.wkoecg.at/Web/Library/img/ecg.gif\" alt=\"Informationen zu E-Commerce und Mediengesetz\"></a></p>"
+     "html": "<h2>Medieninhaber &amp; Herausgeber</h2>\n<p>Informationspflicht gemäß § 5 E-Commerce-Gesetz, § 14 Unternehmensgesetzbuch und Offenlegung gemäß § 25 Mediengesetz.</p>\n<dl>\n<dt>Firmenwortlaut</dt><dd>Eder &amp; Steiner GmbH</dd>\n<dt>Marke</dt><dd>WOHNFEE – Home Staging, Furniture Leasing &amp; Redesign</dd>\n<dt>Rechtsform</dt><dd>Gesellschaft mit beschränkter Haftung</dd>\n<dt>Firmensitz</dt><dd>Obersdorferstraße 5, 2201 Seyring, Österreich</dd>\n<dt>Firmenbuchnummer</dt><dd>FN 665860g</dd>\n<dt>Firmenbuchgericht</dt><dd>Landesgericht Korneuburg</dd>\n<dt>UID-Nummer</dt><dd>ATU82726169</dd>\n<dt>Unternehmenswebsite</dt><dd><a href=\"https://www.es-gmbh.at\" target=\"_blank\" rel=\"noopener\">www.es-gmbh.at</a></dd>\n</dl>\n<h2>Kontakt</h2>\n<dl>\n<dt>Telefon</dt><dd><a href=\"tel:+436769202236\">+43 676 9202236</a></dd>\n<dt>E-Mail</dt><dd><a href=\"mailto:office@wohnfee.at\">office@wohnfee.at</a></dd>\n<dt>Website</dt><dd><a href=\"https://www.wohnfee.at/\">www.wohnfee.at</a></dd>\n</dl>\n<h2>Gewerbe &amp; Aufsicht</h2>\n<dl>\n<dt>Gewerbeberechtigungen</dt><dd>Handelsgewerbe (mit Ausnahme der reglementierten Handelsgewerbe und Handelsagent)<br>Kleintransportgewerbe</dd>\n<dt>Gewerberechtlicher Geschäftsführer</dt><dd>Marvin Eder</dd>\n<dt>Gewerbebehörde</dt><dd>Bezirkshauptmannschaft Korneuburg</dd>\n<dt>Kammerzugehörigkeit</dt><dd>Mitglied der Wirtschaftskammer Niederösterreich</dd>\n<dt>Anwendbare Rechtsvorschriften</dt><dd>Gewerbeordnung, abrufbar unter <a href=\"https://www.ris.bka.gv.at/\" target=\"_blank\" rel=\"noopener\">www.ris.bka.gv.at</a></dd>\n<dt>Firmeninformationen</dt><dd><a href=\"https://firmen.wko.at/eder-und-steiner-gmbh/nieder%c3%b6sterreich/?firmaid=254dc21b-3a0c-48c1-825d-2b45e4d33159\" target=\"_blank\" rel=\"noopener\">Eintrag im WKO Firmen A–Z</a></dd>\n</dl>\n<h2>Blattlinie</h2>\n<p>Diese Website stellt Informationen zu den Leistungen des Unternehmens unter der Marke WOHNFEE dar – Home Staging, Furniture Leasing und Redesign.</p>\n<h2>Haftung &amp; Urheberrecht</h2>\n<p>Die Inhalte dieser Website wurden mit größter Sorgfalt erstellt. Für die Richtigkeit, Vollständigkeit und Aktualität der Inhalte können wir jedoch keine Gewähr übernehmen. Für Inhalte externer Links übernehmen wir keine Haftung; für den Inhalt der verlinkten Seiten sind ausschließlich deren Betreiber verantwortlich.</p>\n<p>Texte, Fotos und Grafiken dieser Website sind urheberrechtlich geschützt. Jede Verwendung außerhalb der Grenzen des Urheberrechts bedarf der vorherigen schriftlichen Zustimmung. © Eder &amp; Steiner GmbH – alle Rechte vorbehalten.</p>"
     }
    ]
   },
@@ -910,7 +839,7 @@
        "headline": "Office",
        "headlineUnit": "h2",
        "cssClass": "",
-       "html": "<p style=\"text-align: center;\">WOHNFEE GmbH<br>Heumühlgasse 12/4<br>1040 Wien <br>ÖSTERREICH</p>"
+       "html": "<p>Eder &amp; Steiner GmbH<br>Marke WOHNFEE<br>Obersdorferstraße 5<br>2201 Seyring<br>ÖSTERREICH</p>"
       },
       {
        "id": "707",
@@ -984,7 +913,7 @@
      "headline": "Ihre Rechte",
      "headlineUnit": "h2",
      "cssClass": "",
-     "html": "<p>Ihnen stehen grundsätzlich die Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerruf und Widerspruch zu. Wenn Sie glauben, dass die Verarbeitung Ihrer Daten gegen das Datenschutzrecht verstößt oder Ihre datenschutzrechtlichen Ansprüche sonst in einer Weise verletzt worden sind, können Sie sich bei der Aufsichtsbehörde beschweren. In Österreich ist dies die Datenschutzbehörde.</p>\n<p>Bitte nutzen Sie folgende Kontaktdaten für Rückfragen:</p>\n<p>WOHN.FEE GmbH<br>Heumühlgasse 12/4<br>1040 Wien<br>ÖSTERREICH</p>\n<p>Telefon:<br>+43 676 9202236<br>E-Mail:<br>office@wohnfee.at</p>"
+     "html": "<p>Ihnen stehen grundsätzlich die Rechte auf Auskunft, Berichtigung, Löschung, Einschränkung, Datenübertragbarkeit, Widerruf und Widerspruch zu. Wenn Sie glauben, dass die Verarbeitung Ihrer Daten gegen das Datenschutzrecht verstößt oder Ihre datenschutzrechtlichen Ansprüche sonst in einer Weise verletzt worden sind, können Sie sich bei der Aufsichtsbehörde beschweren. In Österreich ist dies die Datenschutzbehörde.</p>\n<p>Bitte nutzen Sie folgende Kontaktdaten für Rückfragen:</p>\n<p>Eder &amp; Steiner GmbH<br>Obersdorferstraße 5<br>2201 Seyring<br>ÖSTERREICH</p>\n<p>Telefon:<br>+43 676 9202236<br>E-Mail:<br>office@wohnfee.at</p>"
     },
     {
      "id": "496",
@@ -1056,7 +985,7 @@
      "headline": "Office",
      "headlineUnit": "h3",
      "cssClass": "",
-     "html": "<p>WOHN.FEE GmbH<br>Heumühlgasse 12/4<br>1040 Wien</p>"
+     "html": "<p>Eder &amp; Steiner GmbH<br>Obersdorferstraße 5<br>2201 Seyring</p>"
     },
     {
      "id": "14",
@@ -1475,7 +1404,7 @@
   "title": "FAQ",
   "alias": "faq",
   "pageTitle": "",
-  "description": null,
+  "description": "Antworten auf häufige Fragen zu Home Staging, Ablauf, Kosten, Furniture Leasing und Redesign – WOHNFEE, standortunabhängig dank eigener Spedition.",
   "robots": "index,follow",
   "hide": false,
   "parent": "3",
@@ -1484,7 +1413,7 @@
     {
      "id": "362",
      "type": "headline",
-     "headline": "FAQ",
+     "headline": "Häufige Fragen",
      "headlineUnit": "h1",
      "cssClass": ""
     },
@@ -1496,52 +1425,193 @@
      "cssClass": "",
      "children": [
       {
-       "id": "363",
+       "id": "faq-1",
        "type": "text",
-       "headline": "",
-       "headlineUnit": "h2",
+       "headline": "Was ist Home Staging?",
+       "headlineUnit": "h3",
        "cssClass": "",
+       "category": "Allgemein",
+       "html": "<p>Home Staging bereitet eine Immobilie gezielt auf den Verkauf oder die Vermietung vor. Wir betonen die Vorzüge der Räume, entwickeln ein Licht- und Farbkonzept, geben jedem Raum eine klare Funktion und ergänzen alles mit passendem Leihmobiliar, Teppichen, Accessoires und Beleuchtung.</p>\n<p>So können sich Interessentinnen und Interessenten bei der Besichtigung sofort vorstellen, dort zu wohnen.</p>"
+      },
+      {
+       "id": "faq-2",
+       "type": "text",
+       "headline": "Was bringt mir ein Home Staging?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Allgemein",
        "html": "<p>Auf den Punkt gebracht profitieren Verkäufer und Makler durch</p>\n<ul>\n<li>Perfektes Bild- oder auch Videomaterial für die Bewerbung</li>\n<li>Weniger Besichtigungstermine</li>\n<li>Eine um bis zu 50 % kürzere Verkaufszeit</li>\n<li>Den bestmöglichen Verkaufspreis</li>\n<li>Zufriedene Kunden</li>\n</ul>"
       },
       {
-       "id": "364",
+       "id": "faq-3",
        "type": "text",
-       "headline": "",
-       "headlineUnit": "h2",
+       "headline": "Wo ist WOHNFEE im Einsatz?",
+       "headlineUnit": "h3",
        "cssClass": "",
-       "html": "<p>Das <span class=\"wohnfee-light\">WOHN.FEE</span> Team benötigt von der Besichtigung der Immobilie bis zur Umsetzung – je nach Größe der Immobilie – 1-2 Wochen. Das eigentliche Staging wird an einem Tag umgesetzt – inkl. Profifotos oder -video.</p>"
+       "category": "Allgemein",
+       "html": "<p>Wir sind <strong>standortunabhängig</strong> für Sie da: Mit unserer <strong>eigenen Spedition</strong> liefern, montieren und holen wir flexibel dort ab, wo Ihre Immobilie steht. Seit 2011 inszenieren wir Immobilien in ganz unterschiedlichen Größen und Stilrichtungen.</p>"
       },
       {
-       "id": "365",
+       "id": "faq-4",
        "type": "text",
-       "headline": "",
-       "headlineUnit": "h2",
+       "headline": "Lohnt sich Home Staging auch für bewohnte oder möblierte Immobilien?",
+       "headlineUnit": "h3",
        "cssClass": "",
-       "html": "<p>Die <span class=\"wohnfee-light\">WOHN.FEE</span> erstellt für jede Immobilie ein individuelles Angebot je nach Zielgruppe und Leihdauer. Unsere Leistung umfasst die Konzeption, die Möbelauswahl, die Organisation der Transporte und der Handwerker sowie das Staging vor Ort.</p>\n<p><a class=\"abutton\" href=\"mailto:office@wohnfee.at\">Fragen Sie uns!</a></p>"
+       "category": "Allgemein",
+       "html": "<p>Ja. Bei möblierten Objekten ist der individuelle Stil der aktuellen Besitzer oft zu stark präsent. Wir „neutralisieren“ durch gezielte Reduktion persönlicher Dinge und ergänzen mit passendem Leihmobiliar, Accessoires und Beleuchtung – so spricht die Immobilie eine möglichst breite Zielgruppe an.</p>"
       },
       {
-       "id": "366",
+       "id": "faq-5",
        "type": "text",
-       "headline": "",
-       "headlineUnit": "h2",
+       "headline": "Was ist der Unterschied zu einem virtuellen Staging?",
+       "headlineUnit": "h3",
        "cssClass": "",
-       "html": "<p>Die Möbel, Leuchten und Accessoires bleiben während dem gesamten Vermarktungszeitraum im Objekt. Das ist eben der große Unterschied zu einer Visualisierung – das haptische Wohngefühl erleben!</p>"
+       "category": "Allgemein",
+       "html": "<p>Wenn ein Objekt noch in Planung ist, kann ein virtuelles Staging sehr hilfreich sein. Vorhandene Immobilien „live“ zu stagen bringt aber das haptische Erleben bei der Besichtigung: Man setzt sich aufs Sofa oder zum Esstisch, die Räume hallen nicht mehr, es ist gemütlich.</p>\n<p>Beim virtuellen Staging sehen Interessenten zwar schöne Bilder – die Besichtigung findet dann aber in einer leeren Immobilie statt. Ein WOHNFEE-Kunde hat es auf den Punkt gebracht: <em>Ein Konzert im Fernsehen kann man auch nicht mit einem Live-Konzert vergleichen!</em></p>"
       },
       {
-       "id": "367",
+       "id": "faq-6",
        "type": "text",
-       "headline": "",
-       "headlineUnit": "h2",
+       "headline": "Wie läuft ein Home Staging ab?",
+       "headlineUnit": "h3",
        "cssClass": "",
-       "html": "<p>Ein zu billiges Staging, das nicht der Zielgruppe entspricht, kann Nachteile für den Verkauf/ die Vermietung haben.</p>\n<p>Die <span class=\"wohnfee-light\">WOHN.FEE</span> plant passend zur Zielgruppe Möbel, Beleuchtung, Teppiche und Accessoires – hier werden pro Objekt je nach Größe zwischen 100 und 200 Teile angeliefert. Das erzielt natürlich eine andere Wirkung als „ein bisschen Dekoration“.</p>\n<p>Achten Sie daher bei Angeboten auf eine möglichst detaillierte Beschreibung der Ausstattung.</p>"
+       "category": "Ablauf & Dauer",
+       "html": "<ol>\n<li><strong>Erstkontakt:</strong> Sie senden uns Grundriss, einige Fotos und die Adresse.</li>\n<li><strong>Besichtigung:</strong> Nach einem persönlichen Gespräch besichtigen wir das Objekt und geben eine erste Kostenschätzung ab.</li>\n<li><strong>Angebot:</strong> Sie erhalten ein detailliertes Angebot mit Kostenübersicht und möglichem Staging-Termin.</li>\n<li><strong>Staging:</strong> Wir stagen die gesamte Immobilie an nur einem Tag.</li>\n<li><strong>Vermarktung:</strong> Möbel und Accessoires bleiben während der Vermarktung vor Ort.</li>\n<li><strong>Abholung:</strong> Ist ein Käufer oder Mieter gefunden, holen wir alles wieder ab.</li>\n</ol>\n<p><a href=\"/home-staging.html\">Mehr zum Ablauf</a></p>"
       },
       {
-       "id": "368",
+       "id": "faq-7",
        "type": "text",
-       "headline": "",
-       "headlineUnit": "h2",
+       "headline": "Wie schnell kann das Staging umgesetzt werden?",
+       "headlineUnit": "h3",
        "cssClass": "",
-       "html": "<p>Wenn ein Objekt noch in Planung ist, kann ein virtuelles Staging sehr hilfreich sein.</p>\n<p>Vorhandende Immobilien „life“ zu stagen bringt das haptische Erleben bei der Besichtigung. Man setzt sich auf´s Sofa oder zum Essitsch, die Räume hallen nicht mehr, es ist gemütlich.</p>\n<p>Ein <span class=\"wohnfee-light\">WOHN.FEE</span><span class=\"wohnfee\">-</span>Kunde hat es auf den Punkt gebracht: <br>Ein Konzert im Fernsehen kann man auch nicht mit einem Live-Konzert vergleichen!</p>"
+       "category": "Ablauf & Dauer",
+       "html": "<p>Von der Besichtigung bis zur Umsetzung benötigen wir – je nach Größe der Immobilie – <strong>1–2 Wochen</strong>. Das eigentliche Staging wird an <strong>einem Tag</strong> umgesetzt. Die Profi-Fotoaufnahmen – gern auch ein individuelles Video – stehen bereits am nächsten Tag für die Vermarktung bereit.</p>"
+      },
+      {
+       "id": "faq-8",
+       "type": "text",
+       "headline": "Welche Unterlagen benötigen Sie von mir?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Ablauf & Dauer",
+       "html": "<p>Für eine erste Einschätzung genügen der <strong>Grundriss</strong>, <strong>einige Fotos</strong> der Räume und die <strong>Adresse</strong> der Immobilie. Alles Weitere klären wir im persönlichen Gespräch und bei der Besichtigung.</p>"
+      },
+      {
+       "id": "faq-9",
+       "type": "text",
+       "headline": "Wie lange bleiben die Möbel in der Immobilie?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Ablauf & Dauer",
+       "html": "<p>Die Möbel, Leuchten und Accessoires bleiben während des gesamten Vermarktungszeitraums im Objekt. Unsere Paketpreise sind auf eine <strong>Leihdauer von 3 Monaten</strong> ausgelegt. Das ist der große Unterschied zu einer Visualisierung – das Wohngefühl ist bei jeder Besichtigung live erlebbar.</p>"
+      },
+      {
+       "id": "faq-10",
+       "type": "text",
+       "headline": "Was passiert nach dem Verkauf oder der Vermietung?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Ablauf & Dauer",
+       "html": "<p>Ist ein Käufer oder Mieter gefunden, genügt ein Anruf: Wir demontieren alle Möbel, Leuchten und Accessoires und holen sie wieder ab.</p>"
+      },
+      {
+       "id": "faq-11",
+       "type": "text",
+       "headline": "Was kostet ein Home Staging?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Kosten & Leistungen",
+       "html": "<p>In der Regel betragen die Kosten für ein Home Staging inkl. aller Leihmöbel und Accessoires <strong>1–2 % vom Verkaufspreis</strong> – je nach Lage, Standard und Zustand der Immobilie. Für Wohneinheiten bis 50, 70 und 100 m² gibt es Pakete mit „ab“-Preisen; das endgültige Angebot erstellen wir individuell für Ihr Objekt.</p>\n<p><a href=\"/home-staging/preise.html\">Zu den Preispaketen</a></p>"
+      },
+      {
+       "id": "faq-12",
+       "type": "text",
+       "headline": "Welche Leistungen sind im Preis enthalten?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Kosten & Leistungen",
+       "html": "<p>Unsere Leistung umfasst die <strong>Konzeption</strong>, die <strong>Möbelauswahl</strong>, die <strong>Organisation der Transporte und der Handwerker</strong> sowie das <strong>Staging vor Ort</strong>. Für jede Immobilie erstellen wir ein individuelles Angebot je nach Zielgruppe und Leihdauer.</p>\n<p>Nicht enthalten ist die Lampenmontage. Alle Preise verstehen sich zzgl. 20 % USt.</p>"
+      },
+      {
+       "id": "faq-13",
+       "type": "text",
+       "headline": "Wie erfolgt die Bezahlung?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Kosten & Leistungen",
+       "html": "<p>Wir verrechnen eine <strong>Anzahlung von 50 %</strong>, die Restzahlung erfolgt <strong>nach dem Staging</strong>. Alle Preise verstehen sich zzgl. 20 % USt.</p>"
+      },
+      {
+       "id": "faq-14",
+       "type": "text",
+       "headline": "Werden auch die Lampen montiert?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Kosten & Leistungen",
+       "html": "<p>Die Lampenmontage ist in unseren Preisen nicht enthalten. Sie ist von dem/der Auftraggebenden selbst durchzuführen bzw. individuell mit uns zu vereinbaren.</p>"
+      },
+      {
+       "id": "faq-15",
+       "type": "text",
+       "headline": "Sind das echte Möbel?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Kosten & Leistungen",
+       "html": "<p>Ja. Jede Immobilie wird mit einem individuellen Mix aus echten Möbeln, Teppichen und Accessoires ausgestattet, der zur Zielgruppe passt. Jeder Lichtauslass wird mit Leuchten bestückt.</p>\n<p>Karton-Möbel gibt es bei uns nur in der Küche (Dummyküche, dem vorhandenen Platz angepasst). Im Schlafzimmer setzen wir ein Dummybett mit Tagesdecke, Kissen, Plaid und Bettvolant ein.</p>"
+      },
+      {
+       "id": "faq-16",
+       "type": "text",
+       "headline": "Warum nicht einfach ein günstigeres Staging?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Kosten & Leistungen",
+       "html": "<p>Ein zu billiges Staging, das nicht der Zielgruppe entspricht, kann Nachteile für den Verkauf oder die Vermietung haben.</p>\n<p>WOHNFEE plant passend zur Zielgruppe Möbel, Beleuchtung, Teppiche und Accessoires – pro Objekt liefern wir durchschnittlich 80 bis 150 Teile an. Das erzielt natürlich eine andere Wirkung als „ein bisschen Dekoration“. Achten Sie bei Angeboten daher auf eine möglichst detaillierte Beschreibung der Ausstattung.</p>"
+      },
+      {
+       "id": "faq-17",
+       "type": "text",
+       "headline": "Wer bezahlt das Home Staging, wenn ich Makler:in bin?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Für Makler & Bauträger",
+       "html": "<p>Die Finanzierung eines Home Stagings erfolgt in der Regel über den <strong>Eigentümer der Immobilie</strong>. Sie gehen als Makler:in also kein finanzielles Risiko ein. Kümmern Sie sich um den Verkauf, wir kümmern uns um den Rest!</p>\n<p><a href=\"/fuer-makler.html\">Home Staging für Makler</a></p>"
+      },
+      {
+       "id": "faq-18",
+       "type": "text",
+       "headline": "Richtet ihr auch Musterwohnungen und Verkaufsräume ein?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Für Makler & Bauträger",
+       "html": "<p>Ja. Wir richten Musterwohnungen in Rohbauten und fertigen Wohnanlagen ein und haben sogar schon einen Baucontainer zum Verkaufsraum und Büro umgestaltet. So erleben Ihre Kunden schon in der Bauphase, wie sich Größe und Funktion der Räume anfühlen.</p>\n<p><a href=\"/fuer-bautraeger-2.html\">Home Staging für Bauträger</a></p>"
+      },
+      {
+       "id": "faq-19",
+       "type": "text",
+       "headline": "Hilft Home Staging auch bei schwierigen Grundrissen?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Für Makler & Bauträger",
+       "html": "<p>Gerade bei Immobilien mit schwierigen Grundrissen oder vielen Dachschrägen haben wir besonders gute Erfahrungen gemacht. In leeren Räumen ist es oft schwierig, die Proportionen richtig einzuschätzen – eingerichtet werden Größe und Funktion sofort verständlich.</p>"
+      },
+      {
+       "id": "faq-20",
+       "type": "text",
+       "headline": "Kann ich Möbel auch unabhängig vom Staging mieten?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Furniture Leasing & Redesign",
+       "html": "<p>Ja – mit <strong>Furniture Leasing</strong> mieten Sie hochwertige Möbel und Accessoires flexibel von <strong>1 Monat bis zu mehreren Jahren</strong>, etwa für temporäre Wohnlösungen. Je länger die Mietdauer, desto günstiger die Konditionen. Wir liefern, montieren und holen wieder ab; die einmalige Liefer-/Abholgebühr wird im Angebot ausgewiesen.</p>\n<p><a href=\"/furniture-leasing.html\">Zum Furniture Leasing</a></p>"
+      },
+      {
+       "id": "faq-21",
+       "type": "text",
+       "headline": "Was ist ein Redesign?",
+       "headlineUnit": "h3",
+       "cssClass": "",
+       "category": "Furniture Leasing & Redesign",
+       "html": "<p>Unser Redesign richtet sich an alle, die ihr eigenes Zuhause verändern möchten. Wir analysieren die Räume, erstellen ein Moodboard und ein individuelles Gestaltungskonzept mit Farben, Materialien, Beleuchtung, Möbeln und Accessoires – gerne auch unter Einbeziehung vorhandener Möbelstücke. Umgesetzt wird auf einmal oder Schritt für Schritt; sind Umbauten nötig, arbeiten wir mit ausgesuchten Architekturbüros zusammen.</p>\n<p><a href=\"/redesign.html\">Mehr zum Redesign</a></p>"
       }
      ]
     }

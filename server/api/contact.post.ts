@@ -30,19 +30,19 @@ export default defineEventHandler(async (event) => {
   if (website) return { ok: true } // Bot — still erschlagen, aber Eintrag verwerfen
 
   if (!name || name.length > 128) {
-    throw createError({ statusCode: 400, statusMessage: 'Bitte gib deinen Namen an.' })
+    throw createError({ statusCode: 400, statusMessage: 'Bitte geben Sie Ihren Namen an.' })
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email) || email.length > 190) {
-    throw createError({ statusCode: 400, statusMessage: 'Bitte gib eine gültige E-Mail-Adresse an.' })
+    throw createError({ statusCode: 400, statusMessage: 'Bitte geben Sie eine gültige E-Mail-Adresse an.' })
   }
   if (phone.length > 64) {
     throw createError({ statusCode: 400, statusMessage: 'Telefonnummer ist zu lang.' })
   }
   if (!message || message.length > 5000) {
-    throw createError({ statusCode: 400, statusMessage: 'Bitte gib eine Nachricht ein (max. 5000 Zeichen).' })
+    throw createError({ statusCode: 400, statusMessage: 'Bitte geben Sie eine Nachricht ein (max. 5000 Zeichen).' })
   }
   if (!body?.privacy) {
-    throw createError({ statusCode: 400, statusMessage: 'Bitte bestätige die Datenschutzerklärung.' })
+    throw createError({ statusCode: 400, statusMessage: 'Bitte bestätigen Sie die Datenschutzerklärung.' })
   }
 
   const ip = getRequestIP(event, { xForwardedFor: true }) || 'unbekannt'
@@ -56,7 +56,7 @@ export default defineEventHandler(async (event) => {
     { ip: ipHash }
   ).catch(() => null)
   if (recent) {
-    throw createError({ statusCode: 429, statusMessage: 'Bitte warte einen Moment, bevor du erneut sendest.' })
+    throw createError({ statusCode: 429, statusMessage: 'Bitte warten Sie einen Moment, bevor Sie erneut senden.' })
   }
 
   const subject = SUBJECTS[subjectKey] || SUBJECTS.allgemein

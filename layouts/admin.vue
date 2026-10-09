@@ -58,6 +58,7 @@ const NAV = [
   { to: '/admin/anfragen', label: 'Anfragen', icon: 'inbox', exact: false },
   { to: '/admin/mietanfragen', label: 'Mietanfragen', icon: 'bag', exact: false },
   { to: '/admin/newsletter', label: 'Newsletter', icon: 'mail', exact: false },
+  { to: '/admin/artikel', label: 'Blog-Artikel', icon: 'edit', exact: false },
   { to: '/admin/projekte', label: 'Projekte', icon: 'folder', exact: false },
   { to: '/admin/kalender', label: 'Kalender', icon: 'calendar', exact: false },
   { to: '/admin/angebote', label: 'Angebote', icon: 'file', exact: false },

@@ -365,6 +365,26 @@ CREATE TABLE IF NOT EXISTS newsletter_sends (
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   KEY idx_newsletter_sends_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  section VARCHAR(32) NOT NULL DEFAULT 'trends-tipps',
+  slug VARCHAR(190) NOT NULL,
+  title VARCHAR(190) NOT NULL,
+  teaser TEXT NULL,
+  body_html MEDIUMTEXT NULL,
+  cover_image VARCHAR(255) NULL,
+  cover_alt VARCHAR(190) NULL,
+  meta_description VARCHAR(300) NULL,
+  status ENUM('entwurf','veroeffentlicht') NOT NULL DEFAULT 'entwurf',
+  published_at DATETIME NULL,
+  author_name VARCHAR(128) NULL,
+  created_by INT UNSIGNED NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_blog_posts_section_slug (section, slug),
+  KEY idx_blog_posts_status_published (status, published_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 `
 
 // Spalten-Migrationen für bestehende Datenbanken (idempotent)

@@ -123,6 +123,17 @@ watch(open, (v) => {
   }
 })
 
+// Header bekommt beim Scrollen nur einen Schatten – Höhe/Größen bleiben konstant
+const scrolled = ref(false)
+const onScroll = () => { scrolled.value = window.scrollY > 8 }
+onMounted(() => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+})
+onBeforeUnmount(() => {
+  if (import.meta.client) window.removeEventListener('scroll', onScroll)
+})
+
 // ---------- Warenkorb-Icon (Furniture Leasing) ----------
 // Anzahl aus dem localStorage des RentalShops ('wf_rental_cart'); der Shop
 // feuert bei Änderungen das Event 'wf:cart-changed'.
@@ -156,7 +167,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <header id="header">
+  <header id="header" class="wfh" :class="{ 'is-scrolled': scrolled }">
     <div class="inside">
       <div id="logo" class="content-text media media--above">
         <figure>
@@ -168,12 +179,29 @@ onBeforeUnmount(() => {
           <p class="logo"><span class="subtag">since 2011</span></p>
         </div>
       </div>
-      <nav class="mod_navigation block" :aria-label="currentLang === 'en' ? 'Main navigation' : 'Hauptnavigation'">
+      <nav class="mod_navigation block wfh-nav" :aria-label="currentLang === 'en' ? 'Main navigation' : 'Hauptnavigation'">
         <a href="#skipNavigation1" class="invisible">Navigation überspringen</a>
         <ul class="level_1">
-          <li v-for="item in (nav as any).main" :key="item.route" :class="liClass(item, false)">
-            <strong v-if="item.route === dePath(route.path)" :class="liClass(item, false)">{{ titleFor(item) }}</strong>
-            <NuxtLink v-else :to="linkFor(item.route)" :title="titleFor(item)" :class="liClass(item, false)">{{ titleFor(item) }}</NuxtLink>
+          <li v-for="item in (nav as any).main" :key="item.route"
+              :class="[liClass(item, false), item.children?.length ? 'has-drop' : '']">
+            <strong v-if="item.route === dePath(route.path)" :class="liClass(item, false)">
+              {{ titleFor(item) }}
+              <svg v-if="item.children?.length" class="wfh-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </strong>
+            <NuxtLink v-else :to="linkFor(item.route)" :title="titleFor(item)" :class="liClass(item, false)">
+              {{ titleFor(item) }}
+              <svg v-if="item.children?.length" class="wfh-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+            </NuxtLink>
+            <div v-if="item.children?.length" class="wfh-drop">
+              <ul>
+                <li v-for="child in item.children" :key="child.route">
+                  <NuxtLink :to="linkFor(child.route)" :class="{ 'is-current': child.route === dePath(route.path) }">
+                    <span>{{ titleFor(child) }}</span>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
+                  </NuxtLink>
+                </li>
+              </ul>
+            </div>
           </li>
         </ul>
         <span id="skipNavigation1" class="invisible"></span>
@@ -195,6 +223,9 @@ onBeforeUnmount(() => {
         <NuxtLink v-if="enTarget" :to="enTarget" hreflang="en" lang="en" :class="{ 'is-active': currentLang === 'en' }" @click="setLangPref('en')">EN</NuxtLink>
         <span v-else class="is-active is-current" aria-current="true" lang="en">EN</span>
       </div>
+      <NuxtLink :to="linkFor('/kontakt.html')" class="wfh-cta">
+        {{ currentLang === 'en' ? 'Get in touch' : 'Beratung anfragen' }}
+      </NuxtLink>
       <div class="mod_mobile_menu block">
         <div id="mobile-menu-22-trigger" class="mobile_menu_trigger" :class="{ active: open }"
              @click="open = !open">
@@ -365,43 +396,102 @@ onBeforeUnmount(() => {
 #header .cartbtn:hover { color: #2f5d40; }
 #header .cartbtn svg { width: 1.55em; height: 1.55em; }
 
-/* Nav-Unterstreichung: dünne 1px-Linie in Dunkelgrün, die beim Hover
-   langsam von links nach rechts einfährt (scaleX). Der aktive Menüpunkt
-   (strong) und Trail-Einträge tragen sie permanent. Überschreibt die
-   dicke 0.35em-Border aus navigation.css. Gilt nur für die Desktop-Hauptnav
-   (.inside > nav), nicht für das mobile Aufklappmenü. */
-#header .inside > nav.mod_navigation > ul.level_1 > li > a,
-#header .inside > nav.mod_navigation > ul.level_1 > li > strong {
+/* ── Header-Entwurf „wfh" ─────────────────────────────
+   Heller, leicht transparenter Header mit Blur, Pill-Navigation in der
+   Grundschrift, Dropdowns für Unterseiten und grünem CTA rechts. */
+#header.wfh {
+  /* backdrop-filter erzeugt einen eigenen Stacking-Context – ohne z-index
+     würde das Untermenü (#submenu) über den Dropdowns liegen */
   position: relative;
-  border-bottom: 0;
-  /* symmetrisches Padding: Textzeile sitzt exakt auf der gemeinsamen
-     Mittelachse von Warenkorb-Icon und Language-Switch */
-  padding-top: .42em;
-  padding-bottom: .42em;
+  z-index: 2;
+  background: rgba(255, 255, 255, .86);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  border-bottom: 1px solid transparent;
+  transition: box-shadow .25s ease, border-color .25s ease, background .25s ease;
 }
-/* der 0.5em-Bottom-Margin aus navigation.css würde die Zeile nach oben
-   schieben – alle Header-Elemente teilen sich eine Mittelachse */
-#header .inside > nav.mod_navigation > ul.level_1 { margin-bottom: 0; }
-#header .inside > nav.mod_navigation > ul.level_1 > li > a::after,
-#header .inside > nav.mod_navigation > ul.level_1 > li > strong::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: .12em;
-  height: 1px;
-  background: #26492f;
-  transform: scaleX(0);
-  transform-origin: left center;
-  transition: transform .35s ease;
-  pointer-events: none;
+#header.wfh.is-scrolled {
+  background: rgba(255, 255, 255, .94);
+  border-bottom-color: #ece7da;
+  box-shadow: 0 8px 28px rgba(40, 35, 20, .07);
 }
-#header .inside > nav.mod_navigation > ul.level_1 > li:hover > a::after,
-#header .inside > nav.mod_navigation > ul.level_1 > li:active > a::after,
-#header .inside > nav.mod_navigation > ul.level_1 > li.active > strong::after,
-#header .inside > nav.mod_navigation > ul.level_1 > li.trail > a::after {
-  transform: scaleX(1);
+#header.wfh .inside { padding: .75rem 0 .85rem; }
+#header.wfh #logo img { width: 185px; }
+
+#header.wfh .wfh-nav { font-family: var(--font-family-01, 'Open Sans', sans-serif); overflow: visible; }
+#header.wfh .wfh-nav > ul.level_1 {
+  gap: .25em; margin: 0; padding-left: 0; align-items: center;
 }
+#header.wfh .wfh-nav > ul.level_1 > li { position: relative; font-size: 1em; word-spacing: 0; }
+#header.wfh .wfh-nav > ul.level_1 > li > a,
+#header.wfh .wfh-nav > ul.level_1 > li > strong {
+  display: inline-flex; align-items: center; gap: .35em;
+  padding: .55em 1em; border: 0; border-radius: 999px;
+  font-size: .93em; font-weight: 500; letter-spacing: .01em; color: #2b2b28;
+  transition: background .2s ease, color .2s ease;
+}
+#header.wfh .wfh-nav > ul.level_1 > li:hover > a,
+#header.wfh .wfh-nav > ul.level_1 > li:hover > strong,
+#header.wfh .wfh-nav > ul.level_1 > li:focus-within > a {
+  background: #f4f0e7; color: #1f1f1c;
+}
+#header.wfh .wfh-nav > ul.level_1 > li > strong,
+#header.wfh .wfh-nav > ul.level_1 > li.trail > a {
+  background: #eef3ee; color: #2f5d40; font-weight: 600;
+}
+#header.wfh .wfh-chev {
+  width: .85em; height: .85em; fill: none; stroke: currentColor; stroke-width: 2.2;
+  stroke-linecap: round; stroke-linejoin: round; opacity: .55; transition: transform .25s ease;
+}
+#header.wfh .wfh-nav li.has-drop:hover .wfh-chev,
+#header.wfh .wfh-nav li.has-drop:focus-within .wfh-chev { transform: rotate(180deg); }
+
+/* Dropdown */
+#header.wfh .wfh-drop {
+  position: absolute; top: 100%; left: 50%; z-index: 50;
+  padding-top: .7em; min-width: 250px;
+  opacity: 0; visibility: hidden; transform: translate(-50%, 8px);
+  transition: opacity .2s ease, transform .2s ease, visibility 0s linear .2s;
+}
+#header.wfh .wfh-nav li.has-drop:hover > .wfh-drop,
+#header.wfh .wfh-nav li.has-drop:focus-within > .wfh-drop {
+  opacity: 1; visibility: visible; transform: translate(-50%, 0);
+  transition: opacity .2s ease, transform .2s ease, visibility 0s;
+}
+#header.wfh .wfh-drop ul {
+  display: block; margin: 0; padding: .5em; gap: 0;
+  background: #fff; border: 1px solid #ece7da; border-radius: 16px;
+  box-shadow: 0 20px 44px rgba(40, 35, 20, .14);
+}
+#header.wfh .wfh-drop li { list-style: none; font-size: 1em; }
+#header.wfh .wfh-drop a {
+  display: flex; align-items: center; justify-content: space-between; gap: 1em;
+  padding: .65em .9em; border: 0; border-radius: 10px;
+  font-size: .9em; font-weight: 500; color: #2b2b28; white-space: nowrap;
+  transition: background .15s ease, color .15s ease;
+}
+#header.wfh .wfh-drop a svg {
+  width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+  opacity: 0; transform: translateX(-4px); transition: opacity .15s ease, transform .15s ease;
+}
+#header.wfh .wfh-drop a:hover { background: #f6f3ec; color: #2f5d40; }
+#header.wfh .wfh-drop a:hover svg { opacity: 1; transform: none; }
+#header.wfh .wfh-drop a.is-current { color: #2f5d40; font-weight: 600; background: #eef3ee; }
+
+/* Icon-Gruppe + CTA */
+#header.wfh .cartbtn { margin-left: 1.4rem; }
+#header.wfh .langswitch { margin-left: .8rem; font-size: .85em; }
+#header.wfh .wfh-cta {
+  flex-shrink: 0; align-self: center; margin-left: 1rem;
+  display: inline-flex; align-items: center; padding: .7em 1.35em; border-radius: 999px;
+  background: #2f5d40; color: #fff; text-decoration: none; white-space: nowrap;
+  font-family: var(--font-family-01, 'Open Sans', sans-serif); font-size: .85em; font-weight: 600;
+  box-shadow: 0 6px 16px rgba(47, 93, 64, .22);
+  transition: background .15s ease, transform .15s ease;
+}
+#header.wfh .wfh-cta:hover { background: #26492f; transform: translateY(-1px); }
+@media (max-width: 1180px) { #header.wfh .wfh-cta { display: none; } }
 
 #header .cartbtn__badge {
   position: absolute;

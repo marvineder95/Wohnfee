@@ -656,7 +656,7 @@
   "title": "Legal Notice",
   "alias": "en/impressum",
   "pageTitle": "",
-  "description": null,
+  "description": "Legal notice of Eder & Steiner GmbH – WOHNFEE brand: home staging, furniture leasing & redesign.",
   "robots": "index,follow",
   "hide": false,
   "parent": "8",
@@ -668,7 +668,7 @@
      "headline": "Legal Notice",
      "headlineUnit": "h1",
      "cssClass": "",
-     "html": "<h2>Disclosure pursuant to § 25 para 5 of the Austrian Media Act (MedienG)</h2>\n<dl>\n<dt>Company name</dt>\n<dd>WOHN.FEE GmbH</dd>\n<dt>Line of business</dt>\n<dd>Living space consulting, trade in furniture and interior furnishing goods</dd>\n<dt>VAT ID</dt>\n<dd>ATU78831249</dd>\n<dt>Companies Register Court</dt>\n<dd>Commercial Court of Vienna</dd>\n<dt>Registered office</dt>\n<dd>Heumühlgasse 12/4, 1040 Vienna, AUSTRIA</dd>\n<dt>Phone</dt>\n<dd>+43 676 9202236</dd>\n<dt>Fax</dt>\n<dd>n/a</dd>\n<dt>E-mail</dt>\n<dd><a href=\"mailto:office@wohnfee.at\">office@wohnfee.at</a></dd>\n<dt>Website</dt>\n<dd><a href=\"https://www.wohnfee.at/\">www.wohnfee.at</a></dd>\n<dt>Membership in the Austrian Federal Economic Chamber (WKO)</dt>\n<dd>Member of the Vienna Chamber of Commerce</dd>\n<dt>Applicable legal regulations and access to them</dt>\n<dd><a href=\"http://www.ris.bka.gv.at/\">Trade Regulation Act (GewO)</a></dd>\n<dt>Supervisory authority, trade authority</dt>\n<dd>Municipal District Office of the 9th district</dd>\n<dt>Professional title</dt>\n<dd>Home Staging Professional, Interior Designer</dd>\n<dt>State of award</dt>\n<dd>Austria</dd>\n<dt>Managing director under commercial law:</dt>\n<dd>Paola Moreira</dd>\n<dt>Statement on the fundamental direction of the medium</dt>\n<dd>This website provides information about the company's services.</dd>\n</dl>\n<h2>WKO link</h2>\n<p><a rel=\"noopener\" href=\"http://www.wkoecg.at/Web/Ecg.aspx?FirmaID=8f5322dd-8c38-467b-a1d5-2829080dae47\" target=\"_blank\"><img style=\"border: 0px none; display: block; margin-left: auto; margin-right: auto;\" src=\"http://www.wkoecg.at/Web/Library/img/ecg.gif\" alt=\"Information on E-Commerce and Media Law\"></a></p>"
+     "html": "<h2>Media owner &amp; publisher</h2>\n<p>Information pursuant to § 5 of the Austrian E-Commerce Act, § 14 of the Austrian Commercial Code and disclosure pursuant to § 25 of the Austrian Media Act.</p>\n<dl>\n<dt>Company name</dt><dd>Eder &amp; Steiner GmbH</dd>\n<dt>Brand</dt><dd>WOHNFEE – Home Staging, Furniture Leasing &amp; Redesign</dd>\n<dt>Legal form</dt><dd>Limited liability company (GmbH)</dd>\n<dt>Registered office</dt><dd>Obersdorferstraße 5, 2201 Seyring, Austria</dd>\n<dt>Company register number</dt><dd>FN 665860g</dd>\n<dt>Register court</dt><dd>Regional Court of Korneuburg</dd>\n<dt>VAT ID</dt><dd>ATU82726169</dd>\n<dt>Company website</dt><dd><a href=\"https://www.es-gmbh.at\" target=\"_blank\" rel=\"noopener\">www.es-gmbh.at</a></dd>\n</dl>\n<h2>Contact</h2>\n<dl>\n<dt>Phone</dt><dd><a href=\"tel:+436769202236\">+43 676 9202236</a></dd>\n<dt>E-mail</dt><dd><a href=\"mailto:office@wohnfee.at\">office@wohnfee.at</a></dd>\n<dt>Website</dt><dd><a href=\"https://www.wohnfee.at/\">www.wohnfee.at</a></dd>\n</dl>\n<h2>Trade licences &amp; supervision</h2>\n<dl>\n<dt>Trade licences</dt><dd>Trading (excluding regulated trades and commercial agents)<br>Small-scale goods transport</dd>\n<dt>Managing director under trade law</dt><dd>Marvin Eder</dd>\n<dt>Trade authority</dt><dd>District Authority of Korneuburg (Bezirkshauptmannschaft Korneuburg)</dd>\n<dt>Chamber membership</dt><dd>Member of the Lower Austrian Economic Chamber</dd>\n<dt>Applicable regulations</dt><dd>Austrian Trade Regulation Act (Gewerbeordnung), available at <a href=\"https://www.ris.bka.gv.at/\" target=\"_blank\" rel=\"noopener\">www.ris.bka.gv.at</a></dd>\n<dt>Company information</dt><dd><a href=\"https://firmen.wko.at/eder-und-steiner-gmbh/nieder%c3%b6sterreich/?firmaid=254dc21b-3a0c-48c1-825d-2b45e4d33159\" target=\"_blank\" rel=\"noopener\">Entry in the WKO company directory</a></dd>\n</dl>\n<h2>Editorial policy</h2>\n<p>This website provides information about the company's services under the WOHNFEE brand – home staging, furniture leasing and redesign.</p>\n<h2>Liability &amp; copyright</h2>\n<p>The content of this website has been created with the utmost care. However, we cannot guarantee that the content is correct, complete or up to date. We accept no liability for the content of external links; the operators of the linked pages are solely responsible for their content.</p>\n<p>Texts, photos and graphics on this website are protected by copyright. Any use beyond the limits of copyright law requires prior written consent. © Eder &amp; Steiner GmbH – all rights reserved.</p>"
     }
    ]
   },
@@ -715,7 +715,7 @@
        "headline": "Office",
        "headlineUnit": "h2",
        "cssClass": "",
-       "html": "<p style=\"text-align: center;\">WOHNFEE GmbH<br>Heumühlgasse 12/4<br>1040 Wien <br>ÖSTERREICH</p>"
+       "html": "<p>Eder &amp; Steiner GmbH<br>WOHNFEE brand<br>Obersdorferstraße 5<br>2201 Seyring<br>AUSTRIA</p>"
       },
       {
        "id": "707",
@@ -790,7 +790,7 @@
      "headline": "Your rights",
      "headlineUnit": "h2",
      "cssClass": "",
-     "html": "<p>You are basically entitled to the rights of access, rectification, erasure, restriction, data portability, withdrawal and objection. If you believe that the processing of your data violates data protection law or that your data protection rights have otherwise been infringed in any way, you can complain to the supervisory authority. In Austria, this is the Data Protection Authority.</p>\n<p>Please use the following contact details for queries:</p>\n<p>WOHN.FEE GmbH<br>Heumühlgasse 12/4<br>1040 Wien<br>ÖSTERREICH</p>\n<p>Telefon:<br>+43 676 9202236<br>E-Mail:<br>office@wohnfee.at</p>"
+     "html": "<p>You are basically entitled to the rights of access, rectification, erasure, restriction, data portability, withdrawal and objection. If you believe that the processing of your data violates data protection law or that your data protection rights have otherwise been infringed in any way, you can complain to the supervisory authority. In Austria, this is the Data Protection Authority.</p>\n<p>Please use the following contact details for queries:</p>\n<p>Eder &amp; Steiner GmbH<br>Obersdorferstraße 5<br>2201 Seyring<br>ÖSTERREICH</p>\n<p>Telefon:<br>+43 676 9202236<br>E-Mail:<br>office@wohnfee.at</p>"
     },
     {
      "id": "496",

@@ -56,7 +56,7 @@ const previewHtml = computed(() => {
     `</div>` +
     `<div style="padding:18px 32px 24px;border-top:1px solid #ece7da;background:#faf8f2">` +
     `<p style="margin:0 0 4px;font-size:12px;line-height:1.6;color:#8a857a"><strong style="color:#55554e">WOHNFEE – Eder &amp; Steiner GmbH</strong><br>` +
-    `Obersdorferstraße 8, 2201 Seyring<br>office@wohnfee.at | +43 676 9202236 | wohnfee.at</p>` +
+    `Obersdorferstraße 5, 2201 Seyring<br>office@wohnfee.at | +43 676 9202236 | wohnfee.at</p>` +
     `<p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:#a8a396">Du erhältst diese E-Mail, weil du dich beim WOHNFEE-Newsletter angemeldet hast. Zum Abmelden einfach mit „Abmelden“ antworten.</p>` +
     `</div></div></div>`
 })

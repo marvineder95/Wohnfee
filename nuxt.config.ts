@@ -70,14 +70,18 @@ export default defineNuxtConfig({
   },
   nitro: {
     routeRules: {
-      '/': { redirect: { to: '/start.html', statusCode: 302 } }
+      '/': { redirect: { to: '/start.html', statusCode: 302 } },
+      // live statt vorgerendert (Dashboard-Artikel), auch falls der Link-Crawler aktiv ist
+      '/trends-tipps.html': { prerender: false },
+      '/aktuelles.html': { prerender: false },
+      '/blogartikel-trends-tipps/**': { prerender: false },
+      '/sitemap.xml': { prerender: false }
     },
     prerender: {
       failOnError: true,
       // routes are listed explicitly from data/routes.json — the link crawler alone
       // misses pages in this app, so prerendering must not depend on it
       routes: [
-        '/sitemap.xml',
         '/robots.txt',
         '/admin',
         '/admin/dashboard',
@@ -90,7 +94,10 @@ export default defineNuxtConfig({
         '/admin/rechnungen',
         '/admin/kontakte',
         '/admin/inventar',
-        ...Object.keys(routesJson)
+        '/admin/artikel',
+        // Trends & Tipps (Übersicht + Artikel), Aktuell und die Sitemap werden live gerendert,
+        // damit im Dashboard veröffentlichte Artikel sofort ohne Neu-Build erscheinen
+        ...Object.keys(routesJson).filter(r => !['/trends-tipps.html', '/aktuelles.html'].includes(r) && !r.startsWith('/blogartikel-trends-tipps/'))
       ]
     }
   }

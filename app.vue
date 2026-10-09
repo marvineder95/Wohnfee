@@ -18,7 +18,6 @@ const isAdmin = computed(() => route.path.startsWith('/admin'))
       </div>
       <main id="main">
         <NuxtPage />
-        <AppIconRail />
       </main>
       <AppFooter />
     </div>

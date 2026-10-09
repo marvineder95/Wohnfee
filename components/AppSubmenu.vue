@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { HS_AUDIENCE_ROUTES } from '~~/shared/home-staging-audiences'
 // Section submenu bar (#submenu), mirrors the Contao navigation module:
 // rendered for pages that are a nav item with children or a child of such an item.
 const { nav, pages, routes } = useSiteData()
@@ -55,6 +56,16 @@ const section = computed(() => {
 // the parent page of the current section shows its items without states (live behaviour)
 const plain = computed(() => section.value && !section.value.child && section.value.item.route === '/home-staging.html')
 
+// Home-Staging-Übersicht, Preise, FAQ, Blog-Übersichten, Team, Presse, Kontakt, Impressum und Zielgruppen-Seiten: Hero-Karten bzw. Header-Dropdown
+// ersetzen das Untermenü
+const hidden = computed(() =>
+  route.path === '/home-staging.html' || route.path === '/home-staging/preise.html'
+  || route.path === '/faq.html' || route.path === '/team.html'
+  || ['/aktuelles.html', '/projekte.html', '/trends-tipps.html', '/events.html'].includes(route.path)
+  || route.path.startsWith('/projekte/category/')
+  || route.path === '/kontakt.html' || route.path === '/impressum.html' || route.path === '/presse.html' || route.path.startsWith('/presse/category/')
+  || HS_AUDIENCE_ROUTES.includes(route.path))
+
 const liClass = (r: string) => plain.value ? '' : [
   r === dePath.value ? 'active' : 'sibling',
   pageClass(r)
@@ -62,7 +73,7 @@ const liClass = (r: string) => plain.value ? '' : [
 </script>
 
 <template>
-  <div v-if="section" id="submenu">
+  <div v-if="section && !hidden" id="submenu">
     <div class="inside">
       <nav class="mod_navigation block">
         <a :href="`${route.path}#skipNavigation2`" class="invisible">Navigation überspringen</a>

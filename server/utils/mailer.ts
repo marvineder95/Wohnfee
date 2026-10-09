@@ -126,8 +126,8 @@ export function newsletterMail(data: { subject: string; bodyText: string; lang: 
   const text =
     `${data.bodyText}\n\n—\n` +
     (isEn
-      ? `WOHNFEE – Eder & Steiner GmbH\nObersdorferstraße 8, 2201 Seyring\noffice@wohnfee.at | +43 676 9202236 | wohnfee.at\n\nTo unsubscribe, simply reply with "Unsubscribe".`
-      : `WOHNFEE – Eder & Steiner GmbH\nObersdorferstraße 8, 2201 Seyring\noffice@wohnfee.at | +43 676 9202236 | wohnfee.at\n\nZum Abmelden einfach auf diese E-Mail mit „Abmelden" antworten.`)
+      ? `WOHNFEE – Eder & Steiner GmbH\nObersdorferstraße 5, 2201 Seyring\noffice@wohnfee.at | +43 676 9202236 | wohnfee.at\n\nTo unsubscribe, simply reply with "Unsubscribe".`
+      : `WOHNFEE – Eder & Steiner GmbH\nObersdorferstraße 5, 2201 Seyring\noffice@wohnfee.at | +43 676 9202236 | wohnfee.at\n\nZum Abmelden einfach auf diese E-Mail mit „Abmelden" antworten.`)
 
   const html =
     `<div style="margin:0;padding:24px 12px;background:#f4f3ee;font-family:Georgia,'Times New Roman',serif">` +
@@ -146,7 +146,7 @@ export function newsletterMail(data: { subject: string; bodyText: string; lang: 
     // Footer
     `<div style="padding:18px 32px 24px;border-top:1px solid #ece7da;background:#faf8f2">` +
     `<p style="margin:0 0 4px;font-size:12px;line-height:1.6;color:#8a857a"><strong style="color:#55554e">WOHNFEE – Eder &amp; Steiner GmbH</strong><br>` +
-    `Obersdorferstraße 8, 2201 Seyring<br>` +
+    `Obersdorferstraße 5, 2201 Seyring<br>` +
     `<a href="mailto:office@wohnfee.at" style="color:#26492f;text-decoration:none">office@wohnfee.at</a> | +43 676 9202236 | <a href="https://wohnfee.at" style="color:#26492f;text-decoration:none">wohnfee.at</a></p>` +
     `<p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:#a8a396">${isEn
       ? 'You receive this e-mail because you subscribed to the WOHNFEE newsletter. To unsubscribe, simply reply with "Unsubscribe".'

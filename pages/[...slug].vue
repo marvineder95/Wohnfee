@@ -1,6 +1,16 @@
 <script setup lang="ts">
+import { HS_AUDIENCE_ROUTES } from '~~/shared/home-staging-audiences'
 const { pages, pagesEn, news, newsEn, site, categories } = useSiteData()
 const route = useRoute()
+
+// Blog-Übersichten und -Sektionen im neuen Design
+const BLOG_LISTS: Record<string, string> = {
+  '/aktuelles.html': 'aktuelles', '/projekte.html': 'projekte', '/trends-tipps.html': 'trends-tipps', '/events.html': 'events'
+}
+const BLOG_ARTICLE_SECTIONS = ['trends-tipps', 'projekte', 'events', 'aktuelles']
+
+// pro Adresse neu aufbauen – Dashboard-Artikel werden beim Setup geladen
+definePageMeta({ key: r => r.path })
 
 const slug = computed(() => {
   const p = route.params.slug
@@ -16,16 +26,32 @@ const entry = computed(() => resolveRoute(slug.value))
 const pageData = computed(() => entry.value?.type === 'page'
   ? ((isEn.value ? pagesEn : pages) as Record<string, any>)[entry.value!.id]
     || (pages as Record<string, any>)[entry.value!.id] : null)
+// Im Dashboard angelegte Blog-Artikel stehen nicht in routes.json, sondern in
+// der Datenbank – bei unbekannter Artikel-Adresse dort nachsehen.
+let dbArticle: any = null
+const dbMatch = !entry.value ? slug.value.match(/^\/blogartikel-([a-z-]+)\/([a-z0-9-]+)\.html$/) : null
+if (dbMatch) {
+  const { data } = await useAsyncData(`blog-article-${slug.value}`,
+    () => $fetch<any>(`/api/blog/${dbMatch[1]}/${dbMatch[2]}`).catch(() => ({ notFound: true })))
+  dbArticle = data.value?.route ? data.value : null
+}
+
 const newsData = computed(() => entry.value?.type === 'news'
   ? ((isEn.value ? newsEn : news) as Record<string, any>)[entry.value!.id]
-    || (news as Record<string, any>)[entry.value!.id] : null)
+    || (news as Record<string, any>)[entry.value!.id] : dbArticle)
 
 const categoryData = computed(() => entry.value?.type === 'category'
   ? (categories as Record<string, any>)[entry.value!.id] : null)
 
 // category archive pages render the parent page's frame with a filtered newslist
-const categoryPage = computed(() => categoryData.value
-  ? (pages as Record<string, any>)[categoryData.value.page] : null)
+// Elternseite über ihre Route finden (pages.json ist nach Seiten-ID geschlüsselt,
+// categoryData.page enthält aber den Alias – der direkte Zugriff lief ins Leere)
+const categoryPage = computed(() => {
+  const c = categoryData.value
+  if (!c) return null
+  return Object.values(pages as Record<string, any>).find((p: any) => p.route === c.pageRoute)
+    || (pages as Record<string, any>)[c.page] || null
+})
 
 const categoryListEl = computed(() => {
   if (!categoryData.value) return null
@@ -50,7 +76,8 @@ const title = computed(() => {
 })
 
 const description = computed(() =>
-  newsData.value?.teaser?.replace(/<[^>]+>/g, ' ').slice(0, 160).trim()
+  newsData.value?.description?.slice(0, 160)
+  || newsData.value?.teaser?.replace(/<[^>]+>/g, ' ').slice(0, 160).trim()
   || pageData.value?.description || categoryPage.value?.description || '')
 
 const canonicalUrl = computed(() =>
@@ -111,7 +138,7 @@ const backLink = computed(() => {
 })
 
 // 404 for unknown routes
-if (!entry.value) {
+if (!entry.value && !dbArticle) {
   throw createError({ statusCode: 404, statusMessage: 'Seite nicht gefunden' })
 }
 
@@ -183,6 +210,57 @@ const regularMain = computed(() =>
     <ContentElements v-if="pageData.columns?.footer?.length" :elements="pageData.columns.footer" />
   </div>
 
+  <!-- Home Staging: Hero mit Zielgruppen-Karten + neu gestalteter Inhalt -->
+  <div v-else-if="pageData?.route === '/home-staging.html'" class="page-content" :data-route="pageData.route">
+    <HsHero />
+    <HsContent />
+  </div>
+
+  <!-- Home-Staging-Zielgruppen (Bauträger / Makler / Privatpersonen) -->
+  <div v-else-if="pageData && HS_AUDIENCE_ROUTES.includes(pageData.route)" class="page-content" :data-route="pageData.route">
+    <HsAudience :page="pageData" />
+  </div>
+
+  <!-- Home-Staging-Preise: Paket-Karten + Ausstattung je Raum -->
+  <div v-else-if="pageData?.route === '/home-staging/preise.html'" class="page-content" :data-route="pageData.route">
+    <HsPrices :page="pageData" />
+  </div>
+
+  <!-- FAQ: Suche, Rubriken, Akkordeon + FAQPage-Strukturdaten -->
+  <div v-else-if="pageData?.route === '/faq.html'" class="page-content" :data-route="pageData.route">
+    <HsFaq :page="pageData" />
+  </div>
+
+  <!-- Redesign: Hero, Bildstrecke, Ablauf, Investition, Trends -->
+  <div v-else-if="pageData?.route === '/redesign.html'" class="page-content" :data-route="pageData.route">
+    <HsRedesign :page="pageData" />
+  </div>
+
+  <!-- Blog-Übersichten (Aktuell, Projekte, Trends & Tipps, Events) -->
+  <div v-else-if="pageData && BLOG_LISTS[pageData.route]" class="page-content" :data-route="pageData.route">
+    <HsBlogList :page="pageData" :section="BLOG_LISTS[pageData.route]" />
+  </div>
+
+  <!-- Team: Porträts, Zitate, Zahlen, Kontakt -->
+  <div v-else-if="pageData?.route === '/team.html'" class="page-content" :data-route="pageData.route">
+    <HsTeam :page="pageData" />
+  </div>
+
+  <!-- Pressespiegel: Zeitstrahl mit Filtern -->
+  <div v-else-if="pageData?.route === '/presse.html'" class="page-content" :data-route="pageData.route">
+    <HsPress :page="pageData" />
+  </div>
+
+  <!-- Kontakt: Kontaktwege + Formular auf einen Blick -->
+  <div v-else-if="pageData?.route === '/kontakt.html'" class="page-content" :data-route="pageData.route">
+    <HsContact :page="pageData" />
+  </div>
+
+  <!-- Impressum: Rechtstext-Karten -->
+  <div v-else-if="pageData?.route === '/impressum.html'" class="page-content" :data-route="pageData.route">
+    <HsLegal :page="pageData" eyebrow="Über uns" />
+  </div>
+
   <!-- regular page -->
   <div v-else-if="pageData" class="page-content" :data-route="pageData.route">
     <ContentElements v-if="pageData.columns?.head?.length" :elements="pageData.columns.head" />
@@ -209,6 +287,16 @@ const regularMain = computed(() =>
     <ContentElements v-if="pageData.columns?.footer?.length" :elements="pageData.columns.footer" />
   </div>
 
+  <!-- alte Projekt-Kategorie-URLs: Projekte-Übersicht mit vorausgewählter Zielgruppe -->
+  <div v-else-if="categoryPage && categoryData?.page === 'projekte'" class="page-content" :data-route="slug">
+    <HsBlogList :page="categoryPage" section="projekte" :category="categoryData.id" />
+  </div>
+
+  <!-- alte Presse-Kategorie-URLs: neuer Pressespiegel mit vorausgewähltem Filter -->
+  <div v-else-if="categoryPage && categoryData?.page === 'presse'" class="page-content" :data-route="slug">
+    <HsPress :page="categoryPage" :category="categoryData.id" />
+  </div>
+
   <!-- category archive: parent page frame + filtered newslist -->
   <div v-else-if="categoryPage && categoryListEl" class="page-content" :data-route="slug">
     <ContentElements v-if="categoryPage.columns?.slider?.length" :elements="categoryPage.columns.slider" />
@@ -219,6 +307,9 @@ const regularMain = computed(() =>
       </div>
     </div>
   </div>
+
+  <!-- Blog-Artikel (Trends, Projekte, Events, Aktuelles) im neuen Design (nur DE) -->
+  <HsArticle v-else-if="newsData && BLOG_ARTICLE_SECTIONS.includes(newsData.section) && !isEn" :article="newsData" />
 
   <!-- news detail -->
   <article v-else-if="newsData" class="news-reader" itemscope itemtype="http://schema.org/Article">
