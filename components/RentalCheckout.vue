@@ -162,11 +162,73 @@ const minStart = (() => {
   const d = new Date(); d.setDate(d.getDate() + 1)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 })()
-const dateInput = ref<HTMLInputElement | null>(null)
-function openDatePicker() {
-  const el = dateInput.value
-  if (!el) return
-  try { (el as any).showPicker ? (el as any).showPicker() : el.focus() } catch { el.focus() }
+// Eigener Kalender (Popover) statt des Browser-Datepickers
+const calOpen = ref(false)
+const calWrap = ref<HTMLElement | null>(null)
+const calView = ref({ y: 0, m: 0 }) // angezeigter Monat (m 0-basiert)
+const calFocus = ref('')            // per Tastatur fokussierter Tag
+const isoOf = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+const todayIso = isoOf(new Date())
+function addDaysIso(iso: string, n: number) {
+  const d = new Date(iso + 'T12:00:00'); d.setDate(d.getDate() + n); return isoOf(d)
+}
+function openCal() {
+  if (calOpen.value) { calOpen.value = false; return }
+  const base = new Date((form.startDate || minStart) + 'T12:00:00')
+  calView.value = { y: base.getFullYear(), m: base.getMonth() }
+  calFocus.value = form.startDate || minStart
+  calOpen.value = true
+  durOpen.value = false
+}
+const calTitle = computed(() =>
+  new Date(calView.value.y, calView.value.m, 1).toLocaleDateString(isEn.value ? 'en-GB' : 'de-AT', { month: 'long', year: 'numeric' }))
+const calWeekdays = computed(() => isEn.value ? ['Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa', 'Su'] : ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'])
+const calDays = computed(() => {
+  const first = new Date(calView.value.y, calView.value.m, 1, 12)
+  const start = new Date(first); start.setDate(1 - ((first.getDay() + 6) % 7))
+  return Array.from({ length: 42 }, (_, i) => {
+    const d = new Date(start); d.setDate(start.getDate() + i)
+    const iso = isoOf(d)
+    return { iso, day: d.getDate(), out: d.getMonth() !== calView.value.m, disabled: iso < minStart, weekend: d.getDay() === 0 || d.getDay() === 6 }
+  })
+})
+const canPrevMonth = computed(() => {
+  const now = new Date(minStart + 'T12:00:00')
+  return calView.value.y > now.getFullYear() || (calView.value.y === now.getFullYear() && calView.value.m > now.getMonth())
+})
+function shiftCal(delta: number) {
+  const d = new Date(calView.value.y, calView.value.m + delta, 1)
+  calView.value = { y: d.getFullYear(), m: d.getMonth() }
+}
+function pickDate(iso: string) {
+  if (iso < minStart) return
+  form.startDate = iso
+  calOpen.value = false
+}
+// Schnellauswahl
+const calQuick = computed(() => {
+  const nextMonday = (() => { const d = new Date(minStart + 'T12:00:00'); while (d.getDay() !== 1) d.setDate(d.getDate() + 1); return isoOf(d) })()
+  const firstOfNext = (() => { const d = new Date(); return isoOf(new Date(d.getFullYear(), d.getMonth() + 1, 1, 12)) })()
+  return [
+    { label: isEn.value ? 'Next Monday' : 'Nächster Montag', iso: nextMonday },
+    { label: isEn.value ? 'In 2 weeks' : 'In 2 Wochen', iso: addDaysIso(todayIso, 14) },
+    { label: isEn.value ? '1st of next month' : 'Nächster Monatserster', iso: firstOfNext }
+  ]
+})
+function calKey(e: KeyboardEvent) {
+  const moves: Record<string, number> = { ArrowLeft: -1, ArrowRight: 1, ArrowUp: -7, ArrowDown: 7 }
+  if (e.key in moves) {
+    e.preventDefault()
+    const next = addDaysIso(calFocus.value || minStart, moves[e.key])
+    if (next < minStart) return
+    calFocus.value = next
+    const d = new Date(next + 'T12:00:00')
+    calView.value = { y: d.getFullYear(), m: d.getMonth() }
+  } else if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault(); pickDate(calFocus.value)
+  } else if (e.key === 'Escape') {
+    calOpen.value = false
+  }
 }
 const startLabel = computed(() => {
   if (!form.startDate) return ''
@@ -184,6 +246,7 @@ function durText(m: number) {
 }
 function toggleDur() {
   durOpen.value = !durOpen.value
+  if (durOpen.value) calOpen.value = false
   if (durOpen.value) nextTick(() => durList.value?.querySelector<HTMLElement>('.is-sel')?.scrollIntoView({ block: 'center' }))
 }
 function pickDur(m: number) {
@@ -201,6 +264,7 @@ function durKey(e: KeyboardEvent) {
 }
 const onDocClick = (e: MouseEvent) => {
   if (durOpen.value && durWrap.value && !durWrap.value.contains(e.target as Node)) durOpen.value = false
+  if (calOpen.value && calWrap.value && !calWrap.value.contains(e.target as Node)) calOpen.value = false
 }
 onMounted(() => document.addEventListener('click', onDocClick))
 onUnmounted(() => document.removeEventListener('click', onDocClick))
@@ -351,14 +415,41 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
               <div><h2 class="co__h2">{{ t.period }}</h2><p class="co__hint">{{ t.periodHint }}</p></div>
             </div>
             <div class="co__row">
-              <div class="co__fld">
-                <span>{{ t.startDate }}</span>
-                <label class="co__pick" :class="{ 'is-empty': !form.startDate }" @click.prevent="openDatePicker">
+              <div ref="calWrap" class="co__fld co__dur">
+                <span id="co-start-label">{{ t.startDate }}</span>
+                <button type="button" class="co__pick" :class="{ 'is-empty': !form.startDate, 'is-open': calOpen }"
+                        aria-haspopup="dialog" :aria-expanded="calOpen" aria-labelledby="co-start-label" @click="openCal">
                   <span class="co__pickicon"><WfIcon name="calendar" :size="18" /></span>
                   <span class="co__picktext">{{ startLabel || t.pickDate }}</span>
                   <WfIcon name="chevron" :size="14" class="co__pickchev" />
-                  <input ref="dateInput" v-model="form.startDate" type="date" class="co__pickinput" :min="minStart" required :aria-label="t.startDate">
-                </label>
+                </button>
+                <Transition name="co-pop">
+                  <div v-if="calOpen" class="co__cal" role="dialog" :aria-label="t.startDate" tabindex="-1" @keydown="calKey">
+                    <div class="co__calhead">
+                      <button type="button" class="co__calnav" :disabled="!canPrevMonth" :aria-label="isEn ? 'Previous month' : 'Vorheriger Monat'" @click="shiftCal(-1)">
+                        <WfIcon name="chevron" :size="14" class="co__calprev" />
+                      </button>
+                      <strong class="co__caltitle">{{ calTitle }}</strong>
+                      <button type="button" class="co__calnav" :aria-label="isEn ? 'Next month' : 'Nächster Monat'" @click="shiftCal(1)">
+                        <WfIcon name="chevron" :size="14" />
+                      </button>
+                    </div>
+                    <div class="co__calgrid" role="grid">
+                      <span v-for="w in calWeekdays" :key="w" class="co__calwd">{{ w }}</span>
+                      <button v-for="d in calDays" :key="d.iso" type="button" class="co__calday"
+                              :class="{ 'is-out': d.out, 'is-weekend': d.weekend, 'is-today': d.iso === todayIso, 'is-sel': d.iso === form.startDate, 'is-focus': d.iso === calFocus }"
+                              :disabled="d.disabled" :aria-pressed="d.iso === form.startDate" :aria-label="d.iso.split('-').reverse().join('.')"
+                              @click="pickDate(d.iso)">
+                        {{ d.day }}
+                      </button>
+                    </div>
+                    <div class="co__calquick">
+                      <button v-for="q in calQuick" :key="q.label" type="button" :class="{ 'is-on': form.startDate === q.iso }" @click="pickDate(q.iso)">
+                        {{ q.label }}
+                      </button>
+                    </div>
+                  </div>
+                </Transition>
               </div>
               <div ref="durWrap" class="co__fld co__dur">
                 <span id="co-dur-label">{{ t.duration }}</span>
@@ -555,9 +646,43 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
 .co__pick.is-empty .co__picktext { color: var(--green); }
 .co__pickchev { flex: none; color: var(--muted); transform: rotate(90deg); transition: transform .2s; }
 .co__pick.is-open .co__pickchev { transform: rotate(-90deg); }
-/* natives Datumsfeld liegt unsichtbar darunter – öffnet den Kalender des Browsers */
-.co__pickinput { position: absolute; inset: 0; opacity: 0; width: 100%; height: 100%; border: 0; padding: 0; cursor: pointer; }
-.co__pickinput::-webkit-calendar-picker-indicator { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+/* Kalender-Popover */
+.co__cal {
+  position: absolute; z-index: 21; top: calc(100% - .6em); left: 0; width: 20.5em; max-width: calc(100vw - 32px);
+  box-sizing: border-box; padding: 1em 1em .9em; background: #fff; border: 1px solid var(--line);
+  border-radius: 20px; box-shadow: 0 22px 48px rgba(43, 43, 40, .16); outline: none;
+}
+.co__calhead { display: flex; align-items: center; justify-content: space-between; margin-bottom: .7em; }
+.co__caltitle { font-family: var(--serif); font-weight: 500; font-size: 1.15em; text-transform: capitalize; }
+.co__calnav {
+  width: 34px; height: 34px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--ink);
+  display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; transition: background .15s, border-color .15s;
+}
+.co__calnav:hover:not(:disabled) { background: var(--green-soft); border-color: #c9d8cc; color: var(--green); }
+.co__calnav:disabled { opacity: .35; cursor: default; }
+.co__calprev { transform: rotate(180deg); }
+.co__calgrid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 2px; }
+.co__calwd { text-align: center; font-size: .68em; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #a39c89; padding: .3em 0 .5em; }
+.co__calday {
+  aspect-ratio: 1; border: 0; border-radius: 50%; background: none; font: inherit; font-size: .88em; font-weight: 600;
+  color: var(--ink); cursor: pointer; padding: 0; position: relative; font-variant-numeric: tabular-nums;
+  transition: background .12s, color .12s;
+}
+.co__calday.is-weekend { color: var(--muted); }
+.co__calday.is-out { color: #cdc6b5; font-weight: 400; }
+.co__calday:hover:not(:disabled):not(.is-sel) { background: var(--green-soft); color: var(--green); }
+.co__calday:disabled { color: #ddd7ca; cursor: not-allowed; text-decoration: line-through; text-decoration-color: #e8e2d4; font-weight: 400; }
+.co__calday.is-today::after { content: ""; position: absolute; left: 50%; bottom: 14%; width: 4px; height: 4px; margin-left: -2px; border-radius: 50%; background: var(--green); }
+.co__calday.is-focus:not(.is-sel) { box-shadow: inset 0 0 0 1.5px var(--green); }
+.co__calday.is-sel { background: var(--green); color: #fff; box-shadow: 0 6px 14px rgba(47, 93, 64, .3); }
+.co__calday.is-sel::after { background: #fff; }
+.co__calquick { display: flex; flex-wrap: wrap; gap: .35em; margin-top: .8em; padding-top: .8em; border-top: 1px solid #f0ebe0; }
+.co__calquick button {
+  border: 1px solid var(--line); background: var(--field); border-radius: 999px; padding: .35em .75em;
+  font: inherit; font-size: .74em; font-weight: 600; color: var(--ink); cursor: pointer; transition: background .15s, border-color .15s, color .15s;
+}
+.co__calquick button:hover { border-color: #b9c9bc; color: var(--green); }
+.co__calquick button.is-on { background: var(--green); border-color: var(--green); color: #fff; }
 
 .co__dur { position: relative; }
 .co__durlist {
