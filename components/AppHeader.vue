@@ -208,16 +208,6 @@ onBeforeUnmount(() => {
         </ul>
         <span id="skipNavigation1" class="invisible"></span>
       </nav>
-      <button type="button" class="cartbtn" :aria-label="currentLang === 'en' ? 'Open cart' : 'Warenkorb öffnen'"
-              @click="openCart">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="9" cy="20" r="1.4" />
-          <circle cx="17" cy="20" r="1.4" />
-          <path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.76L20 8H6" />
-        </svg>
-        <span v-if="cartCount > 0" class="cartbtn__badge">{{ cartCount }}</span>
-      </button>
       <div class="langswitch" role="navigation" :aria-label="currentLang === 'en' ? 'Choose language' : 'Sprache wählen'">
         <NuxtLink v-if="deTarget" :to="deTarget" hreflang="de" :class="{ 'is-active': currentLang === 'de' }" @click="setLangPref('de')">DE</NuxtLink>
         <span v-else class="is-active is-current" aria-current="true">DE</span>
@@ -228,6 +218,17 @@ onBeforeUnmount(() => {
       <NuxtLink :to="linkFor('/kontakt.html')" class="wfh-cta">
         {{ currentLang === 'en' ? 'Get in touch' : 'Beratung anfragen' }}
       </NuxtLink>
+      <!-- Warenkorb ganz rechts am Ende der Navigation -->
+      <button type="button" class="cartbtn" :aria-label="currentLang === 'en' ? 'Open cart' : 'Warenkorb öffnen'"
+              @click="openCart">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
+             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <circle cx="9" cy="20" r="1.4" />
+          <circle cx="17" cy="20" r="1.4" />
+          <path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.76L20 8H6" />
+        </svg>
+        <span v-if="cartCount > 0" class="cartbtn__badge">{{ cartCount }}</span>
+      </button>
       <button type="button" class="wfm-trigger" :class="{ 'is-open': open }"
               :aria-label="currentLang === 'en' ? (open ? 'Close menu' : 'Open menu') : (open ? 'Menü schließen' : 'Menü öffnen')"
               :aria-expanded="open" aria-controls="wfm" @click="open = !open">
@@ -441,7 +442,7 @@ onBeforeUnmount(() => {
 #header.wfh .inside { padding: .75rem 0 .85rem; }
 #header.wfh #logo img { width: 185px; }
 
-/* Sprachunabhängiges Layout: Logo und rechte Gruppe (Warenkorb, DE|EN, CTA) haben
+/* Sprachunabhängiges Layout: Logo und rechte Gruppe (DE|EN, CTA, Warenkorb) haben
    feste Breiten, das Menü sitzt zentriert im verbleibenden Platz – beim Wechsel
    DE ⇄ EN verschiebt sich dadurch nur die Schrift im Menü, nicht Logo oder Buttons. */
 #header.wfh #logo { flex: none; }
@@ -513,8 +514,8 @@ onBeforeUnmount(() => {
 #header.wfh .wfh-drop a.is-current { color: #2f5d40; font-weight: 600; background: #eef3ee; }
 
 /* Icon-Gruppe + CTA */
-#header.wfh .cartbtn { margin-left: 1.4rem; }
-#header.wfh .langswitch { margin-left: .8rem; font-size: .85em; }
+#header.wfh .cartbtn { margin-left: .9rem; }
+#header.wfh .langswitch { margin-left: 1.4rem; font-size: .85em; }
 #header.wfh .wfh-cta {
   flex-shrink: 0; align-self: center; margin-left: 1rem;
   /* feste Breite für den längsten Text („Beratung anfragen“) – EN ist kürzer */
