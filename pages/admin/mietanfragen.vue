@@ -38,6 +38,7 @@ interface Detail extends Inquiry {
   notes: string | null
   offerId: number | null
   offerNumber: string | null
+  transportCalc: string | null
 }
 
 const inquiries = ref<Inquiry[]>([])
@@ -111,6 +112,11 @@ function displayName(i: Inquiry) {
 function period(i: Inquiry) {
   if (!i.startDate) return '—'
   return `${formatDate(i.startDate)} – ${formatDate(i.endDate)}`
+}
+
+function transport(d: Detail) {
+  if (!d.transportCalc) return null
+  try { return JSON.parse(d.transportCalc) } catch { return null }
 }
 
 function pillClass(status: string) {
@@ -277,6 +283,17 @@ onMounted(load)
               </div>
             </div>
 
+            <div v-if="transport(detail)" class="rental-inquiries__transport">
+              <strong><WfIcon name="truck" :size="14" /> Transport (automatisch berechnet)</strong>
+              <span v-if="!transport(detail).ok">{{ transport(detail).error }} – bitte im Angebot ergänzen.</span>
+              <span v-else>
+                {{ transport(detail).km.toLocaleString('de-AT') }} km · ca. {{ transport(detail).driveMinutes }} Min. je Strecke ·
+                Lieferung {{ money(transport(detail).delivery.cost) }} + Abholung {{ money(transport(detail).pickup.cost) }}
+                <template v-if="transport(detail).kmCost"> + km {{ money(transport(detail).kmCost) }}</template>
+                <template v-if="transport(detail).perk !== 'none'"> · {{ transport(detail).perk === 'free' ? 'gratis (Wien)' : '−50 %' }}</template>
+                = <b>{{ money(transport(detail).total) }}</b> netto
+              </span>
+            </div>
             <p v-if="detail.notes" class="rental-inquiries__notes">
               <strong>Anmerkungen:</strong> {{ detail.notes }}
             </p>
@@ -555,4 +572,6 @@ onMounted(load)
   .rental-inquiries__meta { width: 100%; justify-content: space-between; }
   .rental-inquiries__total { margin-left: auto; }
 }
+.rental-inquiries__transport { display: flex; flex-direction: column; gap: .25em; margin: 0 0 .9em; padding: .7em .9em; border-radius: 10px; background: var(--wf-green-soft); font-size: .86em; }
+.rental-inquiries__transport strong { display: flex; align-items: center; gap: .4em; color: var(--wf-green); }
 </style>

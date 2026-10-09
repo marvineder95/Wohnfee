@@ -508,6 +508,7 @@ export async function migrateSchema() {
   }
   await addCol('contact_inquiries', 'offer_id', 'ADD COLUMN offer_id INT UNSIGNED NULL')
   await addCol('contact_inquiries', 'contact_id', 'ADD COLUMN contact_id INT UNSIGNED NULL')
+  await addCol('rental_inquiries', 'transport_calc', 'ADD COLUMN transport_calc TEXT NULL')
   await addCol('invoices', 'reminder_level', 'ADD COLUMN reminder_level TINYINT NOT NULL DEFAULT 0')
   await addCol('invoices', 'last_reminder_at', 'ADD COLUMN last_reminder_at DATE NULL')
   await addCol('invoices', 'recurring_id', 'ADD COLUMN recurring_id INT UNSIGNED NULL')

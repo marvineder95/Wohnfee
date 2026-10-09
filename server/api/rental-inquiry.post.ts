@@ -149,5 +149,12 @@ export default defineEventHandler(async (event) => {
     console.error('[rental-inquiry] Benachrichtigungsmail fehlgeschlagen:', e)
   }
 
+  // Angebot inkl. berechneter Transportkosten automatisch als Entwurf anlegen –
+  // im Hintergrund, damit der Kunde nicht auf die Routenberechnung warten muss
+  import('../utils/offer-create')
+    .then(({ createOfferForInquiry }) => createOfferForInquiry(inquiryId))
+    .then(r => console.log(`[rental-inquiry] Angebot ${r.number} automatisch erstellt`))
+    .catch(e => console.error('[rental-inquiry] Automatisches Angebot fehlgeschlagen:', e?.message || e))
+
   return { ok: true, number, monthlyTotal: Math.round(monthlyTotal * 100) / 100, itemCount: items.length }
 })

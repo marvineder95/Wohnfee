@@ -79,6 +79,7 @@ const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
     { to: '/admin/newsletter', label: 'Newsletter', icon: 'mail', exact: false }
   ] },
   { label: 'Verwaltung', items: [
+    { to: '/admin/konditionen', label: 'Konditionen', icon: 'euro', exact: false },
     { to: '/admin/users', label: 'Benutzer', icon: 'users', exact: false, super: true },
     { to: '/admin/profil', label: 'Mein Profil', icon: 'settings', exact: false }
   ] }

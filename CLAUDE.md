@@ -41,6 +41,11 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Lagerstatus (lager/vermietet); Shop zeigt nur freien Bestand.
 - Anfrage → Angebot: `server/utils/offer-create.ts` (Miet- und Kontaktanfragen), Angebote
   öffnen per `/admin/angebote?open=ID`. Projekt → „Mietverlängerung" (`extension-offer.post.ts`).
+- Transportkosten (`server/utils/transport.ts`, Seite `/admin/konditionen`, Setting
+  `transport_settings`): Team × Stundensatz × (2 × Fahrzeit + Zeit vor Ort) für Lieferung UND
+  Abholung + Kilometergeld nur für km über der Freigrenze × 4 Strecken; Vorteile (Wien gratis /
+  −50 %) als Preisfaktor. Route via OpenStreetMap (Nominatim + OSRM), Cache-Tabelle `geo_cache`.
+  Jede Mietanfrage erzeugt automatisch einen Angebotsentwurf (Möbel × Mietdauer + Transport).
 - Touren & Rückgaben (`/admin/touren`, API `/api/admin/logistics`): Kalendertermine +
   Projekt-Deadlines mit Möbeln + Überfälliges; Packliste `/admin/packliste/:id` (druckbar).
 - Abo-Rechnungen: Tabelle `recurring_invoices`, Erzeugung `server/utils/recurring.ts`
@@ -74,6 +79,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - SMTP-Passwort (`NUXT_SMTP_PASSWORD`) fehlt → Mails werden nur geloggt.
 - Mietkatalog: Möbel ohne Fotos; danach Live-Produktvorschau auf der Startseite möglich.
 - Tippfehler im Pflegetext: Redesign „entseht“, Preise Paket 1/3 (Komma/€ am Ende).
+- Konditionen: Stundensatz (Platzhalter 45 €/Std.), Aufbau-/Abbauzeiten und Kilometergeld
+  im Dashboard prüfen. Datenschutzerklärung: Adressübermittlung an OpenStreetMap ergänzen.
 - Rolle „Benutzer" hat derzeit dieselben Rechte wie „Admin" (nur Benutzerverwaltung ist
   Superadmin-only) – Rechtekonzept festlegen?
 - Checkout: Mietdauer im Formular (1/3 Monate) ist unabhängig von der Mietdauer je Artikel

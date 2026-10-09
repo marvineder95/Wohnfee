@@ -2,6 +2,7 @@ import { todayVienna } from './site'
 import { getDb, query, queryOne } from './db'
 import { nextOfferNumber } from './invoices'
 import { getSetting } from './settings'
+import { quoteTransport, type TransportQuote } from './transport'
 
 // Erzeugt aus einer Mietanfrage (rental_inquiries) automatisch ein Angebot
 // im Wohnfee-Design (Tabelle offers + offer_items) und verknuepft beides.
@@ -46,6 +47,23 @@ export async function createOfferForInquiry(inquiryId: number): Promise<{ offerI
   // Transport-Vorteil (Gratis-Transport Wien / Rabatt) aus der Anfrage übernehmen
   if (inquiry.notes) note += `${note ? '\n' : ''}${inquiry.notes}`
 
+  // Mietdauer laut Anfrage (1–48 Monate); Monatspreise je Artikel aus dem Warenkorb
+  const months = Math.max(1, Number(inquiry.duration_months) || 1)
+  const monthly = items.reduce((sum: number, it: any) => sum + (it.monthly_price !== null ? Number(it.monthly_price) * it.quantity : 0), 0)
+
+  // Transportkosten automatisch berechnen (Konditionen im Dashboard)
+  const quote: TransportQuote = await quoteTransport(
+    { street: inquiry.street, zip: inquiry.zip, city: inquiry.city, country: inquiry.country },
+    items.map((it: any) => ({ price: it.monthly_price !== null ? Number(it.monthly_price) : null, quantity: it.quantity, durationMonths: it.duration_months || 1 }))
+  )
+  const eur = (v: number) => v.toLocaleString('de-AT', { style: 'currency', currency: 'EUR' })
+  note += `${note ? '\n\n' : ''}Monatliche Miete: ${eur(monthly)} · Mietdauer: ${months} ${months === 1 ? 'Monat' : 'Monate'}.`
+  if (quote.ok) {
+    note += `\nLieferung & Abholung durch unsere eigene Spedition – Entfernung Lager–Lieferadresse ca. ${quote.km.toLocaleString('de-AT')} km.`
+  } else {
+    note += `\nDie Transportkosten werden individuell ergänzt.`
+  }
+
   const { year2, max } = await nextOfferNumber(docDate)
   const conn = await getDb().getConnection()
   try {
@@ -69,20 +87,35 @@ export async function createOfferForInquiry(inquiryId: number): Promise<{ offerI
     )
     const offerId = res.insertId
     let position = 0
+    const addPos = (description: string, quantity: number, unit: string, price: number) =>
+      conn.query(
+        'INSERT INTO offer_items (offer_id, position, description, quantity, unit, unit_price) VALUES (?, ?, ?, ?, ?, ?)',
+        [offerId, ++position, description.slice(0, 250), quantity, unit, Math.round(price * 100) / 100]
+      )
+    // Möbel: Monatsmiete × Mietdauer
     for (const it of items) {
-      position++
-      const price = it.monthly_price !== null ? Number(it.monthly_price) : 0
-      const description = `${it.title} – Mietdauer ${it.duration_months ?? '–'} Monate` +
-        (it.monthly_price === null ? ' (Preis auf Anfrage)' : '')
-      await conn.query(
-        `INSERT INTO offer_items (offer_id, position, description, quantity, unit, unit_price)
-         VALUES (?, ?, ?, ?, 'Mon.', ?)`,
-        [offerId, position, description.slice(0, 250), it.quantity, price]
+      const price = it.monthly_price !== null ? Number(it.monthly_price) * it.quantity : 0
+      await addPos(
+        `${it.quantity}× ${it.title} – Monatsmiete` + (it.monthly_price === null ? ' (Preis auf Anfrage)' : ''),
+        months, 'Mon.', price
       )
     }
+    // Transport: Personalstunden je Tour + ggf. Kilometergeld, Vorteile als Preisanpassung
+    if (quote.ok) {
+      const s = quote.settings
+      const team = [s.drivers ? `${s.drivers} Spediteur${s.drivers === 1 ? '' : 'e'}` : '', s.designers ? `${s.designers} Designerin${s.designers === 1 ? '' : 'nen'}` : ''].filter(Boolean).join(', ')
+      const perkText = quote.perk === 'free' ? ' – gratis (Transportvorteil Wien)' : quote.perk === 'discount' ? ' – inkl. −50 % Transportvorteil' : ''
+      const rate = s.hourlyRate * quote.perkFactor
+      await addPos(`Lieferung inkl. Aufbau – Team ${quote.crew} Pers. (${team}), ${quote.delivery.hours.toLocaleString('de-AT')} Std.${perkText}`, quote.delivery.personHours, 'Std.', rate)
+      await addPos(`Abholung inkl. Abbau nach Mietende – Team ${quote.crew} Pers., ${quote.pickup.hours.toLocaleString('de-AT')} Std.${perkText}`, quote.pickup.personHours, 'Std.', rate)
+      if (quote.extraKm > 0) {
+        await addPos(`Kilometergeld – 4 Strecken × ${(Math.round((quote.km - s.freeKm) * 10) / 10).toLocaleString('de-AT')} km (Entfernung ${quote.km.toLocaleString('de-AT')} km, davon ${s.freeKm} km frei)${perkText}`, quote.extraKm, 'km', s.kmRate * quote.perkFactor)
+      }
+    } else {
+      await addPos('Lieferung & Abholung durch WOHNFEE – Transportkosten werden ergänzt', 1, 'Pausch.', 0)
+    }
     // In der Kundentabelle (Dokumente) auftauchen lassen
-    const netto = items.reduce((s: number, it: any) =>
-      s + (it.monthly_price !== null ? Number(it.monthly_price) * it.quantity : 0), 0)
+    const netto = monthly * months + (quote.ok ? quote.total : 0)
     const brutto = Math.round(netto * 1.2 * 100) / 100
     await conn.query(
       `INSERT IGNORE INTO documents (contact_id, kind, number, customer_raw, doc_date, total, return_date, file_path, source)
@@ -90,8 +123,8 @@ export async function createOfferForInquiry(inquiryId: number): Promise<{ offerI
       [contactId, number, docDate, brutto, `dashboard/${number.replace(/[^a-z0-9/_-]+/gi, '_')}.pdf`]
     )
     await conn.query(
-      "UPDATE rental_inquiries SET offer_id = ?, status = IF(status = 'neu', 'in_bearbeitung', status) WHERE id = ?",
-      [offerId, inquiryId])
+      "UPDATE rental_inquiries SET offer_id = ?, transport_calc = ?, status = IF(status = 'neu', 'in_bearbeitung', status) WHERE id = ?",
+      [offerId, JSON.stringify({ ...quote, settings: undefined, at: new Date().toISOString() }), inquiryId])
     await conn.commit()
     return { offerId, number, created: true }
   } catch (e) {
