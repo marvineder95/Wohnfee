@@ -436,7 +436,8 @@ function timeLabel(ev: CalEvent) {
 /* Layout: Kalender + Tagesliste */
 .cal-layout {
   display: grid;
-  grid-template-columns: 1.9fr 1fr;
+  /* minmax(0, …): lange Einträge dürfen die Spalten nicht aufdehnen */
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
   gap: 1em;
   align-items: start;
 }
@@ -480,7 +481,7 @@ function timeLabel(ev: CalEvent) {
 /* Kalender-Raster */
 .cal-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(7, minmax(0, 1fr));
   gap: 4px;
 }
 .cal-grid.is-loading { opacity: .5; pointer-events: none; }
@@ -494,6 +495,7 @@ function timeLabel(ev: CalEvent) {
   padding: .35em 0;
 }
 .cal-day {
+  min-width: 0;
   min-height: 6.2em;
   border: 1px solid #f0ece1;
   border-radius: 10px;
@@ -523,7 +525,7 @@ function timeLabel(ev: CalEvent) {
 }
 .cal-day.is-selected { background: #f4f7f0; border-color: var(--wf-green); box-shadow: 0 0 0 2px rgba(47,93,64,.15); }
 .cal-day__num { font-size: .82em; font-weight: 600; padding: .1em; }
-.cal-day__events { display: flex; flex-direction: column; gap: 2px; }
+.cal-day__events { display: flex; flex-direction: column; gap: 2px; min-width: 0; width: 100%; }
 
 /* Termin-Chips nach Typ */
 .cal-chip {
@@ -667,10 +669,10 @@ function timeLabel(ev: CalEvent) {
   .cal-chip { font-size: .62em; }
   .cal-form { grid-template-columns: 1fr; }
 }
-.cal-chip--auto { background: #fdf3df !important; color: #8a5a12 !important; border: 1px dashed #e3c27e; }
+.cal-chip--auto { max-width: 100%; box-sizing: border-box; background: #fdf3df !important; color: #8a5a12 !important; border: 1px dashed #e3c27e; }
 .cal-autolist { list-style: none; margin: 0 0 1em; padding: 0; display: grid; gap: .5em; }
 .cal-autolist li { display: flex; flex-wrap: wrap; align-items: center; gap: .4em .6em; padding: .6em .7em; border-radius: 10px; border: 1px dashed #e3c27e; background: #fffaf0; }
-.cal-autolist strong { font-size: .88em; flex: 1; min-width: 8em; }
+.cal-autolist strong { font-size: .88em; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .cal-autolist small { width: 100%; font-size: .76em; color: var(--wf-muted); }
 .cal-autolist__acts { display: flex; gap: .35em; }
 </style>

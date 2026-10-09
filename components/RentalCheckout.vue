@@ -49,7 +49,14 @@ const DE = {
   thanks: 'Vielen Dank für deine Anfrage!',
   thanksText: 'Wir haben deine Mietanfrage erfolgreich erhalten und melden uns in Kürze persönlich bei dir.',
   inquiryNo: 'Anfragenummer', periodLabel: 'Mietzeitraum',
-  backToProducts: 'Zurück zu den Produkten', trust: ['Lieferung & Abholung', 'Flexible Mietdauer', 'Persönliche Beratung']
+  backToProducts: 'Zurück zu den Produkten', trust: ['Lieferung & Abholung', 'Flexible Mietdauer', 'Persönliche Beratung'],
+  eyebrow: 'Furniture Leasing · Mietanfrage', heroTitle: 'Fast geschafft.',
+  heroText: 'Noch ein paar Angaben – dann erstellen wir dir ein persönliches, unverbindliches Angebot.',
+  contactHint: 'Wie erreichen wir dich?', addressHint: 'Wohin dürfen wir liefern?', periodHint: 'Ab wann und wie lange?',
+  yourPick: 'Deine Auswahl', edit: 'Ändern', nonBinding: 'Unverbindlich – du zahlst erst nach Annahme des Angebots.',
+  nextTitle: 'So geht es weiter',
+  next: [['Prüfung', 'Wir prüfen Verfügbarkeit und Liefertermin.'], ['Angebot', 'Du erhältst dein persönliches Angebot per E-Mail.'], ['Lieferung', 'Unser Team liefert und richtet alles für dich ein.']] as [string, string][],
+  toHome: 'Zur Startseite'
 }
 const EN: typeof DE = {
   title: 'Checkout', stepCart: 'Cart', stepData: 'Your details', stepDone: 'Done',
@@ -84,11 +91,19 @@ const EN: typeof DE = {
   thanks: 'Thank you for your request!',
   thanksText: 'We have received your rental request and will get back to you personally shortly.',
   inquiryNo: 'Inquiry no.', periodLabel: 'Rental period',
-  backToProducts: 'Back to the products', trust: ['Delivery & pick-up', 'Flexible rental period', 'Personal consultation']
+  backToProducts: 'Back to the products', trust: ['Delivery & pick-up', 'Flexible rental period', 'Personal consultation'],
+  eyebrow: 'Furniture Leasing · Rental request', heroTitle: 'Almost there.',
+  heroText: 'Just a few details – then we will prepare a personal, non-binding offer for you.',
+  contactHint: 'How can we reach you?', addressHint: 'Where should we deliver?', periodHint: 'From when and for how long?',
+  yourPick: 'Your selection', edit: 'Edit', nonBinding: 'Non-binding – you only pay once you accept the offer.',
+  nextTitle: 'What happens next',
+  next: [['Check', 'We check availability and the delivery date.'], ['Offer', 'You receive your personal offer by e-mail.'], ['Delivery', 'Our team delivers and sets everything up for you.']] as [string, string][],
+  toHome: 'Back to home'
 }
 const t = computed(() => (isEn.value ? EN : DE))
 
 const shopUrl = computed(() => isEn.value ? '/en/furniture-leasing.html' : '/furniture-leasing.html')
+const homeUrl = computed(() => isEn.value ? '/en/start.html' : '/start.html')
 
 useHead(() => ({
   title: `${t.value.title} - WOHNFEE Furniture Leasing`,
@@ -214,240 +229,379 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
 
 <template>
   <div ref="coRoot" class="co">
-    <!-- Schritt-Anzeige + Zurück-Link in einer Zeile, damit beide Cards
-         (Formular links, Übersicht rechts) direkt darauf auf gleicher Höhe beginnen -->
-    <div class="co__topbar">
-      <nav class="co__steps" :aria-label="isEn ? 'Checkout steps' : 'Checkout-Schritte'">
-        <NuxtLink :to="shopUrl" class="co__step is-done">{{ t.stepCart }}</NuxtLink>
-        <span class="co__stepsep" aria-hidden="true">›</span>
-        <span class="co__step" :class="{ 'is-active': step === 'form' }">{{ t.stepData }}</span>
-        <span class="co__stepsep" aria-hidden="true">›</span>
-        <span class="co__step" :class="{ 'is-active': step === 'success' }">{{ t.stepDone }}</span>
-      </nav>
-      <NuxtLink v-if="step === 'form' && cart.length" :to="shopUrl" class="co__back">{{ t.backToCart }}</NuxtLink>
-    </div>
-
-    <!-- Leerer Warenkorb -->
-    <div v-if="step === 'form' && !cart.length" class="co__empty">
-      <h1 class="co__title">{{ t.emptyTitle }}</h1>
-      <p class="co__emptytext">{{ t.emptyText }}</p>
-      <NuxtLink :to="shopUrl" class="co__cta">{{ t.toShop }}</NuxtLink>
-    </div>
-
-    <!-- Schritt 2: Kundendaten + Übersicht -->
-    <div v-else-if="step === 'form'" class="co__grid">
-      <form class="co__main" @submit.prevent="submit" novalidate>
-        <section class="co__sec">
-          <h2 class="co__sech"><span class="co__secno">1</span>{{ t.contact }}</h2>
-          <div class="co__row">
-            <label class="co__fld"><span>{{ t.fFirst }}</span><input v-model="form.firstName" type="text" autocomplete="given-name"></label>
-            <label class="co__fld"><span>{{ t.fLast }}</span><input v-model="form.lastName" type="text" autocomplete="family-name" required></label>
+    <!-- Kopf: Eyebrow, Titel und Fortschritt (Warenkorb → Daten → Fertig) -->
+    <div class="co__head">
+      <div class="co__wrap">
+        <p class="co__eyebrow">{{ t.eyebrow }}</p>
+        <div class="co__headrow">
+          <div>
+            <h1 class="co__h1">{{ step === 'success' ? t.thanks : (cart.length ? t.heroTitle : t.emptyTitle) }}</h1>
+            <p v-if="step === 'form' && cart.length" class="co__lead">{{ t.heroText }}</p>
           </div>
-          <label class="co__fld"><span>{{ t.fCompany }}</span><input v-model="form.company" type="text" autocomplete="organization"></label>
-          <div class="co__row">
-            <label class="co__fld"><span>{{ t.fEmail }}</span><input v-model="form.email" type="email" autocomplete="email" required></label>
-            <label class="co__fld"><span>{{ t.fPhone }}</span><input v-model="form.phone" type="tel" autocomplete="tel"></label>
-          </div>
-        </section>
-
-        <section class="co__sec">
-          <h2 class="co__sech"><span class="co__secno">2</span>{{ t.address }}</h2>
-          <label class="co__fld"><span>{{ t.fStreet }}</span><input v-model="form.street" type="text" autocomplete="street-address" required></label>
-          <div class="co__row co__row--zip">
-            <label class="co__fld co__fld--zip"><span>{{ t.fZip }}</span><input v-model="form.zip" type="text" autocomplete="postal-code" required></label>
-            <label class="co__fld"><span>{{ t.fCity }}</span><input v-model="form.city" type="text" autocomplete="address-level2" required></label>
-          </div>
-          <label class="co__fld"><span>{{ t.fCountry }}</span><input v-model="form.country" type="text" autocomplete="country-name"></label>
-        </section>
-
-        <section class="co__sec">
-          <h2 class="co__sech"><span class="co__secno">3</span>{{ t.period }}</h2>
-          <div class="co__row co__row--zip">
-            <label class="co__fld"><span>{{ t.startDate }}</span><input v-model="form.startDate" type="date" required></label>
-            <label class="co__fld"><span>{{ t.duration }}</span>
-              <select v-model="form.durationMonths">
-                <option :value="3">{{ t.m3 }}</option>
-                <option :value="1">{{ t.m1 }}</option>
-              </select>
-            </label>
-          </div>
-
-          <p class="co__flabel">{{ t.deliveryOption }}</p>
-          <label class="co__opt" :class="{ 'is-active': form.deliveryOption === 'full' }">
-            <input v-model="form.deliveryOption" type="radio" value="full">
-            <span class="co__optmain"><strong>{{ t.dOptFull }}</strong><small>{{ t.dOptFullHint }}</small></span>
-          </label>
-          <label class="co__opt" :class="{ 'is-active': form.deliveryOption === 'self' }">
-            <input v-model="form.deliveryOption" type="radio" value="self">
-            <span class="co__optmain"><strong>{{ t.dOptSelf }}</strong><small>{{ t.dOptSelfHint }}</small></span>
-          </label>
-
-          <label class="co__fld"><span>{{ t.deliveryNotes }}</span>
-            <textarea v-model="form.deliveryNotes" rows="2" :placeholder="t.deliveryPh" />
-          </label>
-        </section>
-
-        <p v-if="error" class="co__error" role="alert">{{ error }}</p>
-
-        <!-- Mobil: Absende-Button unter dem Formular -->
-        <button type="submit" class="co__submit co__submit--mobile" :disabled="loading || !perks.minReached">
-          {{ loading ? t.sending : t.submit }}
-        </button>
-      </form>
-
-      <aside class="co__side">
-        <div class="co__summary">
-          <h2 class="co__sumh">{{ t.summary }}</h2>
-          <ul class="co__lines">
-            <li v-for="l in cart" :key="l.id + '-' + l.durationMonths" class="co__line">
-              <span class="co__limg">
-                <img v-if="l.imagePath" :src="l.imagePath" alt="">
-              </span>
-              <span class="co__lmain">
-                <strong>{{ l.title }}</strong>
-                <small>× {{ l.quantity }} · {{ durLabel(l.durationMonths) }}</small>
-              </span>
-              <span class="co__lprice">{{ l.price !== null ? eur(l.price * l.quantity) + ' / ' + (isEn ? 'mo.' : 'Mon.') : t.onRequest }}</span>
+          <ol class="co__progress" :aria-label="isEn ? 'Checkout steps' : 'Checkout-Schritte'">
+            <li class="is-done">
+              <NuxtLink :to="shopUrl"><span class="co__dot"><WfIcon name="check" :size="12" /></span>{{ t.stepCart }}</NuxtLink>
             </li>
-          </ul>
-          <RentalPerks :lines="cart" />
-          <p class="co__total"><span>{{ t.totalMonthly }}</span><strong>{{ eur(cartMonthly) }}</strong></p>
-          <p class="co__transport" :class="{ 'is-free': transport === 'free' || transport === 'discount' || transport === 'unlocked' }">
-            <span>{{ isEn ? 'Delivery & pick-up' : 'Lieferung & Abholung' }}</span><strong>{{ transportText }}</strong>
-          </p>
-          <p v-if="transport === 'none'" class="co__note">{{ t.feeNote }}</p>
-          <p v-else-if="transport === 'discount'" class="co__note">{{ isEn ? 'Delivery address outside Vienna – the discounted fee is shown in your offer.' : 'Lieferadresse außerhalb Wiens – die reduzierte Gebühr steht in deinem Angebot.' }}</p>
-          <button type="button" class="co__submit" :disabled="loading || !perks.minReached" @click="submit">
-            {{ loading ? t.sending : t.submit }}
-          </button>
-          <p class="co__note co__note--center">{{ t.billingNote }}</p>
-          <ul class="co__trust">
-            <li v-for="x in t.trust" :key="x"><WfIcon name="check" :size="13" /> {{ x }}</li>
-          </ul>
+            <li :class="step === 'success' ? 'is-done' : 'is-active'">
+              <span class="co__dot"><WfIcon v-if="step === 'success'" name="check" :size="12" /><template v-else>2</template></span>{{ t.stepData }}
+            </li>
+            <li :class="{ 'is-active': step === 'success' }">
+              <span class="co__dot">3</span>{{ t.stepDone }}
+            </li>
+          </ol>
         </div>
-      </aside>
+      </div>
     </div>
 
-    <!-- Schritt 3: Bestätigung -->
-    <div v-else class="co__success">
-      <span class="co__check"><WfIcon name="check" :size="30" /></span>
-      <h1 class="co__title">{{ t.thanks }}</h1>
-      <p class="co__successtext">{{ t.thanksText }}</p>
-      <dl class="co__recap">
-        <div><dt>{{ t.inquiryNo }}</dt><dd>{{ inquiryResult?.number }}</dd></div>
-        <div><dt>{{ t.periodLabel }}</dt><dd>{{ form.startDate }} – {{ endDateStr }}</dd></div>
-        <div><dt>{{ t.monthlyRent }}</dt><dd>{{ eur(inquiryResult?.monthlyTotal ?? null) }}</dd></div>
-      </dl>
-      <NuxtLink :to="shopUrl" class="co__cta">{{ t.backToProducts }}</NuxtLink>
+    <div class="co__wrap">
+      <!-- Leerer Warenkorb -->
+      <div v-if="step === 'form' && !cart.length" class="co__empty">
+        <span class="co__emptyicon"><WfIcon name="bag" :size="30" /></span>
+        <p>{{ t.emptyText }}</p>
+        <NuxtLink :to="shopUrl" class="co__btn">{{ t.toShop }} <WfIcon name="arrow" :size="16" /></NuxtLink>
+      </div>
+
+      <!-- Kundendaten + Übersicht -->
+      <div v-else-if="step === 'form'" class="co__grid">
+        <form class="co__main" @submit.prevent="submit" novalidate>
+          <section class="co__card">
+            <div class="co__cardhead">
+              <span class="co__num">01</span>
+              <div><h2 class="co__h2">{{ t.contact }}</h2><p class="co__hint">{{ t.contactHint }}</p></div>
+            </div>
+            <div class="co__row">
+              <label class="co__fld"><span>{{ t.fFirst }}</span><input v-model="form.firstName" type="text" autocomplete="given-name"></label>
+              <label class="co__fld"><span>{{ t.fLast }}</span><input v-model="form.lastName" type="text" autocomplete="family-name" required></label>
+            </div>
+            <label class="co__fld"><span>{{ t.fCompany }}</span><input v-model="form.company" type="text" autocomplete="organization"></label>
+            <div class="co__row">
+              <label class="co__fld"><span>{{ t.fEmail }}</span><input v-model="form.email" type="email" autocomplete="email" required></label>
+              <label class="co__fld"><span>{{ t.fPhone }}</span><input v-model="form.phone" type="tel" autocomplete="tel"></label>
+            </div>
+          </section>
+
+          <section class="co__card">
+            <div class="co__cardhead">
+              <span class="co__num">02</span>
+              <div><h2 class="co__h2">{{ t.address }}</h2><p class="co__hint">{{ t.addressHint }}</p></div>
+            </div>
+            <label class="co__fld"><span>{{ t.fStreet }}</span><input v-model="form.street" type="text" autocomplete="street-address" required></label>
+            <div class="co__row co__row--zip">
+              <label class="co__fld"><span>{{ t.fZip }}</span><input v-model="form.zip" type="text" inputmode="numeric" autocomplete="postal-code" required></label>
+              <label class="co__fld"><span>{{ t.fCity }}</span><input v-model="form.city" type="text" autocomplete="address-level2" required></label>
+            </div>
+            <label class="co__fld co__fld--last"><span>{{ t.fCountry }}</span><input v-model="form.country" type="text" autocomplete="country-name"></label>
+          </section>
+
+          <section class="co__card">
+            <div class="co__cardhead">
+              <span class="co__num">03</span>
+              <div><h2 class="co__h2">{{ t.period }}</h2><p class="co__hint">{{ t.periodHint }}</p></div>
+            </div>
+            <div class="co__row">
+              <label class="co__fld"><span>{{ t.startDate }}</span><input v-model="form.startDate" type="date" required></label>
+              <div class="co__fld">
+                <span>{{ t.duration }}</span>
+                <div class="co__seg" role="radiogroup" :aria-label="t.duration">
+                  <button v-for="m in [3, 1]" :key="m" type="button" role="radio" :aria-checked="form.durationMonths === m"
+                          :class="{ 'is-on': form.durationMonths === m }" @click="form.durationMonths = m">
+                    {{ m === 3 ? t.m3 : t.m1 }}
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <p class="co__flabel">{{ t.deliveryOption }}</p>
+            <div class="co__opts">
+              <label class="co__opt" :class="{ 'is-on': form.deliveryOption === 'full' }">
+                <input v-model="form.deliveryOption" type="radio" value="full">
+                <span class="co__opticon"><WfIcon name="truck" :size="20" /></span>
+                <span class="co__optmain"><strong>{{ t.dOptFull }}</strong><small>{{ t.dOptFullHint }}</small></span>
+                <span class="co__radio" aria-hidden="true"><WfIcon name="check" :size="12" /></span>
+              </label>
+              <label class="co__opt" :class="{ 'is-on': form.deliveryOption === 'self' }">
+                <input v-model="form.deliveryOption" type="radio" value="self">
+                <span class="co__opticon"><WfIcon name="box" :size="20" /></span>
+                <span class="co__optmain"><strong>{{ t.dOptSelf }}</strong><small>{{ t.dOptSelfHint }}</small></span>
+                <span class="co__radio" aria-hidden="true"><WfIcon name="check" :size="12" /></span>
+              </label>
+            </div>
+
+            <label class="co__fld co__fld--last"><span>{{ t.deliveryNotes }}</span>
+              <textarea v-model="form.deliveryNotes" rows="3" :placeholder="t.deliveryPh" />
+            </label>
+          </section>
+
+          <p v-if="error" class="co__error" role="alert">{{ error }}</p>
+
+          <!-- Mobil: Absende-Button unter dem Formular -->
+          <button type="submit" class="co__btn co__btn--block co__submit--mobile" :disabled="loading || !perks.minReached">
+            {{ loading ? t.sending : t.submit }} <WfIcon v-if="!loading" name="arrow" :size="16" />
+          </button>
+        </form>
+
+        <aside class="co__side">
+          <div class="co__summary">
+            <div class="co__sumtop">
+              <h2 class="co__sumh">{{ t.yourPick }}</h2>
+              <NuxtLink :to="shopUrl" class="co__edit">{{ t.edit }}</NuxtLink>
+            </div>
+            <ul class="co__lines">
+              <li v-for="l in cart" :key="l.id + '-' + l.durationMonths" class="co__line">
+                <span class="co__limg">
+                  <img v-if="l.imagePath" :src="l.imagePath" alt="">
+                  <WfIcon v-else name="bag" :size="18" />
+                  <em v-if="l.quantity > 1" class="co__lqty">{{ l.quantity }}</em>
+                </span>
+                <span class="co__lmain">
+                  <strong>{{ l.title }}</strong>
+                  <small>{{ durLabel(l.durationMonths) }}</small>
+                </span>
+                <span class="co__lprice">{{ l.price !== null ? eur(l.price * l.quantity) : t.onRequest }}<small v-if="l.price !== null">/{{ isEn ? 'mo.' : 'Mon.' }}</small></span>
+              </li>
+            </ul>
+
+            <RentalPerks :lines="cart" />
+
+            <div class="co__sums">
+              <p class="co__transport" :class="{ 'is-free': transport === 'free' || transport === 'discount' || transport === 'unlocked' }">
+                <span>{{ isEn ? 'Delivery & pick-up' : 'Lieferung & Abholung' }}</span><strong>{{ transportText }}</strong>
+              </p>
+              <p class="co__total"><span>{{ t.totalMonthly }}</span><strong>{{ eur(cartMonthly) }}</strong></p>
+              <p v-if="transport === 'none'" class="co__note">{{ t.feeNote }}</p>
+              <p v-else-if="transport === 'discount'" class="co__note">{{ isEn ? 'Delivery address outside Vienna – the discounted fee is shown in your offer.' : 'Lieferadresse außerhalb Wiens – die reduzierte Gebühr steht in deinem Angebot.' }}</p>
+            </div>
+
+            <button type="button" class="co__btn co__btn--block" :disabled="loading || !perks.minReached" @click="submit">
+              {{ loading ? t.sending : t.submit }} <WfIcon v-if="!loading" name="arrow" :size="16" />
+            </button>
+            <p class="co__secure"><WfIcon name="lock" :size="13" /> {{ t.nonBinding }}</p>
+
+            <ul class="co__trust">
+              <li v-for="(x, i) in t.trust" :key="x"><WfIcon :name="['truck', 'calendar', 'users'][i]" :size="15" /> {{ x }}</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+
+      <!-- Bestätigung -->
+      <div v-else class="co__success">
+        <span class="co__check"><WfIcon name="check" :size="32" /></span>
+        <p class="co__successtext">{{ t.thanksText }}</p>
+        <dl class="co__recap">
+          <div><dt>{{ t.inquiryNo }}</dt><dd>{{ inquiryResult?.number }}</dd></div>
+          <div><dt>{{ t.periodLabel }}</dt><dd>{{ form.startDate.split('-').reverse().join('.') }} – {{ endDateStr }}</dd></div>
+          <div><dt>{{ t.monthlyRent }}</dt><dd>{{ eur(inquiryResult?.monthlyTotal ?? null) }}</dd></div>
+        </dl>
+        <h2 class="co__nexth">{{ t.nextTitle }}</h2>
+        <ol class="co__next">
+          <li v-for="(n, i) in t.next" :key="n[0]">
+            <span class="co__nextno">0{{ i + 1 }}</span>
+            <strong>{{ n[0] }}</strong>
+            <small>{{ n[1] }}</small>
+          </li>
+        </ol>
+        <div class="co__successbtns">
+          <NuxtLink :to="shopUrl" class="co__btn">{{ t.backToProducts }} <WfIcon name="arrow" :size="16" /></NuxtLink>
+          <NuxtLink :to="homeUrl" class="co__btn co__btn--ghost">{{ t.toHome }}</NuxtLink>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
 .co {
-  --green: #2f5d40; --green-soft: #eef3ee; --ink: #2b2b28; --muted: #7a7568; --line: #e6e0d2; --cream: #f7f4ec;
-  max-width: 1100px; margin: 0 auto; padding: 1.4em 1.5em 4em;
+  --green: #2f5d40; --green-dark: #26492f; --green-soft: #eef3ee; --ink: #2b2b28; --muted: #6f6a5e;
+  --line: #e6e0d2; --cream: #f8f5ef; --field: #fbfaf6;
+  --serif: var(--font-family-02, Gelasio, Georgia, serif);
+  background: var(--cream); color: var(--ink); padding-bottom: 5em;
+  /* füllt den Viewport, damit bei kurzem Inhalt kein grauer Streifen vor dem Footer bleibt */
+  min-height: calc(100vh - var(--hs-head, 108px));
+  box-sizing: border-box;
 }
-.co__topbar { display: flex; align-items: center; justify-content: space-between; gap: .6em 1.2em; flex-wrap: wrap; margin-bottom: 1.3em; }
-.co__steps { display: flex; align-items: center; gap: .6em; font-size: .85em; color: var(--muted); flex-wrap: wrap; }
-.co__step { text-decoration: none; color: var(--muted); font-weight: 500; }
-.co__step.is-done { color: var(--green); }
-.co__step.is-active { color: var(--ink); font-weight: 700; }
-.co__stepsep { color: #c9c2b0; }
-.co__grid { display: grid; grid-template-columns: 1.55fr 1fr; gap: 2.2em; align-items: start; }
-.co__main { min-width: 0; }
-.co__back { display: inline-block; font-size: .85em; color: var(--muted); text-decoration: none; white-space: nowrap; }
-.co__back:hover { color: var(--green); }
-.co__title { font-family: Georgia, 'Times New Roman', serif; font-weight: 500; font-size: 1.7em; margin: 0 0 1em; color: var(--ink); }
-.co__sec { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 1.4em 1.5em 1.1em; margin-bottom: 1.3em; }
-.co__sech { display: flex; align-items: center; gap: .55em; font-size: .8em; letter-spacing: .14em; text-transform: uppercase; color: var(--ink); margin: 0 0 1.1em; }
-.co__secno {
-  width: 1.7em; height: 1.7em; border-radius: 50%; background: var(--green); color: #fff;
-  display: inline-flex; align-items: center; justify-content: center; font-size: .95em; letter-spacing: 0;
-}
-.co__row { display: grid; grid-template-columns: 1fr 1fr; gap: .8em; }
-.co__row--zip { grid-template-columns: 8em 1fr; }
-.co__fld { display: flex; flex-direction: column; gap: .28em; margin-bottom: .9em; min-width: 0; }
-.co__fld > span { font-size: .74em; font-weight: 600; color: var(--muted); }
-.co__fld input, .co__fld select, .co__fld textarea {
-  width: 100%; box-sizing: border-box; padding: .62em .8em; font-size: .95em; font-family: inherit;
-  color: var(--ink); background: #fff; border: 1px solid var(--line); border-radius: 10px; outline: none;
-}
-.co__fld input:focus, .co__fld select:focus, .co__fld textarea:focus {
-  border-color: var(--green); box-shadow: 0 0 0 3px rgba(47, 93, 64, .12);
-}
-.co__flabel { font-size: .74em; font-weight: 600; color: var(--muted); margin: .4em 0 .5em; }
-.co__opt {
-  display: flex; gap: .7em; align-items: flex-start; border: 1px solid var(--line); border-radius: 12px;
-  padding: .7em .9em; margin-bottom: .6em; cursor: pointer; transition: border-color .15s, background .15s;
-}
-.co__opt.is-active { border-color: var(--green); background: var(--green-soft); }
-.co__opt input { margin-top: .25em; accent-color: var(--green); }
-.co__optmain { display: flex; flex-direction: column; gap: .15em; }
-.co__optmain strong { font-size: .9em; color: var(--ink); font-weight: 600; }
-.co__optmain small { font-size: .78em; color: var(--muted); }
-.co__error { background: #fbeaea; color: #a33; border-radius: 10px; padding: .7em 1em; font-size: .88em; }
-.co__submit {
-  display: block; width: 100%; padding: .85em 1em; border: 0; border-radius: 12px; cursor: pointer;
-  background: var(--green); color: #fff; font-size: 1em; font-weight: 600; font-family: inherit;
-  transition: background .15s, opacity .15s;
-}
-.co__submit:hover:not(:disabled) { background: #26492f; }
-.co__submit:disabled { opacity: .6; cursor: default; }
-.co__submit--mobile { display: none; margin-top: .4em; }
+.co__wrap { max-width: 1180px; margin: 0 auto; padding: 0 1.5em; box-sizing: border-box; }
+.co h1, .co h2 { font-family: var(--serif); font-weight: 500; color: var(--ink); text-align: left; text-transform: none; border: 0; padding: 0; letter-spacing: 0; }
 
-/* Seitliche Übersicht */
+/* ── Kopf ─────────────────────────────── */
+.co__head { padding: 3.2em 0 2.4em; background: radial-gradient(circle at 88% 0%, #efe9dc 0%, var(--cream) 62%); }
+.co__eyebrow {
+  display: flex; align-items: center; gap: 1em; margin: 0 0 1em;
+  font-size: .72em; letter-spacing: .22em; text-transform: uppercase; font-weight: 600;
+}
+.co__eyebrow::after { content: ""; width: 3.5em; height: 1px; background: var(--green); }
+.co__headrow { display: flex; justify-content: space-between; align-items: flex-end; gap: 1.5em 3em; flex-wrap: wrap; }
+.co__h1 { font-size: clamp(2.2em, 4.6vw, 3.3em) !important; line-height: 1.06; margin: 0 0 .3em; }
+.co__lead { margin: 0; max-width: 34em; color: var(--muted); line-height: 1.65; }
+
+.co__progress { list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: .4em; }
+.co__progress li { display: flex; align-items: center; gap: .5em; font-size: .84em; font-weight: 600; color: #a39c89; white-space: nowrap; }
+.co__progress li + li::before { content: ""; width: 2.4em; height: 1px; background: #d9d2c1; margin-right: .4em; }
+.co__progress a { display: flex; align-items: center; gap: .5em; color: inherit; text-decoration: none; }
+.co__dot {
+  width: 26px; height: 26px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center;
+  border: 1.5px solid #d3cbb9; background: #fff; font-size: .82em; color: #a39c89;
+}
+.co__progress .is-done { color: var(--green); }
+.co__progress .is-done .co__dot { background: var(--green); border-color: var(--green); color: #fff; }
+.co__progress .is-active { color: var(--ink); }
+.co__progress .is-active .co__dot { border-color: var(--green); color: var(--green); box-shadow: 0 0 0 4px rgba(47, 93, 64, .12); }
+
+/* ── Layout ──────────────────────────── */
+.co__grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 2em; align-items: start; }
+.co__main { min-width: 0; display: grid; gap: 1.2em; }
+
+.co__card { background: #fff; border: 1px solid var(--line); border-radius: 24px; padding: 1.8em 1.9em .9em; }
+.co__cardhead { display: flex; align-items: center; gap: 1em; margin-bottom: 1.4em; }
+.co__num {
+  font-family: var(--serif); font-size: 2.2em; line-height: 1; color: transparent;
+  -webkit-text-stroke: 1px #b9c9bc; flex: none;
+}
+.co__h2 { font-size: 1.35em !important; margin: 0; line-height: 1.2; }
+.co__hint { margin: .15em 0 0; font-size: .85em; color: var(--muted); }
+
+.co__row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1em; }
+.co__row--zip { grid-template-columns: 9em 1fr; }
+.co__fld { display: flex; flex-direction: column; gap: .4em; margin-bottom: 1.1em; min-width: 0; }
+.co__fld > span, .co__flabel { font-size: .74em; font-weight: 700; letter-spacing: .04em; color: var(--muted); }
+.co__fld input, .co__fld textarea {
+  width: 100%; box-sizing: border-box; padding: .85em 1em; font: inherit; font-size: .95em;
+  color: var(--ink); background: var(--field); border: 1px solid var(--line); border-radius: 14px; outline: none;
+  transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.co__fld textarea { resize: vertical; min-height: 5.5em; }
+.co__fld input:hover, .co__fld textarea:hover { border-color: #d6cfbd; }
+.co__fld input:focus, .co__fld textarea:focus { background: #fff; border-color: var(--green); box-shadow: 0 0 0 4px rgba(47, 93, 64, .1); }
+
+.co__seg { display: flex; padding: 4px; gap: 4px; border: 1px solid var(--line); border-radius: 14px; background: var(--field); }
+.co__seg button {
+  flex: 1; border: 0; border-radius: 10px; background: none; padding: .65em .6em; font: inherit; font-size: .9em;
+  font-weight: 600; color: var(--muted); cursor: pointer; transition: background .15s, color .15s;
+}
+.co__seg button.is-on { background: var(--green); color: #fff; box-shadow: 0 4px 12px rgba(47, 93, 64, .22); }
+
+.co__flabel { margin: .2em 0 .6em; }
+.co__opts { display: grid; grid-template-columns: 1fr 1fr; gap: .8em; margin-bottom: 1.2em; }
+.co__opt {
+  position: relative; display: flex; flex-direction: column; gap: .7em; padding: 1.1em 1.1em 1em;
+  border: 1.5px solid var(--line); border-radius: 18px; cursor: pointer; background: #fff;
+  transition: border-color .15s, background .15s, transform .15s;
+}
+.co__opt:hover { border-color: #c9d8cc; transform: translateY(-1px); }
+.co__opt.is-on { border-color: var(--green); background: var(--green-soft); }
+.co__opt input { position: absolute; opacity: 0; pointer-events: none; }
+.co__opt:has(input:focus-visible) { box-shadow: 0 0 0 4px rgba(47, 93, 64, .15); }
+.co__opticon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; background: var(--cream); color: var(--green); }
+.co__opt.is-on .co__opticon { background: #fff; }
+.co__optmain { display: flex; flex-direction: column; gap: .25em; padding-right: 1.4em; }
+.co__optmain strong { font-size: .92em; line-height: 1.3; }
+.co__optmain small { font-size: .78em; color: var(--muted); line-height: 1.45; }
+.co__radio {
+  position: absolute; top: 1em; right: 1em; width: 22px; height: 22px; border-radius: 50%;
+  border: 1.5px solid #d3cbb9; display: flex; align-items: center; justify-content: center; color: transparent; background: #fff;
+}
+.co__opt.is-on .co__radio { background: var(--green); border-color: var(--green); color: #fff; }
+
+.co__error { margin: 0; background: #fbeaea; color: #a33; border-radius: 14px; padding: .85em 1.1em; font-size: .9em; }
+
+/* Buttons */
+.co__btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: .55em;
+  padding: .95em 1.8em; border: 0; border-radius: 999px; cursor: pointer;
+  background: var(--green); color: #fff; font: inherit; font-size: 1em; font-weight: 700; text-decoration: none;
+  box-shadow: 0 10px 24px rgba(47, 93, 64, .25); transition: background .15s, transform .15s, opacity .15s;
+}
+.co__btn:hover:not(:disabled) { background: var(--green-dark); transform: translateY(-1px); color: #fff; }
+.co__btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+.co__btn--block { width: 100%; }
+.co__btn--ghost { background: transparent; color: var(--ink); border: 1.5px solid var(--ink); box-shadow: none; }
+.co__btn--ghost:hover:not(:disabled) { background: var(--ink); color: #fff; }
+.co__submit--mobile { display: none; }
+
+/* ── Übersicht ───────────────────────── */
 /* klebt mit Abstand unter dem Header; ist sie höher als der freie Platz, scrollt sie in sich */
 .co__side {
   position: sticky; top: calc(var(--hs-head, 108px) + 1.2em);
   max-height: calc(100vh - var(--hs-head, 108px) - 2.4em); overflow-y: auto; scrollbar-width: thin;
+  border-radius: 24px;
 }
-.co__summary { background: var(--cream); border: 1px solid var(--line); border-radius: 14px; padding: 1.3em 1.4em; }
-.co__sumh { font-family: Georgia, serif; font-weight: 500; font-size: 1.15em; margin: 0 0 .9em; color: var(--ink); }
-.co__lines { list-style: none; margin: 0 0 1em; padding: 0; }
-.co__line { display: flex; gap: .7em; padding: .6em 0; border-bottom: 1px solid var(--line); align-items: center; }
-.co__limg { flex: 0 0 44px; height: 44px; border-radius: 8px; overflow: hidden; background: #fff; }
-.co__limg img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.co__lmain { flex: 1; min-width: 0; display: flex; flex-direction: column; }
-.co__lmain strong { font-size: .85em; color: var(--ink); font-weight: 600; line-height: 1.3; }
-.co__lmain small { font-size: .74em; color: var(--muted); }
-.co__lprice { font-size: .8em; color: var(--ink); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.co__total { display: flex; justify-content: space-between; align-items: baseline; margin: .4em 0 .3em; font-size: .9em; color: var(--muted); }
-.co__total strong { font-size: 1.35em; color: var(--ink); }
-.co__note { font-size: .72em; color: var(--muted); margin: .5em 0 .9em; }
-.co__transport { display: flex; justify-content: space-between; align-items: baseline; gap: 1em; margin: 0 0 .3em; font-size: .82em; color: var(--muted); }
+.co__summary { background: #fff; border: 1px solid var(--line); border-radius: 24px; padding: 1.5em 1.5em 1.3em; }
+.co__sumtop { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: .6em; }
+.co__sumh { font-size: 1.3em !important; margin: 0; }
+.co__edit { font-size: .82em; font-weight: 600; color: var(--green); text-decoration: none; border-bottom: 1px solid #b9c9bc; }
+.co__lines { list-style: none; margin: 0 0 1.1em; padding: 0; }
+.co__line { display: flex; gap: .85em; padding: .75em 0; border-bottom: 1px solid #f0ebe0; align-items: center; }
+.co__limg {
+  position: relative; flex: 0 0 52px; height: 52px; border-radius: 14px; background: var(--cream); color: #b4ab97;
+  display: flex; align-items: center; justify-content: center;
+}
+.co__limg img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.co__lqty {
+  position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; border-radius: 999px; padding: 0 5px; box-sizing: border-box;
+  background: var(--green); color: #fff; font-style: normal; font-size: .7em; font-weight: 700; display: flex; align-items: center; justify-content: center;
+}
+.co__lmain { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .15em; }
+.co__lmain strong { font-size: .86em; font-weight: 600; line-height: 1.3; }
+.co__lmain small { font-size: .76em; color: var(--muted); }
+.co__lprice { font-size: .88em; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; }
+.co__lprice small { font-weight: 400; color: var(--muted); font-size: .82em; }
+
+.co__sums { border-top: 1px solid var(--line); padding-top: .9em; margin: 1em 0 1.1em; }
+.co__transport { display: flex; justify-content: space-between; gap: 1em; margin: 0 0 .5em; font-size: .86em; color: var(--muted); }
 .co__transport strong { color: var(--ink); font-weight: 600; text-align: right; }
 .co__transport.is-free strong { color: var(--green); }
-.co__note--center { text-align: center; margin: .7em 0 0; }
-.co__trust { list-style: none; margin: 1em 0 0; padding: .8em 0 0; border-top: 1px solid var(--line); display: grid; gap: .35em; }
-.co__trust li { display: flex; align-items: center; gap: .45em; font-size: .76em; color: var(--muted); }
-.co__trust svg { color: var(--green); flex: 0 0 auto; }
+.co__total { display: flex; justify-content: space-between; align-items: baseline; margin: 0; font-size: .95em; }
+.co__total strong { font-family: var(--serif); font-size: 1.7em; font-weight: 500; }
+.co__note { font-size: .74em; color: var(--muted); margin: .5em 0 0; line-height: 1.5; }
+.co__secure { display: flex; align-items: center; justify-content: center; gap: .4em; margin: .8em 0 0; font-size: .76em; color: var(--muted); text-align: center; }
+.co__trust { list-style: none; margin: 1.1em 0 0; padding: 1em 0 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: repeat(3, 1fr); gap: .5em; }
+.co__trust li { display: flex; flex-direction: column; align-items: center; gap: .35em; font-size: .7em; font-weight: 600; color: var(--muted); text-align: center; line-height: 1.3; }
+.co__trust svg { color: var(--green); }
 
-/* Leer & Erfolg */
-.co__empty, .co__success { text-align: center; padding: 3em 1em; max-width: 30em; margin: 0 auto; }
-.co__emptytext, .co__successtext { color: var(--muted); font-size: .95em; margin: 0 0 1.4em; }
-.co__cta {
-  display: inline-block; padding: .8em 2.2em; border-radius: 12px; background: var(--green); color: #fff;
-  text-decoration: none; font-weight: 600;
+/* ── Leer & Erfolg ───────────────────── */
+.co__empty, .co__success {
+  max-width: 40em; margin: 0 auto; text-align: center; background: #fff; border: 1px solid var(--line);
+  border-radius: 28px; padding: 2.6em 2em;
 }
-.co__cta:hover { background: #26492f; }
+.co__empty p, .co__successtext { color: var(--muted); line-height: 1.65; margin: 0 auto 1.6em; max-width: 30em; }
+.co__emptyicon {
+  width: 72px; height: 72px; border-radius: 50%; background: var(--cream); color: var(--green);
+  display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1em;
+}
 .co__check {
-  width: 72px; height: 72px; border-radius: 50%; background: var(--green); color: #fff;
-  display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.1em;
+  width: 84px; height: 84px; border-radius: 50%; background: var(--green); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center; margin-bottom: 1.2em;
+  box-shadow: 0 0 0 10px var(--green-soft); animation: co-pop .5s cubic-bezier(.2, .9, .3, 1.3) both;
 }
-.co__recap { width: 100%; margin: 0 0 1.6em; text-align: left; background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: .4em 1.2em; }
-.co__recap div { display: flex; justify-content: space-between; gap: 1em; padding: .55em 0; border-bottom: 1px solid var(--line); font-size: .88em; }
+@keyframes co-pop { from { transform: scale(.4); opacity: 0; } to { transform: none; opacity: 1; } }
+.co__recap { margin: 0 0 2em; text-align: left; background: var(--cream); border-radius: 18px; padding: .3em 1.3em; }
+.co__recap div { display: flex; justify-content: space-between; gap: 1em; padding: .75em 0; border-bottom: 1px solid var(--line); font-size: .9em; }
 .co__recap div:last-child { border-bottom: 0; }
 .co__recap dt { color: var(--muted); }
-.co__recap dd { margin: 0; font-weight: 600; color: var(--ink); }
+.co__recap dd { margin: 0; font-weight: 700; }
+.co__nexth { font-size: 1.3em !important; text-align: center !important; margin: 0 0 1em; }
+.co__next { list-style: none; margin: 0 0 2em; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: .8em; text-align: left; }
+.co__next li { display: flex; flex-direction: column; gap: .25em; padding: 1em; border: 1px solid var(--line); border-radius: 16px; }
+.co__nextno { font-family: var(--serif); font-size: 1.6em; color: transparent; -webkit-text-stroke: 1px #b9c9bc; line-height: 1; margin-bottom: .2em; }
+.co__next strong { font-size: .92em; }
+.co__next small { font-size: .78em; color: var(--muted); line-height: 1.45; }
+.co__successbtns { display: flex; gap: .7em; justify-content: center; flex-wrap: wrap; }
 
-@media (max-width: 860px) {
+/* ── Responsive ──────────────────────── */
+@media (max-width: 960px) {
   .co__grid { grid-template-columns: 1fr; }
   .co__side { position: static; order: -1; max-height: none; overflow: visible; }
-  .co__summary { padding: 1em 1.1em; }
-  .co__submit--mobile { display: block; }
-  .co__side .co__submit { display: none; }
-  .co__trust { display: none; }
-  .co__row, .co__row--zip { grid-template-columns: 1fr; gap: 0; }
+  .co__side .co__btn, .co__side .co__secure, .co__trust { display: none; }
+  .co__submit--mobile { display: inline-flex; }
+}
+@media (max-width: 640px) {
+  .co__wrap { padding: 0 16px; }
+  .co__head { padding: 2em 0 1.6em; }
+  .co__progress li { font-size: .76em; }
+  .co__progress li + li::before { width: 1.2em; }
+  .co__card { padding: 1.4em 1.2em .6em; border-radius: 20px; }
+  .co__num { font-size: 1.8em; }
+  .co__row, .co__row--zip, .co__opts, .co__next { grid-template-columns: 1fr; }
+  .co__empty, .co__success { padding: 2em 1.2em; }
 }
 </style>
