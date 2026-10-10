@@ -78,7 +78,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: `Der Mindestmietwert beträgt € ${MIN_MONTHLY} pro Monat.` })
   }
   const selfPickup = /selbst/i.test(String(body?.deliveryOption ?? ''))
-  const perk = selfPickup ? 'none' : transportPerk(perkLines, zip)
+  const perk = selfPickup ? 'none' : transportPerk(perkLines, zip, duration)
   const perkNote = perk === 'free'
     ? 'Transport: GRATIS (Wien, Mietwert ab 3 Monaten erreicht)'
     : perk === 'discount'

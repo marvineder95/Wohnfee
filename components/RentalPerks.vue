@@ -6,11 +6,12 @@ import {
   type PerkLine
 } from '~~/shared/rental-perks'
 
-const props = defineProps<{ lines: PerkLine[] }>()
+// months: gewählte Mietdauer (nur im Checkout bekannt) – Vorteile erst ab 3 Monaten
+const props = defineProps<{ lines: PerkLine[]; months?: number | null }>()
 const { isEn, t } = useLang()
 
-const p = computed(() => rentalPerks(props.lines))
-const hasShortLines = computed(() => props.lines.some((l) => l.durationMonths < FREE_MIN_MONTHS))
+const p = computed(() => rentalPerks(props.lines, props.months))
+const hasShortLines = computed(() => !props.months && props.lines.some((l) => l.durationMonths < FREE_MIN_MONTHS))
 const discountPct = Math.round(OTHER_STATES_DISCOUNT * 100)
 // Position des Mindestwert-Markers auf dem Balken (0–350)
 const minMarker = `${(MIN_MONTHLY / FREE_TRANSPORT_FROM) * 100}%`
@@ -37,6 +38,12 @@ function eur(v: number) {
       <span>
         {{ t('Noch', 'Add') }} <strong>{{ eur(p.missingMin) }}</strong>
         {{ t(`bis zum Mindestmietwert von ${eur(MIN_MONTHLY)} / Monat.`, `more to reach the minimum rental value of ${eur(MIN_MONTHLY)} / month.`) }}
+      </span>
+    </p>
+    <p v-else-if="p.tooShort" class="rp__msg">
+      <span class="rp__ico"><WfIcon name="truck" :size="15" /></span>
+      <span>
+        {{ t(`Gratis-Transport in Wien bzw. −${discountPct} % gibt es ab einer Mietdauer von ${FREE_MIN_MONTHS} Monaten.`, `Free transport in Vienna or −${discountPct}% applies from a rental period of ${FREE_MIN_MONTHS} months.`) }}
       </span>
     </p>
     <p v-else class="rp__msg">

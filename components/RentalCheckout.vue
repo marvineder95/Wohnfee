@@ -134,10 +134,10 @@ const cartMonthly = computed(() =>
   Math.round(cart.value.reduce((s, l) => s + (l.price ?? 0) * l.quantity, 0) * 100) / 100
 )
 // Mindestmietwert & Transport-Vorteil (abhängig von PLZ und Abwicklung)
-const perks = computed(() => rentalPerks(cart.value))
+const perks = computed(() => rentalPerks(cart.value, form.durationMonths))
 const transport = computed(() => {
   if (form.deliveryOption === 'self') return 'self'
-  const tp = transportPerk(cart.value, form.zip)
+  const tp = transportPerk(cart.value, form.zip, form.durationMonths)
   // ohne PLZ ist der Ort noch offen: freigeschaltet, aber Wien/Bundesland unklar
   return tp !== 'none' && !form.zip.trim() ? 'unlocked' : tp
 })
@@ -518,7 +518,7 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
               </li>
             </ul>
 
-            <RentalPerks :lines="cart" />
+            <RentalPerks :lines="cart" :months="form.durationMonths" />
 
             <div class="co__sums">
               <p class="co__transport" :class="{ 'is-free': transport === 'free' || transport === 'discount' || transport === 'unlocked' }">

@@ -8,6 +8,7 @@ export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const b = await readBody(event)
   const monthly = Number(b?.monthly) || 0
+  const months = Math.min(48, Math.max(1, Number(b?.months) || 3))
   const lines = monthly > 0 ? [{ price: monthly, quantity: 1, durationMonths: 3 }] : []
-  return await quoteTransport({ street: b?.street, zip: b?.zip, city: b?.city, country: b?.country }, lines)
+  return await quoteTransport({ street: b?.street, zip: b?.zip, city: b?.city, country: b?.country }, lines, months)
 })

@@ -18,16 +18,24 @@ export interface PerkLine {
 
 const round = (v: number) => Math.round(v * 100) / 100
 
-export function rentalPerks(lines: PerkLine[]) {
+/**
+ * @param rentalMonths gewählte Mietdauer (Checkout/Anfrage). Ist sie bekannt, entscheidet
+ *   sie: Transportvorteile erst ab FREE_MIN_MONTHS Monaten, dann zählt die ganze Monatsmiete.
+ *   Ohne Angabe (Warenkorb, Dauer noch offen) zählt der Miettarif der einzelnen Artikel.
+ */
+export function rentalPerks(lines: PerkLine[], rentalMonths?: number | null) {
   const monthly = round(lines.reduce((s, l) => s + (l.price ?? 0) * l.quantity, 0))
-  // nur Langzeit-Positionen zählen für den Gratis-Transport
-  const qualifying = round(lines
-    .filter((l) => l.durationMonths >= FREE_MIN_MONTHS)
-    .reduce((s, l) => s + (l.price ?? 0) * l.quantity, 0))
+  const qualifying = rentalMonths
+    ? (rentalMonths >= FREE_MIN_MONTHS ? monthly : 0)
+    : round(lines
+      .filter((l) => l.durationMonths >= FREE_MIN_MONTHS)
+      .reduce((s, l) => s + (l.price ?? 0) * l.quantity, 0))
   const minReached = monthly >= MIN_MONTHLY
   const transportUnlocked = qualifying >= FREE_TRANSPORT_FROM
   return {
     monthly,
+    /** Mietdauer zu kurz für Transportvorteile (nur wenn die Dauer bekannt ist) */
+    tooShort: !!rentalMonths && rentalMonths < FREE_MIN_MONTHS,
     qualifying,
     minReached,
     missingMin: minReached ? 0 : round(MIN_MONTHLY - monthly),
@@ -45,7 +53,7 @@ export function isViennaZip(zip: string | null | undefined): boolean {
 }
 
 /** Transport-Ergebnis für eine konkrete Lieferadresse */
-export function transportPerk(lines: PerkLine[], zip: string | null | undefined) {
-  if (!rentalPerks(lines).transportUnlocked) return 'none' as const
+export function transportPerk(lines: PerkLine[], zip: string | null | undefined, rentalMonths?: number | null) {
+  if (!rentalPerks(lines, rentalMonths).transportUnlocked) return 'none' as const
   return isViennaZip(zip) ? ('free' as const) : ('discount' as const)
 }

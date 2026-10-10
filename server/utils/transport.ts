@@ -155,12 +155,13 @@ export function priceTransport(s: TransportSettings, km: number, rawMinutes: num
 /** Komplette Berechnung für eine Lieferadresse (+ optional Warenkorb-Zeilen für die Vorteile) */
 export async function quoteTransport(
   address: { street?: string | null; zip?: string | null; city?: string | null; country?: string | null },
-  lines: Array<{ price: number | null; quantity: number; durationMonths: number }> = []
+  lines: Array<{ price: number | null; quantity: number; durationMonths: number }> = [],
+  rentalMonths?: number | null
 ): Promise<TransportQuote> {
   const s = await getTransportSettings()
   const addr = [address.street, [address.zip, address.city].filter(Boolean).join(' '), address.country || 'Österreich']
     .filter(Boolean).join(', ')
-  const perk = lines.length ? transportPerk(lines, address.zip) : 'none'
+  const perk = lines.length ? transportPerk(lines, address.zip, rentalMonths) : 'none'
   const fail = (error: string): TransportQuote => ({
     ok: false, error, address: addr, ...priceTransport(s, 0, 0, perk), subtotal: 0, total: 0
   })

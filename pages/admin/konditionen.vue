@@ -54,7 +54,7 @@ const mapUrl = computed(() => form.depotLat !== null
   ? `https://www.openstreetmap.org/?mlat=${form.depotLat}&mlon=${form.depotLon}#map=16/${form.depotLat}/${form.depotLon}` : '')
 
 // ---------- Probe-Berechnung ----------
-const test = reactive({ street: '', zip: '', city: 'Wien', monthly: '' as string | number })
+const test = reactive({ street: '', zip: '', city: 'Wien', monthly: '' as string | number, months: 3 })
 const quote = ref<any>(null)
 const testing = ref(false)
 async function runTest() {
@@ -168,9 +168,15 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
           <label class="kond__fld"><span>PLZ</span><input v-model="test.zip" type="text" placeholder="1090"></label>
           <label class="kond__fld"><span>Ort</span><input v-model="test.city" type="text"></label>
         </div>
-        <label class="kond__fld"><span>Monatsmiete Warenkorb (für Transportvorteile)</span>
-          <span class="kond__unit"><input v-model="test.monthly" type="number" min="0" placeholder="0"><em>€</em></span>
-        </label>
+        <div class="kond__row">
+          <label class="kond__fld"><span>Monatsmiete (für Vorteile)</span>
+            <span class="kond__unit"><input v-model="test.monthly" type="number" min="0" placeholder="0"><em>€</em></span>
+          </label>
+          <label class="kond__fld"><span>Mietdauer</span>
+            <span class="kond__unit"><input v-model.number="test.months" type="number" min="1" max="48"><em>Mon.</em></span>
+          </label>
+        </div>
+        <p class="kond__hint kond__hint--gap">Vorteile gelten ab 350 € Monatsmiete und mindestens 3 Monaten Mietdauer.</p>
         <button class="wf-btn wf-btn--primary kond__testbtn" :disabled="testing || !(test.zip || test.city)" @click="runTest">
           {{ testing ? 'Berechne Route …' : 'Berechnen' }}
         </button>
@@ -222,6 +228,7 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
 .kond__unit input { padding-right: 5.5em; }
 .kond__unit em { position: absolute; right: .8em; top: 50%; transform: translateY(-50%); font-style: normal; font-size: .78em; color: var(--wf-muted); pointer-events: none; }
 .kond__hint { margin: -.3em 0 0; font-size: .8em; color: var(--wf-muted); }
+.kond__hint--gap { margin: -.4em 0 1em; }
 .kond__hint a { color: var(--wf-green); }
 .kond__error { color: var(--wf-red); background: var(--wf-red-soft); border-radius: 10px; padding: .6em .9em; font-size: .88em; margin: 0; }
 .kond__ok { color: var(--wf-green); background: var(--wf-green-soft); border-radius: 10px; padding: .6em .9em; font-size: .88em; margin: 0; }

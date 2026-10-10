@@ -54,7 +54,8 @@ export async function createOfferForInquiry(inquiryId: number): Promise<{ offerI
   // Transportkosten automatisch berechnen (Konditionen im Dashboard)
   const quote: TransportQuote = await quoteTransport(
     { street: inquiry.street, zip: inquiry.zip, city: inquiry.city, country: inquiry.country },
-    items.map((it: any) => ({ price: it.monthly_price !== null ? Number(it.monthly_price) : null, quantity: it.quantity, durationMonths: it.duration_months || 1 }))
+    items.map((it: any) => ({ price: it.monthly_price !== null ? Number(it.monthly_price) : null, quantity: it.quantity, durationMonths: it.duration_months || 1 })),
+    months
   )
   const eur = (v: number) => v.toLocaleString('de-AT', { style: 'currency', currency: 'EUR' })
   note += `${note ? '\n\n' : ''}Monatliche Miete: ${eur(monthly)} · Mietdauer: ${months} ${months === 1 ? 'Monat' : 'Monate'}.`
