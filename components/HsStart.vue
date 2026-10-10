@@ -364,15 +364,17 @@ function scrollToId(id: string, e?: Event) {
 .hss__slides { position: absolute; inset: 0; }
 .hss__slide {
   position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 50%;
-  opacity: 0; transform: scale(1.06); transition: opacity 1.4s ease, transform 7s ease-out;
+  /* nur Überblenden – kein Zoom: wirkt fotografisch statt „gerendert" */
+  opacity: 0; transition: opacity 1.4s ease;
 }
-.hss__slide.is-active { opacity: 1; transform: scale(1); }
+.hss__slide.is-active { opacity: 1; }
 .hss__hero::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
+  /* Schleier nur hinter dem Text (links) – das Foto bleibt ungefiltert sichtbar */
   background:
-    linear-gradient(90deg, rgba(248, 245, 239, .97) 0%, rgba(248, 245, 239, .9) 32%,
-      rgba(248, 245, 239, .45) 52%, rgba(248, 245, 239, 0) 68%),
-    linear-gradient(0deg, var(--cream) 0%, rgba(248, 245, 239, .6) 14%, rgba(248, 245, 239, 0) 30%);
+    linear-gradient(90deg, rgba(248, 245, 239, .94) 0%, rgba(248, 245, 239, .82) 30%,
+      rgba(248, 245, 239, .3) 46%, rgba(248, 245, 239, 0) 58%),
+    linear-gradient(0deg, rgba(248, 245, 239, .55) 0%, rgba(248, 245, 239, 0) 14%);
 }
 .hss__inside { position: relative; z-index: 1; width: 100%; max-width: 1240px; margin: 0 auto; padding: 3em 1.5em 2em; box-sizing: border-box; }
 .hss__inside > * { max-width: 34rem; }
@@ -410,7 +412,7 @@ function scrollToId(id: string, e?: Event) {
     padding: clamp(1em, 3.5vh, 3em) 1.5em clamp(.8em, 2vh, 2em); }
   /* altes Theme-CSS setzt bei h1 flex: 0 1 100% → Überschrift würde sich strecken */
   .hss__inside > * { flex: 0 0 auto; }
-  .hss__inside > .hss__h1 { max-width: 46rem; font-size: clamp(2em, min(4.4vw, 6.2vh), 3.8em) !important; margin-bottom: clamp(.25em, 1.8vh, .45em); }
+  .hss__inside > .hss__h1 { max-width: 40rem; font-size: clamp(2em, min(4.4vw, 6.2vh), 3.8em) !important; margin-bottom: clamp(.25em, 1.8vh, .45em); }
   .hss__inside > .hss__eyebrow { margin-bottom: clamp(.6em, 1.8vh, 1.3em); }
   .hss__inside > .hss__lead { font-size: clamp(.95em, 1.9vh, 1.05em); line-height: 1.6; margin-bottom: clamp(.9em, 2.6vh, 1.8em); }
   .hss__inside > .hss__dots { margin-top: clamp(.9em, 2.4vh, 2em); }

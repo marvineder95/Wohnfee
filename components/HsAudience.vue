@@ -201,9 +201,9 @@ function scrollToProjects(e: Event) {
 .hsa__hero::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background:
-    linear-gradient(90deg, rgba(248, 245, 239, .97) 0%, rgba(248, 245, 239, .88) 32%,
-      rgba(248, 245, 239, .45) 50%, rgba(248, 245, 239, 0) 66%),
-    linear-gradient(0deg, var(--cream) 0%, rgba(248, 245, 239, 0) 16%);
+    linear-gradient(90deg, rgba(248, 245, 239, .94) 0%, rgba(248, 245, 239, .82) 30%,
+      rgba(248, 245, 239, .3) 46%, rgba(248, 245, 239, 0) 58%),
+    linear-gradient(0deg, rgba(248, 245, 239, .7) 0%, rgba(248, 245, 239, 0) 12%);
 }
 .hsa__inside { position: relative; z-index: 1; width: 100%; max-width: 1240px; margin: 0 auto; padding: 4em 1.5em; box-sizing: border-box; }
 .hsa__inside > * { max-width: 32rem; }
