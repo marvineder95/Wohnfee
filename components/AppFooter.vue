@@ -20,7 +20,7 @@ const t = computed(() => {
     nlThanks: 'Fast geschafft! Bitte bestätige deine Anmeldung über den Link in der E-Mail, die wir dir gerade geschickt haben.',
     nlError: 'Bitte E-Mail-Adresse angeben und dem Erhalt zustimmen.',
     rights: 'Alle Rechte vorbehalten.',
-    socials: { instagram: 'WOHNFEE auf Instagram', linkedin: 'WOHNFEE auf LinkedIn', pinterest: 'WOHNFEE auf Pinterest', facebook: 'WOHNFEE auf Facebook' }
+    socials: { instagram: 'WOHNFEE auf Instagram', linkedin: 'WOHNFEE auf LinkedIn', facebook: 'WOHNFEE auf Facebook' }
   }
   const en = {
     services: 'Services', company: 'Company', legal: 'Legal',
@@ -35,7 +35,7 @@ const t = computed(() => {
     nlThanks: 'Almost done! Please confirm your subscription via the link in the e-mail we just sent you.',
     nlError: 'Please enter your e-mail address and agree to receive the newsletter.',
     rights: 'All rights reserved.',
-    socials: { instagram: 'WOHNFEE on Instagram', linkedin: 'WOHNFEE on LinkedIn', pinterest: 'WOHNFEE on Pinterest', facebook: 'WOHNFEE on Facebook' }
+    socials: { instagram: 'WOHNFEE on Instagram', linkedin: 'WOHNFEE on LinkedIn', facebook: 'WOHNFEE on Facebook' }
   }
   return isEn.value ? en : de
 })
@@ -85,10 +85,9 @@ const columns = computed(() => ([
 ]))
 
 const socials = [
-  { key: 'instagram', url: 'https://www.instagram.com/wohnfee.at/' },
-  { key: 'linkedin', url: 'https://www.linkedin.com/company/wohnfee' },
-  { key: 'pinterest', url: 'https://www.pinterest.at/wohnfee/' },
-  { key: 'facebook', url: 'https://www.facebook.com/wohnfee.homestaging' }
+  { key: 'instagram', url: 'https://www.instagram.com/wohnfee.vienna/' },
+  { key: 'linkedin', url: 'https://www.linkedin.com/company/wohn-fee-home-staging-redesign-furniture-leasing/' },
+  { key: 'facebook', url: 'https://www.facebook.com/wohnfee.homestaging/' }
 ] as const
 
 // ---------- Newsletter ----------
@@ -123,21 +122,17 @@ const year = new Date().getFullYear()
           <p class="wffoot__tagline">{{ t.tagline }}</p>
           <div class="wffoot__socials">
             <a v-for="s in socials" :key="s.key" :href="s.url" target="_blank" rel="noopener"
-               class="wffoot__social" :aria-label="(t.socials as any)[s.key]">
-              <svg v-if="s.key === 'instagram'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
-                <rect x="3.2" y="3.2" width="17.6" height="17.6" rx="4.5" />
-                <circle cx="12" cy="12" r="4" />
-                <circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none" />
+               class="wffoot__social" :class="`wffoot__social--${s.key}`" :aria-label="(t.socials as any)[s.key]">
+              <!-- Logos in den Originalfarben der Plattformen -->
+              <svg v-if="s.key === 'instagram'" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.9" aria-hidden="true">
+                <rect x="3.6" y="3.6" width="16.8" height="16.8" rx="4.8" />
+                <circle cx="12" cy="12" r="3.9" />
+                <circle cx="17.1" cy="6.9" r="1.15" fill="#fff" stroke="none" />
               </svg>
-              <svg v-else-if="s.key === 'linkedin'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <rect x="3.5" y="3.5" width="4.4" height="10" rx="0.8" />
-                <circle cx="5.7" cy="17.6" r="2.2" />
-                <path d="M11 8.2h4.1v1.9c.7-1.2 2-2.2 3.7-2.2 2.9 0 4.2 1.9 4.2 5v6.6h-4.3v-5.9c0-1.6-.6-2.6-2-2.6-1.4 0-2.3 1-2.3 2.7v5.8H11z" />
+              <svg v-else-if="s.key === 'linkedin'" viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
+                <path d="M6.94 8.98H3.56V20h3.38V8.98ZM5.25 3.5a1.96 1.96 0 1 0 0 3.92 1.96 1.96 0 0 0 0-3.92ZM20.44 13.68c0-3.02-1.61-4.43-3.77-4.43-1.74 0-2.52.96-2.96 1.63V8.98h-3.37c.04.96 0 11.02 0 11.02h3.37v-6.15c0-.33.02-.66.12-.9.27-.66.87-1.34 1.89-1.34 1.33 0 1.86 1.01 1.86 2.5V20h3.37v-6.32h-.51Z" />
               </svg>
-              <svg v-else-if="s.key === 'pinterest'" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-                <path d="M12 2.8a9.2 9.2 0 0 0-3.4 17.7c-.1-.7-.2-1.9 0-2.7l1.2-5s-.3-.6-.3-1.5c0-1.4.8-2.5 1.9-2.5.9 0 1.3.7 1.3 1.5 0 .9-.6 2.2-.9 3.4-.2 1 .5 1.9 1.5 1.9 1.9 0 3.3-2 3.3-4.8 0-2.5-1.8-4.3-4.4-4.3a4.6 4.6 0 0 0-4.8 4.6c0 .9.4 1.9.8 2.4l-.3 1.2c-.1.4-.3.5-.7.3-1.2-.6-2-2.4-2-3.9 0-3.2 2.3-6.1 6.7-6.1 3.5 0 6.3 2.5 6.3 5.9 0 3.5-2.2 6.3-5.3 6.3-1 0-2-.5-2.3-1.2l-.6 2.4c-.2.9-.8 2-1.3 2.6A9.2 9.2 0 1 0 12 2.8z" />
-              </svg>
-              <svg v-else viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+              <svg v-else viewBox="0 0 24 24" fill="#fff" aria-hidden="true">
                 <path d="M13.4 21v-7.8h2.6l.4-3h-3V8.3c0-.9.3-1.5 1.6-1.5h1.5V4.1c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.2H7.6v3h2.7V21z" />
               </svg>
             </a>
@@ -281,15 +276,21 @@ const year = new Date().getFullYear()
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.1em;
-  height: 2.1em;
-  border-radius: .45em;
-  background: #2f5d40;
+  width: 2.3em;
+  height: 2.3em;
+  border-radius: .6em;
   color: #fff;
-  transition: background .15s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+  transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
 }
-.wffoot__social:hover { background: #759364; }
-.wffoot__social svg { width: 1.15em; height: 1.15em; }
+.wffoot__social:hover { transform: translateY(-2px); box-shadow: 0 8px 18px rgba(0, 0, 0, .16); filter: brightness(1.06); }
+.wffoot__social svg { width: 1.2em; height: 1.2em; }
+/* Originalfarben der Plattformen */
+.wffoot__social--instagram {
+  background: radial-gradient(circle at 30% 107%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+}
+.wffoot__social--linkedin { background: #0a66c2; }
+.wffoot__social--facebook { background: #1877f2; }
 
 /* Spalten */
 .wffoot__col h3 {
