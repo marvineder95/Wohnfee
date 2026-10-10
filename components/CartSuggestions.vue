@@ -72,10 +72,11 @@ const title = (i: CatalogItem) => (isEn.value && i.titleEn) || i.title
 </template>
 
 <style scoped>
-.cs { --green: #2f5d40; --ink: #2b2b28; --muted: #7a7568; --line: #e6e0d2; margin: -.4em 0 .9em; }
+.cs { --green: #2f5d40; --ink: #2b2b28; --muted: #7a7568; --line: #e6e0d2; margin: -.4em 0 .9em; min-width: 0; max-width: 100%; }
 .cs__head { margin: 0 0 .5em; font-size: .76em; color: var(--muted); line-height: 1.45; text-align: left; }
-.cs__list { list-style: none; margin: 0; padding: 0; display: grid; gap: .4em; }
-.cs__item { display: flex; align-items: center; gap: .6em; padding: .45em .5em; border: 1px dashed #d8d0bd; border-radius: 12px; background: #fff; margin: 0; }
+/* minmax(0, 1fr): lange Produktnamen dürfen die Liste nicht über den Warenkorb hinaus dehnen */
+.cs__list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .4em; }
+.cs__item { min-width: 0; box-sizing: border-box; display: flex; align-items: center; gap: .6em; padding: .45em .5em; border: 1px dashed #d8d0bd; border-radius: 12px; background: #fff; margin: 0; }
 .cs__img { flex: none; width: 38px; height: 38px; border-radius: 9px; overflow: hidden; background: #f7f4ec; color: #b4ab97; display: flex; align-items: center; justify-content: center; }
 .cs__img img { width: 100%; height: 100%; object-fit: cover; }
 .cs__main { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: .05em; text-align: left; }
