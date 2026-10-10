@@ -32,7 +32,7 @@ const t = computed(() => isEn.value ? {
 } : {
   overline1: 'Furniture Leasing',
   h2a: 'Leihmöbel für Expats',
-  lead: 'Mit WOHN.FEE Furniture Leasing bieten wir seit Anfang 2012 als erstes Unternehmen in Österreich ein exquisites Service für all jene, die planen, ihren Wohnort kurzfristig und für eine begrenzte Zeit zu verändern – innerhalb Österreichs und für Expatriats.',
+  lead: 'Mit WOHNFEE Furniture Leasing bieten wir seit Anfang 2012 als erstes Unternehmen in Österreich ein exquisites Service für all jene, die planen, ihren Wohnort kurzfristig und für eine begrenzte Zeit zu verändern – innerhalb Österreichs und für Expatriats.',
   p2: 'Zu unseren Kunden zählen heute zahlreiche Botschaften, Relocation-Unternehmen und große Unternehmen, die ihren Mitarbeitern den Einstieg erleichtern möchten.',
   p3: 'Wir unterstützen Ihre Kunden oder Mitarbeiter gerne auf dem kürzesten Weg zu ihrem neuen Zuhause auf Zeit!',
   features: [
@@ -44,7 +44,7 @@ const t = computed(() => isEn.value ? {
   overline2: 'Unser Angebot',
   h2b: 'Individuelle Einrichtungslösungen',
   offer1: 'Unser Angebot umfasst sowohl attraktive Leihmöbel-Pakete als auch individuelle Lösungen. Zu besten Konditionen.',
-  offer2: 'Wir gestalten den kompletten Wohnbereich nach den Wünschen des Kunden – mit Möbeln, Accessoires, Küchenutensilien, Elektrogeräten, Bettwäsche u.v.a.m. Damit bieten wir eine intelligente Alternative zum kosten- und zeitintensiven Kauf des Interieurs. Ein Mitarbeiter bzw. eine Mitarbeiterin von WOHN.FEE Furniture Leasing betreut die komplette Abwicklung des Auftrags, vom ersten bis zum letzten Tag, von der Montage bis zur Demontage und Endreinigung.',
+  offer2: 'Wir gestalten den kompletten Wohnbereich nach den Wünschen des Kunden – mit Möbeln, Accessoires, Küchenutensilien, Elektrogeräten, Bettwäsche u.v.a.m. Damit bieten wir eine intelligente Alternative zum kosten- und zeitintensiven Kauf des Interieurs. Ein Mitarbeiter bzw. eine Mitarbeiterin von WOHNFEE Furniture Leasing betreut die komplette Abwicklung des Auftrags, vom ersten bis zum letzten Tag, von der Montage bis zur Demontage und Endreinigung.',
   steps: [
     { title: 'Planung', text: 'Wir beraten Sie und erstellen ein individuelles Einrichtungskonzept.', icon: 'plan' },
     { title: 'Lieferung & Montage', text: 'Pünktliche Lieferung und professionelle Montage vor Ort.', icon: 'truck' },

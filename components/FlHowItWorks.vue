@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// „So funktioniert WOHN.FEE Furniture Leasing" – Ablauf-Sektion der FL-Seiten:
+// „So funktioniert WOHNFEE Furniture Leasing" – Ablauf-Sektion der FL-Seiten:
 // 6 nummerierte Schritt-Karten mit Foto, darunter 5 Feature-Karten mit Icons.
 // Vollständig SSR-gerendert (SEO), keine Interaktion nötig.
 const props = withDefaults(defineProps<{ lang?: 'de' | 'en' }>(), { lang: 'de' })
@@ -16,7 +16,7 @@ const base = '/files/wohnfee/bilder/furniture-leasing/fl-steps'
 
 const content = computed(() => props.lang === 'en' ? {
   kicker: 'IT’S THAT SIMPLE',
-  title: 'How WOHN.FEE Furniture Leasing works',
+  title: 'How WOHNFEE Furniture Leasing works',
   subtitle: 'We make furnished living simple: you choose your furniture – we deliver, assemble and pick everything up again at the end of the rental period. Flexible, reliable and in the highest quality.',
   steps: [
     { img: `${base}/step-1.jpg`, title: 'Choose your furniture', text: 'Discover our high-quality rental furniture and put together your individual furnishing concept.' },
@@ -35,7 +35,7 @@ const content = computed(() => props.lang === 'en' ? {
   ]
 } : {
   kicker: 'SO EINFACH GEHT’S',
-  title: 'So funktioniert WOHN.FEE Furniture Leasing',
+  title: 'So funktioniert WOHNFEE Furniture Leasing',
   subtitle: 'Wir machen möbliertes Wohnen einfach: Sie wählen Ihre Möbel – wir liefern, montieren und holen alles am Ende der Mietdauer wieder ab. Flexibel, zuverlässig und in höchster Qualität.',
   steps: [
     { img: `${base}/step-1.jpg`, title: 'Möbel auswählen', text: 'Entdecken Sie unsere hochwertigen Leihmöbel und stellen Sie Ihr individuelles Einrichtungskonzept zusammen.' },

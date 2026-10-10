@@ -1,5 +1,5 @@
 <script setup lang="ts">
-// WOHN.FEE cookie consent — first layer (decision) and second layer (granular settings).
+// WOHNFEE cookie consent — first layer (decision) and second layer (granular settings).
 // Both main actions carry equal visual weight; optional categories are never
 // pre-selected; nothing non-essential loads before an explicit choice.
 const { visible, view, consent, init, persist, open } = useCookiebar()

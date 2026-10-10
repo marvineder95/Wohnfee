@@ -205,7 +205,7 @@
      "headline": "Fancy something new?",
      "headlineUnit": "h2",
      "cssClass": "bg-nl",
-     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohnfee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
     }
    ]
   },
@@ -314,7 +314,7 @@
     {
      "id": "69",
      "type": "headline",
-     "headline": "What are the benefits of WOHN.FEE home staging?",
+     "headline": "What are the benefits of WOHNFEE home staging?",
      "headlineUnit": "h1",
      "cssClass": "no-flex center"
     },
@@ -388,7 +388,7 @@
     {
      "id": "340",
      "type": "headline",
-     "headline": "WOHN.FEE Redesign",
+     "headline": "WOHNFEE Redesign",
      "headlineUnit": "h1",
      "cssClass": "no-flex"
     },
@@ -398,15 +398,15 @@
      "headline": "Not happy with your living environment?",
      "headlineUnit": "h2",
      "cssClass": "",
-     "html": "<p>Our offer is aimed at anyone who wants to change their living environment but is not quite sure what and how. Adapting rooms to new needs, creating new perspectives, zoning areas, using what you have and combining it with new pieces, adding something special.</p>\n<h3><strong>Fresh, innovative, with that certain something. </strong></h3>\n<p>The <span class=\"wohnfee-light\">WOHN.FEE</span> interior professionals support you in redesigning your own living spaces. We help you define your ideas and implement them either all at once or \"step by step\".</p>\n<p>This service is also recommended when moving into a new home – because with an overall concept you have a great decision-making aid for buying furniture, and your individual, cosy home won't take long to arrive.</p>"
+     "html": "<p>Our offer is aimed at anyone who wants to change their living environment but is not quite sure what and how. Adapting rooms to new needs, creating new perspectives, zoning areas, using what you have and combining it with new pieces, adding something special.</p>\n<h3><strong>Fresh, innovative, with that certain something. </strong></h3>\n<p>The <span class=\"wohnfee-light\">WOHNFEE</span> interior professionals support you in redesigning your own living spaces. We help you define your ideas and implement them either all at once or \"step by step\".</p>\n<p>This service is also recommended when moving into a new home – because with an overall concept you have a great decision-making aid for buying furniture, and your individual, cosy home won't take long to arrive.</p>"
     },
     {
      "id": "342",
      "type": "text",
-     "headline": "Redesign by the WOHN.FEE professionals",
+     "headline": "Redesign by the WOHNFEE professionals",
      "headlineUnit": "h2",
      "cssClass": "",
-     "html": "<p>The <span class=\"wohnfee-light\">WOHN.FEE</span> analyses the conditions of your living spaces and clarifies the wishes, ideas and needs of all residents in a personal conversation. From this, an individual design concept is created with colours, materials, lighting, furniture and accessories.</p>\n<h3><strong>Implementation from a single source - fairy service, so to speak.</strong></h3>\n<p>The offer includes the entire redesign of the interior spaces. We plan and organise all the necessary things. If structural alterations are also required, we work with selected architecture firms.</p>\n<p>Properties <strong>of any size</strong> are changed for you – according to budget specifications and cost estimate – exactly as you dream of. No standard package, but something special.</p>\n<p>&nbsp;</p>"
+     "html": "<p>The <span class=\"wohnfee-light\">WOHNFEE</span> analyses the conditions of your living spaces and clarifies the wishes, ideas and needs of all residents in a personal conversation. From this, an individual design concept is created with colours, materials, lighting, furniture and accessories.</p>\n<h3><strong>Implementation from a single source - fairy service, so to speak.</strong></h3>\n<p>The offer includes the entire redesign of the interior spaces. We plan and organise all the necessary things. If structural alterations are also required, we work with selected architecture firms.</p>\n<p>Properties <strong>of any size</strong> are changed for you – according to budget specifications and cost estimate – exactly as you dream of. No standard package, but something special.</p>\n<p>&nbsp;</p>"
     },
     {
      "id": "354",
@@ -474,7 +474,7 @@
      "headline": "",
      "headlineUnit": "h2",
      "cssClass": "icon_list no_icon",
-     "html": "<h3>An investment that pays off</h3>\n<p>The cost of a redesign consultation or even a complete redesign \"from WOHN.FEE's hand\" is definitely worth it – because the many hours you would spend searching for suitable materials, furniture, lighting etc. are taken off your hands. You make the final selection – according to your specifications, of course – but enhanced with the professional tips of WOHN.FEE. And you can then already enjoy the time you have saved in your new home.</p>"
+     "html": "<h3>An investment that pays off</h3>\n<p>The cost of a redesign consultation or even a complete redesign \"from WOHNFEE's hand\" is definitely worth it – because the many hours you would spend searching for suitable materials, furniture, lighting etc. are taken off your hands. You make the final selection – according to your specifications, of course – but enhanced with the professional tips of WOHNFEE. And you can then already enjoy the time you have saved in your new home.</p>"
     }
    ],
    "slider": [
@@ -649,10 +649,10 @@
       {
        "id": "707",
        "type": "text",
-       "headline": "WOHN.FEE online",
+       "headline": "WOHNFEE online",
        "headlineUnit": "h2",
        "cssClass": "",
-       "html": "<ul>\n<li><a rel=\"noopener\" href=\"https://www.instagram.com/wohnfee.vienna/\" target=\"_blank\">WOHN.FEE on Instagram</a></li>\n<li><a rel=\"noopener\" href=\"https://www.facebook.com/wohnfee.homestaging\" target=\"_blank\">WOHN.FEE on Facebook</a></li>\n</ul>"
+       "html": "<ul>\n<li><a rel=\"noopener\" href=\"https://www.instagram.com/wohnfee.vienna/\" target=\"_blank\">WOHNFEE on Instagram</a></li>\n<li><a rel=\"noopener\" href=\"https://www.facebook.com/wohnfee.homestaging\" target=\"_blank\">WOHNFEE on Facebook</a></li>\n</ul>"
       }
      ]
     }
@@ -778,7 +778,7 @@
      "headline": "Fancy something new?",
      "headlineUnit": "h2",
      "cssClass": "bg-nl",
-     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohnfee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
     }
    ]
   },
@@ -816,7 +816,7 @@
      "headline": "Fancy something new?",
      "headlineUnit": "h2",
      "cssClass": "bg-nl",
-     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohnfee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
     }
    ]
   },
@@ -841,7 +841,7 @@
      "headline": "Fancy something new?",
      "headlineUnit": "h2",
      "cssClass": "bg-nl",
-     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohnfee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
     }
    ]
   },
@@ -866,7 +866,7 @@
      "headline": "Fancy something new?",
      "headlineUnit": "h2",
      "cssClass": "bg-nl",
-     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohnfee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
     }
    ]
   },
@@ -891,7 +891,7 @@
      "headline": "Fancy something new?",
      "headlineUnit": "h2",
      "cssClass": "bg-nl",
-     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohnfee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
     }
    ]
   },
@@ -933,7 +933,7 @@
      "headline": "Fancy something new?",
      "headlineUnit": "h2",
      "cssClass": "bg-nl",
-     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohnfee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
     }
    ]
   },
@@ -973,7 +973,7 @@
      "headline": "Your advantages",
      "headlineUnit": "h2",
      "cssClass": "",
-     "html": "<p>With a WOHN.FEE home staging you increase the recognition value of your properties! Marketing times are shortened and price reductions avoided. Here you will find examples of show apartments in shell constructions and completed residential complexes, as well as an example of a converted construction container used as a sales room and office.</p>"
+     "html": "<p>With a WOHNFEE home staging you increase the recognition value of your properties! Marketing times are shortened and price reductions avoided. Here you will find examples of show apartments in shell constructions and completed residential complexes, as well as an example of a converted construction container used as a sales room and office.</p>"
     },
     {
      "type": "newslist",
@@ -1027,7 +1027,7 @@
      "headline": "",
      "headlineUnit": "h2",
      "cssClass": "",
-     "html": "<h3>Our experience</h3>\n<p>WOHN.FEE home staging demonstrably leads to faster purchase decisions by prospective buyers and thus to fewer viewing appointments until the sale. We have particularly good experience with properties that have difficult floor plans or many sloping ceilings!</p>\n<p>The financing of a home staging is usually provided by the owner of the property. So as an agent, you take no financial risk.</p>\n<p>You take care of the sale, we take care of the rest!</p>"
+     "html": "<h3>Our experience</h3>\n<p>WOHNFEE home staging demonstrably leads to faster purchase decisions by prospective buyers and thus to fewer viewing appointments until the sale. We have particularly good experience with properties that have difficult floor plans or many sloping ceilings!</p>\n<p>The financing of a home staging is usually provided by the owner of the property. So as an agent, you take no financial risk.</p>\n<p>You take care of the sale, we take care of the rest!</p>"
     },
     {
      "type": "newslist",
@@ -1342,7 +1342,7 @@
      "headline": "Fancy something new?",
      "headlineUnit": "h2",
      "cssClass": "bg-nl",
-     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohnfee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
     }
    ]
   },
@@ -1364,7 +1364,7 @@
     {
      "id": "375",
      "type": "headline",
-     "headline": "The WOHN.FEE team",
+     "headline": "The WOHNFEE team",
      "headlineUnit": "h1",
      "cssClass": ""
     },
@@ -1390,7 +1390,7 @@
      "headline": "",
      "headlineUnit": "h2",
      "cssClass": "teamfoto",
-     "html": "<h2>Sandra Berte</h2>\n<p>… has been part of the WOHN.FEE team since autumn 2015 and is mainly responsible for planning and executing stagings as well as redesign projects. Even in challenging Furniture Leasing projects she proves her poise and humour.</p>\n<blockquote>\n<p>\"What makes my job exciting is the variety. From planning at the desk to preparatory organisation in the warehouse to the finishing touches on staging day, every project is different and inspiring.\"</p>\n</blockquote>\n<p>The Berlin native, who came to Vienna for love via Hamburg, is a passionate member of the WOHN.FEE team. As a trained master florist, she successfully completed further training in interior design in 2014. She brings a special flair for designing living spaces and plenty of ideas for redesigning properties that have \"seen better days\".</p>\n<h3>Contact</h3>\n<p>E-mail: <a href=\"mailto:sandra.berte@wohnfee.at\">sandra.berte@wohnfee.at</a></p>",
+     "html": "<h2>Sandra Berte</h2>\n<p>… has been part of the WOHNFEE team since autumn 2015 and is mainly responsible for planning and executing stagings as well as redesign projects. Even in challenging Furniture Leasing projects she proves her poise and humour.</p>\n<blockquote>\n<p>\"What makes my job exciting is the variety. From planning at the desk to preparatory organisation in the warehouse to the finishing touches on staging day, every project is different and inspiring.\"</p>\n</blockquote>\n<p>The Berlin native, who came to Vienna for love via Hamburg, is a passionate member of the WOHNFEE team. As a trained master florist, she successfully completed further training in interior design in 2014. She brings a special flair for designing living spaces and plenty of ideas for redesigning properties that have \"seen better days\".</p>\n<h3>Contact</h3>\n<p>E-mail: <a href=\"mailto:sandra.berte@wohnfee.at\">sandra.berte@wohnfee.at</a></p>",
      "src": "files/wohnfee/team/WohnFee_Brandingfotos_23-6.jpg",
      "alt": "",
      "title": null,
@@ -1496,7 +1496,7 @@
      "headline": "Fancy something new?",
      "headlineUnit": "h2",
      "cssClass": "bg-nl",
-     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohnfee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
     }
    ]
   },
@@ -1679,7 +1679,7 @@
      "headline": "Fancy something new?",
      "headlineUnit": "h2",
      "cssClass": "bg-nl",
-     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohn.Fee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
+     "html": "<p style=\"text-align: center;\">We will gladly inform you about current projects of <span class=\"wohnfee-light\">Wohnfee</span> in our quarterly newsletter.</p>\n<p style=\"text-align: center;\"><a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/subscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"abutton\">Sign up here</a></p>\n<p style=\"text-align: center;\">You can <a rel=\"noopener\" href=\"https://wohnfee.us7.list-manage.com/unsubscribe?u=72faf745fb1ebab6bf72b454f&id=41014a8a53\" target=\"_blank\" class=\"light\">unsubscribe via this link</a> at any time.</p>"
     }
    ]
   },
