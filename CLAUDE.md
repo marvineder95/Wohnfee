@@ -20,7 +20,9 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   `pageRoute` (DE-Route, auch für `/en/…`).
 - Beiträge aus dem Dashboard (`/admin/artikel`): Tabelle `blog_posts`, Rubriken aktuelles,
   projekte, trends-tipps, events (`BLOG_SECTIONS` in server/utils/blog.ts, Links
-  `/blogartikel-<rubrik>/<slug>.html`), Projekte mit Zielgruppen (`categories`), Galerie (`gallery`).
+  `/blogartikel-<rubrik>/<slug>.html`), Projekte mit Zielgruppen (`categories`), Galerie (`gallery`),
+  Vorher-Foto (`before_image` → Vorher/Nachher-Regler `HsBeforeAfter.vue`, neuester auch auf der Startseite)
+  und Bildunterschrift (`photo_facts`). Rücksetzpunkt vor den Echtheits-Anpassungen: Git-Tag `vor-foto-anpassung`.
   Nur DE. Öffentlich via `/api/blog`; Blog-Übersichten, Artikel und Sitemap werden live gerendert.
 
 ## Furniture Leasing – Mietregeln

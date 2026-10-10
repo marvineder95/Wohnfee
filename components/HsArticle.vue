@@ -30,6 +30,12 @@ const SECTION_LABELS_EN: Record<string, string> = {
 }
 const sectionLabel = computed(() => t(SECTION_LABELS[props.article.section] || 'Blog', SECTION_LABELS_EN[props.article.section] || 'Blog'))
 const lead = computed(() => blogTeaser(props.article, 400))
+// Bildunterschrift: Fakten zum Projekt + Hinweis auf eigene Fotos (Projekte immer, sonst nur mit Fakten)
+const photoCredit = computed(() => {
+  const own = t('Foto aus unserem eigenen Projekt', 'Photo from our own project')
+  if (props.article.facts) return `${props.article.facts} · ${own}`
+  return props.article.section === 'projekte' ? own : ''
+})
 const backRoute = computed(() => lp(`/${props.article.section}.html`))
 
 // Lesefortschritt
@@ -68,10 +74,18 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
         <h1 class="hsa2__h1" itemprop="name">{{ article.headline }}</h1>
         <p v-if="lead" class="hsa2__lead" itemprop="description">{{ lead }}</p>
       </div>
-      <figure v-if="article.image" class="hsa2__cover">
+      <!-- Mit Vorher-Foto: Vorher/Nachher-Regler statt Titelbild -->
+      <div v-if="article.image && article.beforeImage" class="hsa2__cover hsa2__cover--ba">
+        <HsBeforeAfter :before="asset(article.beforeImage)" :after="asset(article.image)" :alt="article.imageAlt || article.headline" />
+      </div>
+      <figure v-else-if="article.image" class="hsa2__cover">
         <HsImg :src="asset(article.image)" :alt="article.imageAlt || article.headline" itemprop="image"
                  sizes="xs:100vw sm:100vw md:100vw lg:1100px xl:1100px xxl:1100px 2xl:1100px" loading="eager" />
       </figure>
+      <p v-if="article.image && photoCredit" class="hsa2__credit">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h3l2-2.5h6L17 8h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Zm8 9a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z" /></svg>
+        {{ photoCredit }}
+      </p>
     </header>
 
     <!-- ── Inhalt ───────────────────────────────────── -->
@@ -130,6 +144,10 @@ onUnmounted(() => window.removeEventListener('scroll', onScroll))
 </template>
 
 <style scoped>
+.hsa2__cover--ba :deep(.hsba__stage) { box-shadow: 0 22px 50px rgba(60, 50, 30, .16); max-height: 640px; }
+.hsa2__credit { max-width: 1100px; margin: .7em auto 0; padding: 0 1.5em; box-sizing: border-box; display: flex; align-items: center; justify-content: center; gap: .45em; font-size: .84rem; color: #8a857a; text-align: center; }
+.hsa2__credit svg { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.6; }
+
 .hsa2 {
   --green: #2f5d40; --green-dark: #26492f; --green-soft: #eef3ee;
   --ink: #2b2b28; --muted: #5f5b52; --line: #e6e0d2; --cream: #f8f5ef;

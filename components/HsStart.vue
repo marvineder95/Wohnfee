@@ -64,7 +64,10 @@ const redesignText = computed(() => {
 })
 
 // Projekte & Presse
-const projects = computed(() => blogItems('projekte', lang.value).filter(n => n.image).slice(0, 3))
+// Projekte inkl. Dashboard-Beiträgen; der neueste mit Vorher-Foto zeigt den Vorher/Nachher-Regler
+const projectFeed = await useBlogFeed('projekte')
+const projects = computed(() => projectFeed.value.filter(n => n.image).slice(0, 3))
+const baProject = computed(() => projectFeed.value.find(n => n.image && n.beforeImage) || null)
 const pressAll = computed(() => Object.values((isEn.value ? newsEn : news) as Record<string, any>)
   .filter((n: any) => n.archive === '8').sort((a: any, b: any) => Number(b.date) - Number(a.date)))
 const pressClips = computed(() => pressAll.value.filter((n: any) => n.image).slice(0, 5))
@@ -132,6 +135,8 @@ function scrollToId(id: string, e?: Event) {
         </div>
       </div>
 
+      <p class="hss__herocredit"><WfIcon name="camera" :size="13" /> {{ t('Echte Fotos aus unseren Projekten', 'Real photos from our projects') }}</p>
+
       <nav class="hss__services" :aria-label="t('Unsere Leistungen', 'Our services')">
         <a v-for="s in services" :key="s.id" :href="`#${s.id}`" class="hss__service" @click="scrollToId(s.id, $event)">
           <span class="hss__sno">{{ s.no }}</span>
@@ -159,7 +164,14 @@ function scrollToId(id: string, e?: Event) {
             <NuxtLink :to="lp('/home-staging/preise.html')" class="hss__btn hss__btn--ghost">{{ t('Preise & Pakete', 'Prices & packages') }}</NuxtLink>
           </div>
         </div>
-        <div class="hss__collage">
+        <div v-if="baProject" class="hss__ba">
+          <HsBeforeAfter :before="asset(baProject.beforeImage)" :after="asset(baProject.image)" :alt="baProject.headline" />
+          <NuxtLink :to="baProject.route" class="hss__bacap">
+            <strong>{{ baProject.headline }}</strong>
+            <small>{{ baProject.facts || t('Eigenes WOHNFEE-Projekt', 'Our own WOHNFEE project') }} →</small>
+          </NuxtLink>
+        </div>
+        <div v-else class="hss__collage">
           <HsImg src="/files/wohnfee/bilder_slider/SLIDER_Gobergasse-96_0108.jpg" alt="" class="hss__cimg hss__cimg--main"
                  sizes="xs:100vw sm:100vw md:60vw lg:600px xl:600px xxl:600px 2xl:600px" />
           <HsImg src="/files/wohnfee/bilder/homestaging/Liam 61.jpg" alt="" class="hss__cimg hss__cimg--small"
@@ -245,6 +257,7 @@ function scrollToId(id: string, e?: Event) {
           <div>
             <p class="hss__divider hss__divider--left"><span>{{ t('Referenzen', 'References') }}</span></p>
             <h2 class="hss__h2">{{ t('Aktuelle Projekte', 'Recent projects') }}</h2>
+            <p class="hss__own"><WfIcon name="camera" :size="15" /> {{ t('Alle Fotos stammen aus unseren eigenen Projekten – keine Stock- oder KI-Bilder.', 'All photos come from our own projects – no stock or AI images.') }}</p>
           </div>
           <NuxtLink :to="lp('/projekte.html')" class="hss__more">{{ t('Alle Projekte', 'All projects') }} <WfIcon name="arrow" :size="15" /></NuxtLink>
         </div>
@@ -254,6 +267,7 @@ function scrollToId(id: string, e?: Event) {
             <span class="hss__pbody">
               <small>{{ blogDate(p.date, lang) }}</small>
               <strong>{{ p.headline }}</strong>
+              <em v-if="p.facts" class="hss__pfacts">{{ p.facts }}</em>
             </span>
           </NuxtLink>
         </div>
@@ -420,6 +434,20 @@ function scrollToId(id: string, e?: Event) {
   .hss__service { padding: clamp(.65em, 1.6vh, 1.1em) 1.3em; }
 }
 .hss__service svg { flex: none; width: 1.2em; height: 1.2em; fill: none; stroke: var(--green); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── Echtheit: Foto-Hinweise & Vorher/Nachher ── */
+.hss__herocredit {
+  position: absolute; z-index: 1; top: 1.1em; right: 1.5em; margin: 0; display: inline-flex; align-items: center; gap: .4em;
+  padding: .35em .8em; border-radius: 999px; background: rgba(255, 255, 255, .78); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+  font-size: .74em; color: var(--ink); letter-spacing: .02em;
+}
+.hss__own { display: flex; align-items: center; gap: .45em; margin: .6em 0 0; font-size: .86em; color: var(--muted); }
+.hss__pfacts { font-style: normal; font-size: .8em; color: var(--muted); }
+.hss__ba { display: grid; gap: .8em; }
+.hss__ba :deep(.hsba__stage) { box-shadow: 0 22px 50px rgba(60, 50, 30, .16); }
+.hss__bacap { display: flex; flex-direction: column; gap: .15em; text-decoration: none; color: var(--ink); }
+.hss__bacap strong { font-family: var(--serif); font-weight: 500; font-size: 1.05em; }
+.hss__bacap small { color: var(--green); font-size: .84em; }
 
 /* ── Split-Layouts ── */
 .hss__split { display: grid; grid-template-columns: 1fr 1.05fr; gap: 4.5em; align-items: center; }

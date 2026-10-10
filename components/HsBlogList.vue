@@ -124,6 +124,7 @@ function scrollToId(id: string, e?: Event) {
         <p class="hsb__eyebrow">Blog</p>
         <h1 class="hsb__h1">{{ page.title }}</h1>
         <p class="hsb__lead">{{ t(cfg.lead[0], cfg.lead[1]) }}</p>
+        <p v-if="section === 'projekte'" class="hsb__own"><WfIcon name="camera" :size="15" /> {{ t('Alle Fotos stammen aus unseren eigenen Projekten – keine Stock- oder KI-Bilder.', 'All photos come from our own projects – no stock or AI images.') }}</p>
 
         <NuxtLink v-if="featured" :to="href(featured)" :external="isExternal(featured)" :target="isExternal(featured) ? '_blank' : undefined" class="hsb__feature">
           <span class="hsb__badge">{{ t('Neuester Beitrag', 'Latest post') }}{{ cfg.filter === 'type' ? ` · ${badge(featured)}` : '' }}</span>
@@ -168,10 +169,12 @@ function scrollToId(id: string, e?: Event) {
                        sizes="xs:100vw sm:100vw md:50vw lg:400px xl:400px xxl:400px 2xl:400px" />
               <span v-else class="hsb__ph"><WfIcon name="leaf" :size="34" /></span>
               <span class="hsb__year">{{ badge(n) }}</span>
+              <span v-if="n.beforeImage" class="hsb__bab">{{ t('Vorher / Nachher', 'Before / after') }}</span>
             </div>
             <div class="hsb__cbody">
               <span class="hsb__cmeta">{{ blogDate(n.date, lang) }} · {{ blogReadingMinutes(n) }} {{ t('Min.', 'min') }}</span>
               <h3>{{ n.headline }}</h3>
+              <em v-if="n.facts" class="hsb__facts">{{ n.facts }}</em>
               <p>{{ blogTeaser(n) }}</p>
               <span class="hsb__clink">{{ linkLabel(n) }} <WfIcon name="arrow" :size="14" /></span>
             </div>
@@ -307,6 +310,9 @@ function scrollToId(id: string, e?: Event) {
   position: absolute; left: .9em; top: .9em; font-size: .72em; font-weight: 700; letter-spacing: .06em;
   background: rgba(255, 255, 255, .92); color: var(--green); border-radius: 999px; padding: .35em .8em;
 }
+.hsb__own { display: flex; align-items: center; gap: .45em; margin: -.6em 0 1.4em; font-size: .86em; color: var(--muted); }
+.hsb__facts { font-style: normal; font-size: .8em; color: var(--green); }
+.hsb__bab { position: absolute; right: .8em; bottom: .8em; padding: .25em .7em; border-radius: 999px; background: rgba(255, 255, 255, .9); font-size: .72em; letter-spacing: .06em; color: var(--green); }
 .hsb__cbody { padding: 1.2em 1.35em 1.4em; display: flex; flex-direction: column; flex: 1; gap: .35em; }
 .hsb__cbody h3 { font-size: 1.18em; line-height: 1.35; margin: 0; }
 .hsb__cbody p { margin: .2em 0 .6em; font-size: .88em; line-height: 1.65; color: var(--muted); }

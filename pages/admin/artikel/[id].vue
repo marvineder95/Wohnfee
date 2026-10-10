@@ -31,13 +31,15 @@ interface Form {
   bodyHtml: string
   coverImage: string
   coverAlt: string
+  beforeImage: string
+  photoFacts: string
   metaDescription: string
   status: 'entwurf' | 'veroeffentlicht'
   publishedAt: string // datetime-local (Ortszeit)
 }
 const empty = (): Form => ({
   section: startSection, categories: [], gallery: [],
-  title: '', slug: '', teaser: '', bodyHtml: '', coverImage: '', coverAlt: '',
+  title: '', slug: '', teaser: '', bodyHtml: '', coverImage: '', coverAlt: '', beforeImage: '', photoFacts: '',
   metaDescription: '', status: 'entwurf', publishedAt: ''
 })
 
@@ -88,7 +90,7 @@ async function load() {
     Object.assign(form, {
       section: a.section, categories: a.categories || [], gallery: a.gallery || [],
       title: a.title, slug: a.slug, teaser: a.teaser, bodyHtml: a.bodyHtml, coverImage: a.coverImage,
-      coverAlt: a.coverAlt, metaDescription: a.metaDescription, status: a.status, publishedAt: toLocal(a.publishedAt)
+      coverAlt: a.coverAlt, beforeImage: a.beforeImage || '', photoFacts: a.photoFacts || '', metaDescription: a.metaDescription, status: a.status, publishedAt: toLocal(a.publishedAt)
     })
     authorName.value = a.authorName
     slugTouched.value = true
@@ -147,6 +149,27 @@ async function onCover(e: Event) {
   }
 }
 
+// Vorher-Foto (Vorher/Nachher-Regler über dem Titelbild)
+const beforeUploading = ref(false)
+const beforeInput = ref<HTMLInputElement | null>(null)
+async function onBefore(e: Event) {
+  const file = (e.target as HTMLInputElement).files?.[0]
+  ;(e.target as HTMLInputElement).value = ''
+  if (!file) return
+  beforeUploading.value = true
+  error.value = ''
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    const res = await $fetch<{ path: string }>('/api/admin/blog/upload', { method: 'POST', body: fd })
+    form.beforeImage = res.path
+  } catch (err: any) {
+    error.value = err?.data?.statusMessage || 'Vorher-Foto konnte nicht hochgeladen werden.'
+  } finally {
+    beforeUploading.value = false
+  }
+}
+
 // ---------- Bildergalerie (Projekte & Events) ----------
 const galleryUploading = ref(0)
 const galleryInput = ref<HTMLInputElement | null>(null)
@@ -199,6 +222,8 @@ const previewArticle = computed(() => ({
   text: null,
   image: form.coverImage || null,
   imageAlt: form.coverAlt || null,
+  beforeImage: form.beforeImage || null,
+  facts: form.photoFacts || null,
   elements: [
     ...(form.bodyHtml ? [{ id: 'preview', type: 'text', headline: '', html: form.bodyHtml }] : []),
     ...(form.gallery.length ? [{ id: 'preview-gallery', type: 'gallery', items: form.gallery.map(g => ({ type: 'image', src: g.src, alt: g.alt })) }] : [])
@@ -352,6 +377,30 @@ watch(showPreview, v => { document.body.style.overflow = v ? 'hidden' : '' })
             <input v-model="form.coverAlt" type="text" class="wf-input" maxlength="190" placeholder="z. B. Wohnzimmer in warmem Braunton">
           </label>
           <input ref="coverInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onCover">
+          <label class="ed__field">
+            <span>Bildunterschrift mit Fakten <em>– zeigt, dass es ein echtes Projekt ist</em></span>
+            <input v-model="form.photoFacts" type="text" class="wf-input" maxlength="190" placeholder="z. B. Penthouse, Wien 1190 · 2024 · verkauft nach 3 Wochen">
+          </label>
+        </section>
+
+        <section class="wf-card ed__card">
+          <h2 class="ed__h">Vorher-Foto <em class="ed__hsub">{{ form.section === 'projekte' ? 'empfohlen' : 'optional' }}</em></h2>
+          <p class="ed__hint">Mit Vorher-Foto erscheint statt des Titelbilds ein <strong>Vorher/Nachher-Regler</strong> (Titelbild = Nachher).
+            Am besten aus demselben Blickwinkel fotografiert. Der neueste Projekt-Beitrag mit Vorher-Foto erscheint auch auf der Startseite.</p>
+          <div class="ed__cover" :class="{ 'is-empty': !form.beforeImage }">
+            <img v-if="form.beforeImage" :src="form.beforeImage" alt="">
+            <button v-else type="button" class="ed__coverpick" :disabled="beforeUploading" @click="beforeInput?.click()">
+              <WfIcon name="camera" :size="22" />
+              <span>{{ beforeUploading ? 'Wird hochgeladen …' : 'Vorher-Foto auswählen' }}</span>
+              <small>gleicher Raum vor dem Staging</small>
+            </button>
+          </div>
+          <div v-if="form.beforeImage" class="ed__coveractions">
+            <button type="button" class="wf-btn wf-btn--sm" :disabled="beforeUploading" @click="beforeInput?.click()">{{ beforeUploading ? 'Lädt …' : 'Ersetzen' }}</button>
+            <button type="button" class="wf-btn wf-btn--sm wf-btn--danger" @click="form.beforeImage = ''">Entfernen</button>
+          </div>
+          <p v-if="form.beforeImage && !form.coverImage" class="ed__hint ed__hint--warn">Bitte auch ein Titelbild (= Nachher) hochladen.</p>
+          <input ref="beforeInput" type="file" accept="image/jpeg,image/png,image/webp" hidden @change="onBefore">
         </section>
 
         <section class="wf-card ed__card">
@@ -432,6 +481,8 @@ watch(showPreview, v => { document.body.style.overflow = v ? 'hidden' : '' })
 }
 .ed__sections button.is-on { background: var(--wf-green); border-color: var(--wf-green); color: #fff; }
 .ed__subh { margin: .8rem 0 .4rem; font-size: .82em; font-weight: 600; color: #55554e; }
+.ed__card > p.ed__hint { display: block; margin: 0 0 .8em; font-size: .82em; line-height: 1.5; color: var(--wf-muted); font-style: normal; }
+.ed__card > p.ed__hint--warn { color: var(--wf-red); margin: .6em 0 0; }
 .ed__subh em, .ed__hsub { font-weight: 400; color: #99927f; font-style: normal; font-size: .82em; }
 .ed__cats { display: flex; flex-wrap: wrap; gap: .35rem; }
 .ed__cats label {

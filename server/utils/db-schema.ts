@@ -533,6 +533,9 @@ export async function migrateSchema() {
   }
   await addCol('blog_posts', 'categories', 'ADD COLUMN categories VARCHAR(64) NULL')
   await addCol('blog_posts', 'gallery', 'ADD COLUMN gallery MEDIUMTEXT NULL')
+  // Echtheit: Vorher-Foto (Vorher/Nachher-Regler) + Bildunterschrift mit Fakten zum Projekt
+  await addCol('blog_posts', 'before_image', 'ADD COLUMN before_image VARCHAR(255) NULL')
+  await addCol('blog_posts', 'photo_facts', 'ADD COLUMN photo_facts VARCHAR(190) NULL')
   await addCol('rental_inquiries', 'deco_package', 'ADD COLUMN deco_package TINYINT(1) NOT NULL DEFAULT 0')
   await addCol('rental_inquiries', 'transport_calc', 'ADD COLUMN transport_calc TEXT NULL')
   await addCol('invoices', 'reminder_level', 'ADD COLUMN reminder_level TINYINT NOT NULL DEFAULT 0')

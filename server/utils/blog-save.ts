@@ -47,6 +47,8 @@ export async function readBlogInput(body: any, ownId: number | null) {
     bodyHtml: sanitizeBody(body.bodyHtml) || null,
     coverImage: cleanImagePath(body.coverImage),
     coverAlt: cleanText(body.coverAlt, 190) || null,
+    beforeImage: cleanImagePath(body.beforeImage),
+    photoFacts: cleanText(body.photoFacts, 190) || null,
     metaDescription: cleanText(body.metaDescription, 300) || null,
     // Projekte: Zielgruppen; Projekte/Events: Bildergalerie (max. 40 Bilder)
     categories: section === 'projekte' && Array.isArray(body.categories)

@@ -95,6 +95,9 @@ export function toPublicArticle(r: any) {
     text: null,
     image: r.cover_image || null,
     imageAlt: r.cover_alt || null,
+    // Vorher-Foto für den Vorher/Nachher-Regler + Fakten unter dem Foto
+    beforeImage: r.before_image || null,
+    facts: r.photo_facts || null,
     description: r.meta_description || r.teaser || '',
     elements: [
       ...(r.body_html ? [{ id: `db-${r.id}`, type: 'text', headline: '', html: r.body_html }] : []),
@@ -121,6 +124,8 @@ export function toAdminArticle(r: any) {
     bodyHtml: r.body_html || '',
     coverImage: r.cover_image || '',
     coverAlt: r.cover_alt || '',
+    beforeImage: r.before_image || '',
+    photoFacts: r.photo_facts || '',
     metaDescription: r.meta_description || '',
     status: r.status,
     publishedAt: r.published_at,
