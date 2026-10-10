@@ -62,7 +62,7 @@ export async function createOfferForInquiry(inquiryId: number, markInProgress = 
   const eur = (v: number) => v.toLocaleString('de-AT', { style: 'currency', currency: 'EUR' })
   note += `${note ? '\n\n' : ''}Monatliche Miete: ${eur(monthly)} · Mietdauer: ${months} ${months === 1 ? 'Monat' : 'Monate'}.`
   if (quote.ok) {
-    note += `\nLieferung & Abholung durch unsere eigene Spedition – Entfernung Lager–Lieferadresse ca. ${quote.km.toLocaleString('de-AT')} km.`
+    note += `\nLieferung & Abholung durch unsere eigene Spedition.`
   } else {
     note += `\nDie Transportkosten werden individuell ergänzt.`
   }
@@ -112,7 +112,7 @@ export async function createOfferForInquiry(inquiryId: number, markInProgress = 
       await addPos(`Lieferung inkl. Aufbau – Team ${quote.crew} Pers. (${team}), ${quote.delivery.hours.toLocaleString('de-AT')} Std.${perkText}`, quote.delivery.personHours, 'Std.', rate)
       await addPos(`Abholung inkl. Abbau nach Mietende – Team ${quote.crew} Pers., ${quote.pickup.hours.toLocaleString('de-AT')} Std.${perkText}`, quote.pickup.personHours, 'Std.', rate)
       if (quote.extraKm > 0) {
-        await addPos(`Kilometergeld – 4 Strecken × ${(Math.round((quote.km - s.freeKm) * 10) / 10).toLocaleString('de-AT')} km (Entfernung ${quote.km.toLocaleString('de-AT')} km, davon ${s.freeKm} km frei)${perkText}`, quote.extraKm, 'km', s.kmRate * quote.perkFactor)
+        await addPos(`Kilometergeld – 4 Strecken × ${(Math.round((quote.km - s.freeKm) * 10) / 10).toLocaleString('de-AT')} km${perkText}`, quote.extraKm, 'km', s.kmRate * quote.perkFactor)
       }
     } else {
       await addPos('Lieferung & Abholung durch WOHNFEE – Transportkosten werden ergänzt', 1, 'Pausch.', 0)
