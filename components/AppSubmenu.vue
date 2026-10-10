@@ -63,7 +63,7 @@ const hidden = computed(() =>
   || dePath.value === '/faq.html' || dePath.value === '/team.html'
   || ['/aktuelles.html', '/projekte.html', '/trends-tipps.html', '/events.html'].includes(dePath.value)
   || dePath.value.startsWith('/projekte/category/')
-  || dePath.value === '/kontakt.html' || dePath.value === '/impressum.html' || dePath.value === '/presse.html' || dePath.value.startsWith('/presse/category/')
+  || dePath.value === '/kontakt.html' || dePath.value === '/impressum.html' || dePath.value === '/datenschutz.html' || dePath.value === '/presse.html' || dePath.value.startsWith('/presse/category/')
   || HS_AUDIENCE_ROUTES.includes(dePath.value))
 
 const liClass = (r: string) => plain.value ? '' : [

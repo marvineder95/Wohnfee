@@ -77,6 +77,7 @@ function jump(slug: string, e: Event) {
 
 .hsl__body { padding: 1em 0 4.5em; }
 .hsl__list { display: grid; gap: 1.1em; }
+.hsl__rte :deep(mark) { background: #fff1c2; color: #7a5200; padding: .05em .3em; border-radius: 4px; }
 .hsl__card { background: #fff; border: 1px solid var(--line); border-radius: 20px; padding: 1.7em 1.9em; }
 .hsl__h2 { font-size: 1.4em !important; margin: 0 0 .8em; }
 

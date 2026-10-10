@@ -107,8 +107,11 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Mietkatalog: Möbel ohne Fotos; danach Live-Produktvorschau auf der Startseite möglich.
 - Tippfehler im Pflegetext: Redesign „entseht“, Preise Paket 1/3 (Komma/€ am Ende).
 - Konditionen: Stundensatz (Platzhalter 45 €/Std.), Aufbau-/Abbauzeiten und Kilometergeld
-  im Dashboard prüfen. Datenschutzerklärung: Adressübermittlung an OpenStreetMap ergänzen.
+  im Dashboard prüfen. 
 - Checkout: Mietdauer im Formular (1/3 Monate) ist unabhängig von der Mietdauer je Artikel
   im Warenkorb – vereinheitlichen?
-- Noch nicht im neuen Design: Datenschutz, Furniture Leasing unterhalb des Heros, EN-Startseite
+- Datenschutz (neu, Seite 11 in pages(-en).json, Layout HsLegal): gelb markierte Lücken ausfüllen
+  (Hosting-Anbieter + Log-Löschfrist, SMTP-Anbieter, OSRM-Betreiber); Fotonachweis nennt noch iStock.
+  Google Analytics nutzt eine alte UA-ID (seit 2023 abgeschaltet) – entfernen oder auf GA4 umstellen.
+- Noch nicht im neuen Design: Furniture Leasing unterhalb des Heros, EN-Startseite
   hat englische Daten nur teilweise (Zielgruppen-Elemente ungenutzt).
