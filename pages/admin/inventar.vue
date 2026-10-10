@@ -26,6 +26,9 @@ interface Item {
   returnDate: string | null
 }
 
+const perms = usePermissions()
+const canEditI = computed(() => perms.canEdit('inventar'))
+
 const STATUS_LABELS: Record<string, string> = {
   lager: 'Im Lager', vermietet: 'Vermietet', verkauft: 'Verkauft', ausser_dienst: 'Außer Dienst'
 }
@@ -306,7 +309,7 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
       </div>
       <div class="wf-hero-img">
         <img src="/img/admin-hero-inventar.jpg" alt="Showroom mit Möbeln und Textilien in warmen Tönen">
-        <button class="wf-btn wf-btn--primary wf-hero-cta" @click="openNew">
+        <button v-if="canEditI" class="wf-btn wf-btn--primary wf-hero-cta" @click="openNew">
           <WfIcon name="plus" :size="15" /> Neues Objekt
         </button>
       </div>
@@ -388,8 +391,8 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
             <span v-else-if="i.status === 'vermietet'" class="inv__ret inv__ret--open">Rückgabe offen</span>
           </td>
           <td class="inv__actions">
-            <button class="wf-btn wf-btn--sm" @click="openEdit(i)">Bearbeiten</button>
-            <button class="wf-btn wf-btn--sm wf-btn--danger" @click="remove(i)">Löschen</button>
+            <button class="wf-btn wf-btn--sm" @click="openEdit(i)">{{ canEditI ? 'Bearbeiten' : 'Ansehen' }}</button>
+            <button v-if="canEditI" class="wf-btn wf-btn--sm wf-btn--danger" @click="remove(i)">Löschen</button>
           </td>
         </tr>
       </tbody>
@@ -406,7 +409,7 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
       <div class="wf-modal inv__modal">
         <div class="inv__edhead">
           <div>
-            <h2 class="inv__edtitle">{{ editing ? `Objekt bearbeiten — #${editing.id}` : 'Neues Objekt' }}</h2>
+            <h2 class="inv__edtitle">{{ editing ? `Objekt ${canEditI ? 'bearbeiten' : 'ansehen'} — #${editing.id}` : 'Neues Objekt' }}</h2>
             <p class="inv__edsub">
               {{ editing
                 ? 'Erfasse alle wichtigen Informationen an einem Ort.'
@@ -416,6 +419,7 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
           <button class="inv__edclose" title="Schließen" @click="editOpen = false">×</button>
         </div>
 
+        <fieldset class="inv__fs" :disabled="!canEditI">
         <div class="inv__edgrid">
           <!-- Linke Spalte: Grunddaten -->
           <div class="inv__edmain">
@@ -581,11 +585,12 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
             </section>
           </aside>
         </div>
+        </fieldset>
 
         <p v-if="saveError" class="inv__error" role="alert">{{ saveError }}</p>
         <div class="inv__dialogactions">
-          <button class="wf-btn" @click="editOpen = false">Abbrechen</button>
-          <button class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
+          <button class="wf-btn" @click="editOpen = false">{{ canEditI ? 'Abbrechen' : 'Schließen' }}</button>
+          <button v-if="canEditI" class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
             {{ saving ? 'Speichere …' : (editing ? 'Speichern' : 'Objekt speichern →') }}
           </button>
         </div>
@@ -765,6 +770,8 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
 }
 .inv__field input:focus, .inv__field select:focus, .inv__field textarea:focus { border-color: var(--wf-green); box-shadow: 0 0 0 3px rgba(47, 93, 64, .12); }
 .inv__hint { margin: -.3em 0 .4em; font-size: .78em; color: var(--wf-muted); }
+.inv__fs { border: 0; margin: 0; padding: 0; min-width: 0; }
+.inv__fs:disabled .inv__photoupload, .inv__fs:disabled .inv__photoadd, .inv__fs:disabled .inv__photox { display: none; }
 .inv__dialogactions { display: flex; justify-content: flex-end; gap: .6em; margin-top: .4em; }
 .inv__assign { margin: 1.1em 0 .4em; border-top: 1px solid var(--wf-line); padding-top: 1em; }
 .inv__assignh { font-family: var(--wf-serif); font-weight: 400; font-size: 1.1em; margin: 0 0 .5em; }

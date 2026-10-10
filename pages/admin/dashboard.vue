@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { areaForPath } from '~~/shared/permissions'
 definePageMeta({ layout: 'admin' })
 
 useHead({
@@ -7,6 +8,7 @@ useHead({
 })
 
 const { user } = useAdminAuth()
+const perms = usePermissions()
 
 const greeting = computed(() => {
   const h = new Date().getHours()
@@ -73,7 +75,8 @@ onMounted(async () => {
     const [inq, proj, inv, exp, cal, rent] = await Promise.all([
       $fetch<{ inquiries: Inq[]; counts: any }>('/api/admin/inquiries'),
       $fetch<{ counts: Record<string, number> }>('/api/admin/projects'),
-      $fetch<{ invoices: Inv[] }>('/api/admin/invoices'),
+      // Rechnungen nur für Rollen mit Zugriff (Spediteure sehen keine Finanzen)
+      perms.can('rechnungen') ? $fetch<{ invoices: Inv[] }>('/api/admin/invoices') : Promise.resolve({ invoices: [] as Inv[] }),
       $fetch<{ overdue: any[]; deadlines: any[] }>(`/api/admin/logistics?from=${todayIso}&to=${localIso(new Date(Date.now() + 14 * 86400000))}`),
       $fetch<{ events: CalendarEvent[] }>(`/api/admin/calendar?from=${todayIso}&to=${localIso(new Date(Date.now() + 30 * 86400000))}`),
       $fetch<{ counts: Record<string, number> }>('/api/admin/rental-inquiries').catch(() => ({ counts: {} }))
@@ -110,7 +113,7 @@ function daysUntil(iso: string): number {
   return Math.round((new Date(String(iso).slice(0, 10)).getTime() - new Date(todayIso).getTime()) / 86400000)
 }
 
-const stats = computed(() => [
+const stats = computed(() => ([
   {
     icon: 'inbox', label: 'Neue Kontaktanfragen', to: '/admin/anfragen',
     value: inquiryCounts.value.neu || 0,
@@ -133,7 +136,7 @@ const stats = computed(() => [
     delta: invoiceStats.value.open ? fmtEuro(invoiceStats.value.openSum) : null,
     deltaLabel: invoiceStats.value.overdue ? `netto · ${invoiceStats.value.overdue} überfällig` : 'netto ausständig', tone: 'blue'
   }
-])
+] as const).filter(st => perms.can(areaForPath(st.to) || 'dashboard')))
 
 // Schnellzugriffe öffnen direkt den jeweiligen „Neu"-Dialog (?new=1)
 const quickActions = [
@@ -143,7 +146,7 @@ const quickActions = [
   { label: 'Rechnung erstellen', icon: 'receipt', to: '/admin/rechnungen?new=1' },
   { label: 'Kontakt hinzufügen', icon: 'contacts', to: '/admin/kontakte?new=1' },
   { label: 'Möbel erfassen', icon: 'box', to: '/admin/inventar?new=1' }
-]
+].filter(a => perms.canEdit(areaForPath(a.to) || 'dashboard'))
 </script>
 
 <template>
@@ -263,7 +266,7 @@ const quickActions = [
     </section>
 
     <!-- Schnellzugriff -->
-    <section class="dash-quick wf-card">
+    <section v-if="quickActions.length" class="dash-quick wf-card">
       <h2>Schnellzugriff</h2>
       <div class="dash-quick__grid">
         <NuxtLink v-for="a in quickActions" :key="a.to + a.label" :to="a.to" class="dash-quick__btn">

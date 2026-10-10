@@ -7,7 +7,7 @@ export default defineEventHandler(async (event) => {
   const { role } = await readBody(event).catch(() => ({} as any)) as { role?: string }
 
   if (!Number.isInteger(id) || id <= 0) throw createError({ statusCode: 400, statusMessage: 'Ungültige Benutzer-ID' })
-  if (!['superadmin', 'admin', 'user'].includes(role || '')) {
+  if (!['superadmin', 'designer', 'driver'].includes(role || '')) {
     throw createError({ statusCode: 400, statusMessage: 'Ungültige Rolle' })
   }
   if (id === me.id) throw createError({ statusCode: 400, statusMessage: 'Eigene Rolle kann nicht geändert werden' })

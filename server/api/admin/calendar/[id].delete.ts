@@ -10,7 +10,8 @@ export default defineEventHandler(async (event) => {
 
   const existing = await queryOne<any>('SELECT created_by AS createdBy FROM calendar_events WHERE id = :id', { id })
   if (!existing) throw createError({ statusCode: 404, statusMessage: 'Termin nicht gefunden' })
-  if (user.role !== 'superadmin' && Number(existing.createdBy) !== user.id) {
+  // Admin & Designerin dürfen alle Termine ändern, Spediteure nur ihre eigenen
+  if (user.role === 'driver' && Number(existing.createdBy) !== user.id) {
     throw createError({ statusCode: 403, statusMessage: 'Nur der Ersteller oder der Chef darf diesen Termin löschen' })
   }
 

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ROLES } from '~~/shared/permissions'
 definePageMeta({ layout: 'admin' })
 
 useHead({
@@ -20,12 +21,8 @@ const since = computed(() => {
   if (Number.isNaN(d.getTime())) return ''
   return d.toLocaleDateString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric' })
 })
-const ROLE_LABELS: Record<string, string> = { superadmin: 'Superadmin', admin: 'Admin', user: 'Mitarbeiter' }
-const ROLE_TEXTS: Record<string, string> = {
-  superadmin: 'Du hast vollständigen Zugriff auf alle Bereiche des Systems.',
-  admin: 'Du kannst Projekte, Kunden, Inventar und Dokumente verwalten.',
-  user: 'Du hast Zugriff auf die für dich freigegebenen Bereiche.'
-}
+const ROLE_LABELS: Record<string, string> = Object.fromEntries(ROLES.map(r => [r.value, r.label]))
+const ROLE_TEXTS: Record<string, string> = Object.fromEntries(ROLES.map(r => [r.value, r.text]))
 
 // ---------- Tabs ----------
 type TabKey = 'daten' | 'sicherheit' | 'einstellungen' | 'benachrichtigungen' | 'rollen'
@@ -259,6 +256,7 @@ onMounted(() => push.refresh())
             Push-Benachrichtigungen bei <strong>neuen Kontakt- und Mietanfragen</strong> – auch wenn das Dashboard geschlossen ist.
             Die Einstellung gilt je Gerät (Handy, Laptop …).
           </p>
+          <p v-if="user?.role === 'driver'" class="prof__pushintro"><em>Hinweis: Anfrage-Benachrichtigungen erhalten Admin und Designerinnen.</em></p>
           <div class="prof__pushstate" :class="{ 'is-on': push.subscribed.value }">
             <WfIcon :name="push.subscribed.value ? 'check' : 'bell'" :size="16" />
             <span v-if="!push.supported.value && !push.iosNeedsInstall.value">Dieser Browser unterstützt keine Push-Benachrichtigungen.</span>

@@ -20,6 +20,8 @@ interface Contact {
   locationCount: number
 }
 
+const perms = usePermissions()
+const canEditC = computed(() => perms.canEdit('kontakte'))
 const contacts = ref<Contact[]>([])
 const allTags = ref<Array<{ tag: string; n: number }>>([])
 const total = ref(0)
@@ -140,6 +142,8 @@ async function openEdit(c: Contact) {
       notes: res.contact.notes || '', tags: res.tags.join(', ')
     })
     editOpen.value = true
+    // Dokumente enthalten Rechnungen/Angebote – nur für Rollen mit Rechnungszugriff
+    if (!perms.can('rechnungen')) return
     docsLoading.value = true
     try {
       const dres = await $fetch<{ documents: Document[]; stats: any }>(`/api/admin/contacts/${c.id}/documents`)
@@ -202,7 +206,7 @@ onMounted(() => {
       </div>
       <div class="wf-hero-img">
         <img src="/img/admin-hero-kontakte.jpg" alt="Sideboard mit Visitenkarten, Leder-Notizbuch und Pflanze">
-        <button class="wf-btn wf-btn--primary wf-hero-cta" @click="openNew">
+        <button v-if="canEditC" class="wf-btn wf-btn--primary wf-hero-cta" @click="openNew">
           <WfIcon name="plus" :size="15" /> Neuer Kontakt
         </button>
       </div>
@@ -246,8 +250,8 @@ onMounted(() => {
           <td>{{ c.phone || '—' }}</td>
           <td class="contacts__tagcell">{{ c.tags || '—' }}</td>
           <td class="contacts__actions">
-            <button class="wf-btn wf-btn--sm" @click="openEdit(c)">Bearbeiten</button>
-            <button class="wf-btn wf-btn--sm" @click="toggleArchive(c)">{{ showArchived ? 'Wiederherstellen' : 'Archivieren' }}</button>
+            <button class="wf-btn wf-btn--sm" @click="openEdit(c)">{{ canEditC ? 'Bearbeiten' : 'Ansehen' }}</button>
+            <button v-if="canEditC" class="wf-btn wf-btn--sm" @click="toggleArchive(c)">{{ showArchived ? 'Wiederherstellen' : 'Archivieren' }}</button>
           </td>
         </tr>
       </tbody>
@@ -262,7 +266,8 @@ onMounted(() => {
     <!-- Bearbeiten-/Neu-Dialog -->
     <div v-if="editOpen" class="wf-modal-overlay" @click.self="editOpen = false">
       <div class="wf-modal">
-        <h2>{{ editing ? 'Kontakt bearbeiten' : 'Neuer Kontakt' }}</h2>
+        <h2>{{ !canEditC ? 'Kontakt ansehen' : editing ? 'Kontakt bearbeiten' : 'Neuer Kontakt' }}</h2>
+        <fieldset class="contacts__fs" :disabled="!canEditC">
         <div class="contacts__formrow">
           <label class="contacts__field contacts__field--small">
             <span>Typ</span>
@@ -312,9 +317,10 @@ onMounted(() => {
           <span>Notizen</span>
           <textarea v-model="form.notes" rows="3" />
         </label>
+        </fieldset>
 
         <!-- Dokumente (Rechnungen / Angebote) -->
-        <section v-if="editing" class="contacts__docs">
+        <section v-if="editing && perms.can('rechnungen')" class="contacts__docs">
           <h3 class="contacts__docsh">Dokumente</h3>
           <p v-if="docsLoading" class="contacts__docsempty">Dokumente werden geladen …</p>
           <template v-else-if="documents.length">
@@ -338,8 +344,8 @@ onMounted(() => {
         </section>
         <p v-if="saveError" class="contacts__error" role="alert">{{ saveError }}</p>
         <div class="contacts__dialogactions">
-          <button class="wf-btn" @click="editOpen = false">Abbrechen</button>
-          <button class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
+          <button class="wf-btn" @click="editOpen = false">{{ canEditC ? 'Abbrechen' : 'Schließen' }}</button>
+          <button v-if="canEditC" class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
             {{ saving ? 'Speichere …' : 'Speichern' }}
           </button>
         </div>
@@ -382,6 +388,7 @@ onMounted(() => {
   color: var(--wf-ink); border: 1px solid var(--wf-line); border-radius: 10px; outline: none;
 }
 .contacts__field input:focus, .contacts__field select:focus, .contacts__field textarea:focus { border-color: var(--wf-green); box-shadow: 0 0 0 3px rgba(47, 93, 64, .12); }
+.contacts__fs { border: 0; margin: 0; padding: 0; min-width: 0; }
 .contacts__dialogactions { display: flex; justify-content: flex-end; gap: .6em; margin-top: .4em; }
 .contacts__docs { margin: 1.1em 0 .4em; border-top: 1px solid var(--wf-line); padding-top: 1em; }
 .contacts__docsh { font-family: var(--wf-serif); font-weight: 400; font-size: 1.1em; margin: 0 0 .5em; }

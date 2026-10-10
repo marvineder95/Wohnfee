@@ -25,6 +25,7 @@ interface Entry {
   deadlineText?: string | null
 }
 
+const perms = usePermissions()
 const TYPE_LABELS: Record<string, string> = {
   aufbau: 'Aufbau', abholung: 'Abholung', lieferung: 'Lieferung', beratung: 'Beratung', sonstiges: 'Termin'
 }
@@ -165,7 +166,7 @@ function printPlan() {
             </span>
             <span class="tour__acts no-print">
               <NuxtLink v-if="o.projectId" :to="`/admin/packliste/${o.projectId}?modus=abholung`" class="wf-btn wf-btn--sm"><WfIcon name="list" :size="13" /> Packliste</NuxtLink>
-              <button class="wf-btn wf-btn--sm" :disabled="extBusy === o.projectId" @click="offerExtension(o)"><WfIcon name="file" :size="13" /> Verlängerung anbieten</button>
+              <button v-if="perms.canEdit('angebote')" class="wf-btn wf-btn--sm" :disabled="extBusy === o.projectId" @click="offerExtension(o)"><WfIcon name="file" :size="13" /> Verlängerung anbieten</button>
               <NuxtLink v-if="o.projectId" :to="`/admin/projekte?open=${o.projectId}&cat=${o.projectCategory}`" class="wf-btn wf-btn--sm">Projekt</NuxtLink>
             </span>
           </li>
@@ -197,7 +198,7 @@ function printPlan() {
               <NuxtLink v-if="e.projectId && e.itemCount" :to="`/admin/packliste/${e.projectId}?modus=${e.kind === 'termin' && e.type !== 'abholung' ? 'lieferung' : 'abholung'}`" class="wf-btn wf-btn--sm">
                 <WfIcon name="list" :size="13" /> Packliste
               </NuxtLink>
-              <button v-if="e.kind !== 'termin' && e.projectId" class="wf-btn wf-btn--sm" :disabled="extBusy === e.projectId" @click="offerExtension(e)">Verlängerung anbieten</button>
+              <button v-if="e.kind !== 'termin' && e.projectId && perms.canEdit('angebote')" class="wf-btn wf-btn--sm" :disabled="extBusy === e.projectId" @click="offerExtension(e)">Verlängerung anbieten</button>
             </span>
           </li>
         </ul>

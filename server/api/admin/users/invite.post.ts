@@ -22,7 +22,7 @@ export default defineEventHandler(async (event) => {
   if (!cleanName) {
     throw createError({ statusCode: 400, statusMessage: 'Name erforderlich' })
   }
-  const inviteRole = role === 'admin' ? 'admin' : 'user'
+  const inviteRole = ['superadmin', 'designer', 'driver'].includes(role || '') ? role : 'driver'
 
   const existing = await queryOne(
     'SELECT id, status FROM admin_users WHERE LOWER(email) = LOWER(:email) LIMIT 1',

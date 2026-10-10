@@ -9,7 +9,8 @@ function secret(): string {
   return (config.adminSecret as string | undefined) || 'wf-dev-secret-bitte-setzen'
 }
 
-export type AdminRole = 'superadmin' | 'admin' | 'user'
+// superadmin = Admin, designer = Designerin, driver = Spediteur (siehe shared/permissions.ts)
+export type AdminRole = 'superadmin' | 'designer' | 'driver'
 
 export interface AdminUser {
   id: number
@@ -67,7 +68,7 @@ export function readSession(token: string | undefined): AdminUser | null {
   try {
     const payload = JSON.parse(Buffer.from(body, 'base64url').toString())
     if (!payload.exp || payload.exp < Date.now()) return null
-    return { id: 0, username: payload.u, displayName: null, role: payload.r || 'user' }
+    return { id: 0, username: payload.u, displayName: null, role: payload.r || 'driver' }
   } catch {
     return null
   }

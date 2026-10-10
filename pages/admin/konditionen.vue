@@ -12,6 +12,9 @@ interface Settings {
   truckFactor: number; freeKm: number; kmRate: number; roundMinutes: number
 }
 
+const perms = usePermissions()
+const canEditK = computed(() => perms.canEdit('konditionen'))
+
 const form = reactive<Settings>({
   depotAddress: '', depotLat: null, depotLon: null, hourlyRate: 0, drivers: 2, designers: 1,
   onSiteDeliveryMin: 90, onSitePickupMin: 60, truckFactor: 15, freeKm: 30, kmRate: 0.5, roundMinutes: 15
@@ -94,6 +97,8 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
     <p v-if="loading" class="kond__muted">Wird geladen …</p>
     <div v-else class="kond__grid">
       <form class="kond__form" @submit.prevent="save">
+        <p v-if="!canEditK" class="kond__ro"><WfIcon name="lock" :size="14" /> Nur ansehen – Konditionen ändert der Admin.</p>
+        <fieldset class="kond__fs" :disabled="!canEditK">
         <section class="kond__card wf-card">
           <h2 class="kond__h2"><WfIcon name="pin" :size="16" /> Möbelstandort</h2>
           <label class="kond__fld">
@@ -154,7 +159,8 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
 
         <p v-if="error" class="kond__error" role="alert">{{ error }}</p>
         <p v-if="msg" class="kond__ok">{{ msg }}</p>
-        <div class="kond__actions">
+        </fieldset>
+        <div v-if="canEditK" class="kond__actions">
           <button type="submit" class="wf-btn wf-btn--primary" :disabled="saving">{{ saving ? 'Speichere …' : 'Konditionen speichern' }}</button>
         </div>
       </form>
@@ -188,7 +194,7 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
               <strong>{{ num(quote.km) }} km</strong> · ca. {{ quote.driveMinutes }} Min. je Strecke
               <small>{{ quote.resolvedAddress }}</small>
             </p>
-            <table class="kond__table">
+            <table class="kond__table"><tbody>
               <tr><td>Lieferung inkl. Aufbau<small>{{ num(quote.delivery.hours) }} Std. × {{ quote.crew }} Pers.</small></td><td>{{ eur(quote.delivery.cost) }}</td></tr>
               <tr><td>Abholung inkl. Abbau<small>{{ num(quote.pickup.hours) }} Std. × {{ quote.crew }} Pers.</small></td><td>{{ eur(quote.pickup.cost) }}</td></tr>
               <tr><td>Kilometergeld<small>{{ quote.extraKm ? `${num(quote.extraKm)} km` : `unter ${num(quote.settings.freeKm)} km – entfällt` }}</small></td><td>{{ eur(quote.kmCost) }}</td></tr>
@@ -197,7 +203,7 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
                 <td>−{{ eur(quote.subtotal - quote.total) }}</td>
               </tr>
               <tr class="is-total"><td>Transport gesamt (netto)</td><td>{{ eur(quote.total) }}</td></tr>
-            </table>
+            </tbody></table>
           </template>
         </div>
         <p class="kond__privacy">Für die Route wird die Adresse an OpenStreetMap übermittelt (bitte in der Datenschutzerklärung erwähnen).</p>
@@ -232,6 +238,8 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
 .kond__hint a { color: var(--wf-green); }
 .kond__error { color: var(--wf-red); background: var(--wf-red-soft); border-radius: 10px; padding: .6em .9em; font-size: .88em; margin: 0; }
 .kond__ok { color: var(--wf-green); background: var(--wf-green-soft); border-radius: 10px; padding: .6em .9em; font-size: .88em; margin: 0; }
+.kond__fs { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 1em; }
+.kond__ro { display: flex; align-items: center; gap: .5em; margin: 0; padding: .6em .9em; border-radius: 10px; background: #f6f3ec; color: var(--wf-muted); font-size: .86em; }
 .kond__actions { display: flex; justify-content: flex-end; }
 .kond__testbtn { width: 100%; justify-content: center; }
 .kond__result { margin-top: 1.1em; padding-top: 1em; border-top: 1px solid var(--wf-line); }

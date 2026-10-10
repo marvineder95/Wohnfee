@@ -1,5 +1,9 @@
 <script setup lang="ts">
+import type { Area } from '~~/shared/permissions'
+import { areaForPath, receivesInquiryPush } from '~~/shared/permissions'
+
 const { user, checked, fetchSession, logout } = useAdminAuth()
+const perms = usePermissions()
 const route = useRoute()
 const router = useRouter()
 
@@ -32,7 +36,8 @@ onMounted(() => {
   try { pushDismissed.value = localStorage.getItem('wf_push_dismissed') === '1' } catch { /* privat */ }
 })
 const showPushPrompt = computed(() =>
-  push.supported.value && !push.subscribed.value && push.permission.value !== 'denied' && !pushDismissed.value)
+  push.supported.value && !push.subscribed.value && push.permission.value !== 'denied' && !pushDismissed.value
+  && receivesInquiryPush(user.value?.role))
 async function enablePush() {
   if (await push.enable()) push.test().catch(() => {})
 }
@@ -71,39 +76,39 @@ async function doLogout() {
 }
 
 // Navigation nach Arbeitsbereichen gruppiert (Eingang → Planung → Kunden & Finanzen → Website)
-interface NavItem { to: string; label: string; icon: string; exact: boolean; super?: boolean; badge?: 'inquiries' | 'rental' | 'overdue' }
+interface NavItem { to: string; label: string; icon: string; exact: boolean; area?: Area; badge?: 'inquiries' | 'rental' | 'overdue' }
 const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
   { label: null, items: [
-    { to: '/admin/dashboard', label: 'Übersicht', icon: 'home', exact: true }
+    { to: '/admin/dashboard', label: 'Übersicht', icon: 'home', exact: true, area: 'dashboard' }
   ] },
   { label: 'Eingang', items: [
-    { to: '/admin/anfragen', label: 'Kontaktanfragen', icon: 'inbox', exact: false, badge: 'inquiries' },
-    { to: '/admin/mietanfragen', label: 'Mietanfragen', icon: 'bag', exact: false, badge: 'rental' }
+    { to: '/admin/anfragen', label: 'Kontaktanfragen', icon: 'inbox', exact: false, area: 'anfragen', badge: 'inquiries' },
+    { to: '/admin/mietanfragen', label: 'Mietanfragen', icon: 'bag', exact: false, area: 'mietanfragen', badge: 'rental' }
   ] },
   { label: 'Planung', items: [
-    { to: '/admin/projekte', label: 'Projekte', icon: 'folder', exact: false },
-    { to: '/admin/touren', label: 'Touren & Rückgaben', icon: 'truck', exact: false, badge: 'overdue' },
-    { to: '/admin/kalender', label: 'Kalender', icon: 'calendar', exact: false },
-    { to: '/admin/inventar', label: 'Inventar', icon: 'box', exact: false }
+    { to: '/admin/projekte', label: 'Projekte', icon: 'folder', exact: false, area: 'projekte' },
+    { to: '/admin/touren', label: 'Touren & Rückgaben', icon: 'truck', exact: false, area: 'touren', badge: 'overdue' },
+    { to: '/admin/kalender', label: 'Kalender', icon: 'calendar', exact: false, area: 'kalender' },
+    { to: '/admin/inventar', label: 'Inventar', icon: 'box', exact: false, area: 'inventar' }
   ] },
   { label: 'Kunden & Finanzen', items: [
-    { to: '/admin/kontakte', label: 'Kontakte', icon: 'contacts', exact: false },
-    { to: '/admin/angebote', label: 'Angebote', icon: 'file', exact: false },
-    { to: '/admin/rechnungen', label: 'Rechnungen', icon: 'receipt', exact: false }
+    { to: '/admin/kontakte', label: 'Kontakte', icon: 'contacts', exact: false, area: 'kontakte' },
+    { to: '/admin/angebote', label: 'Angebote', icon: 'file', exact: false, area: 'angebote' },
+    { to: '/admin/rechnungen', label: 'Rechnungen', icon: 'receipt', exact: false, area: 'rechnungen' }
   ] },
   { label: 'Website', items: [
-    { to: '/admin/artikel', label: 'Blog-Artikel', icon: 'edit', exact: false },
-    { to: '/admin/newsletter', label: 'Newsletter', icon: 'mail', exact: false }
+    { to: '/admin/artikel', label: 'Blog-Artikel', icon: 'edit', exact: false, area: 'artikel' },
+    { to: '/admin/newsletter', label: 'Newsletter', icon: 'mail', exact: false, area: 'newsletter' }
   ] },
   { label: 'Verwaltung', items: [
-    { to: '/admin/konditionen', label: 'Konditionen', icon: 'euro', exact: false },
-    { to: '/admin/users', label: 'Benutzer', icon: 'users', exact: false, super: true },
+    { to: '/admin/konditionen', label: 'Konditionen', icon: 'euro', exact: false, area: 'konditionen' },
+    { to: '/admin/users', label: 'Benutzer', icon: 'users', exact: false, area: 'users' },
     { to: '/admin/profil', label: 'Mein Profil', icon: 'settings', exact: false }
   ] }
 ]
 
 const navGroups = computed(() => NAV_GROUPS
-  .map(g => ({ ...g, items: g.items.filter(n => !n.super || user.value?.role === 'superadmin') }))
+  .map(g => ({ ...g, items: g.items.filter(n => !n.area || perms.can(n.area)) }))
   .filter(g => g.items.length))
 
 function badgeCount(item: NavItem) {
@@ -170,6 +175,18 @@ watch(() => route.path, (p, prev) => {
   if ((prev === '/admin/anfragen' || prev === '/admin/mietanfragen') && p !== prev) loadBadges()
 })
 
+// Seiten ohne Berechtigung (z. B. per Link aufgerufen) → zurück zur Übersicht
+const deniedNotice = ref('')
+watch([() => route.path, user], () => {
+  if (!user.value) return
+  const area = areaForPath(route.path)
+  if (area && !perms.can(area)) {
+    deniedNotice.value = `Als ${perms.roleName.value} hast du auf diesen Bereich keinen Zugriff.`
+    router.replace('/admin/dashboard')
+    setTimeout(() => { deniedNotice.value = '' }, 6000)
+  }
+}, { immediate: true })
+
 const isActive = (item: { to: string; exact: boolean }) =>
   item.exact ? route.path === item.to : route.path.startsWith(item.to)
 
@@ -214,7 +231,7 @@ const initials = computed(() => {
         <span class="admin-shell__avatar">{{ initials }}</span>
         <span class="admin-shell__sideuserinfo">
           <strong>{{ user?.displayName || user?.username }}</strong>
-          <small>{{ user?.role === 'superadmin' ? 'Superadmin' : user?.role === 'admin' ? 'Admin' : 'Benutzer' }}</small>
+          <small>{{ perms.roleName.value }}</small>
         </span>
         <button class="admin-shell__iconbtn" title="Abmelden" @click="doLogout">
           <WfIcon name="logout" :size="17" />
@@ -246,12 +263,13 @@ const initials = computed(() => {
           </NuxtLink>
           <span class="admin-shell__userchip">
             {{ user?.displayName || user?.username }}
-            <em>{{ user?.role === 'superadmin' ? 'SUPERADMIN' : (user?.role || '').toUpperCase() }}</em>
+            <em>{{ perms.roleName.value.toUpperCase() }}</em>
           </span>
         </div>
       </header>
 
       <main class="admin-shell__content">
+        <p v-if="deniedNotice" class="admin-shell__denied" @click="deniedNotice = ''">{{ deniedNotice }}</p>
         <p v-if="!checked" class="admin-shell__loading">Sitzung wird geprüft …</p>
         <slot v-else-if="user" />
       </main>
@@ -475,6 +493,7 @@ const initials = computed(() => {
   margin: 0 auto;
 }
 
+.admin-shell__denied { margin: 0 0 1em; padding: .7em 1em; border-radius: 10px; background: var(--wf-amber-soft); color: var(--wf-amber); font-size: .9em; cursor: pointer; }
 .admin-shell__loading { color: var(--wf-muted); }
 
 @media (max-width: 860px) {

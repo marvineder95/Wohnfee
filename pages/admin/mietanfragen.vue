@@ -52,6 +52,7 @@ const detail = ref<Detail | null>(null)
 const items = ref<Item[]>([])
 const detailLoading = ref(false)
 
+const perms = usePermissions()
 const tabs = [
   { value: 'alle', label: 'Alle' },
   { value: 'neu', label: 'Neu' },
@@ -138,7 +139,7 @@ async function toggleDetail(item: Inquiry) {
   detail.value = null
   items.value = []
   // Beim ersten Öffnen automatisch als „in Bearbeitung" markieren
-  if (item.status === 'neu') {
+  if (item.status === 'neu' && perms.canEdit('mietanfragen')) {
     await setStatus(item, 'in_bearbeitung', false)
   }
   try {
@@ -299,10 +300,11 @@ onMounted(load)
             </p>
 
             <div class="rental-inquiries__actions">
-              <button class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(item)">
+              <button v-if="perms.canEdit('angebote')" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(item)">
                 <WfIcon name="file" :size="13" />
                 {{ detail.offerId ? `Angebot ${detail.offerNumber || ''} öffnen` : (offerBusy ? 'Erstelle …' : 'Angebot erstellen') }}
               </button>
+              <template v-if="perms.canEdit('mietanfragen')">
               <a v-if="item.status !== 'beantwortet'" class="wf-btn wf-btn--sm"
                  :href="`mailto:${detail.email}?subject=Ihre Mietanfrage ${detail.number} – WOHNFEE Furniture Leasing`">Per E-Mail antworten</a>
               <button v-if="item.status !== 'in_bearbeitung' && item.status !== 'archiviert'" class="wf-btn wf-btn--sm"
@@ -313,6 +315,7 @@ onMounted(load)
                       @click="setStatus(item, 'archiviert')">Archivieren</button>
               <button v-if="item.status === 'archiviert'" class="wf-btn wf-btn--sm"
                       @click="setStatus(item, 'neu')">Wiederherstellen</button>
+              </template>
             </div>
           </template>
         </div>

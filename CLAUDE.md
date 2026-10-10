@@ -59,6 +59,11 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   `public/wf-admin-sw.js` (im Dev mit ?dev=1 ohne Caching). iOS: nur als installierte App.
 - Achtung: Die Kimi-App startet eine ALTE Projektkopie auf Port 7100 (gleiche DB) – nicht
   mit diesem Projekt verwechseln.
+- Rollen & Rechte: `shared/permissions.ts` (eine Tabelle für Server + UI). Admin (superadmin),
+  Designerin (designer: alles außer Benutzer; Konditionen nur ansehen), Spediteur (driver: nur
+  ansehen, eigene Kalendertermine; keine Angebote/Rechnungen/Konditionen/Newsletter/Blog).
+  Server: `server/middleware/admin-permissions.ts`; UI: `usePermissions()`, Menü + Seitenschutz
+  im Layout, Bearbeiten-Elemente per `canEdit(area)` bzw. `<fieldset :disabled>`.
 - Sicherheit: Login max. 10 Fehlversuche/15 min je IP, „Passwort vergessen" 5/h,
   Mietanfragen 5/h (`server/utils/rate-limit.ts`). Reset-Links nie in API-Antworten.
   In Produktion `NUXT_SITE_URL` setzen (Basis für Links in Mails).
@@ -87,8 +92,6 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Tippfehler im Pflegetext: Redesign „entseht“, Preise Paket 1/3 (Komma/€ am Ende).
 - Konditionen: Stundensatz (Platzhalter 45 €/Std.), Aufbau-/Abbauzeiten und Kilometergeld
   im Dashboard prüfen. Datenschutzerklärung: Adressübermittlung an OpenStreetMap ergänzen.
-- Rolle „Benutzer" hat derzeit dieselben Rechte wie „Admin" (nur Benutzerverwaltung ist
-  Superadmin-only) – Rechtekonzept festlegen?
 - Checkout: Mietdauer im Formular (1/3 Monate) ist unabhängig von der Mietdauer je Artikel
   im Warenkorb – vereinheitlichen?
 - Noch nicht im neuen Design: Datenschutz, Furniture Leasing unterhalb des Heros, EN-Startseite

@@ -24,6 +24,9 @@ interface Project {
   sortOrder: number
 }
 
+const perms = usePermissions()
+const canEditP = computed(() => perms.canEdit('projekte'))
+
 const TABS = [
   { value: 'staging', label: 'Staging' },
   { value: 'leasing', label: 'Furniture Leasing' },
@@ -321,7 +324,7 @@ onMounted(async () => {
       </div>
       <div class="wf-hero-img">
         <img src="/img/admin-hero-projekte.jpg" alt="Home-staged Schlafzimmer in warmen Tönen">
-        <button class="wf-btn wf-btn--primary wf-hero-cta" @click="openNew">
+        <button v-if="canEditP" class="wf-btn wf-btn--primary wf-hero-cta" @click="openNew">
           <WfIcon name="plus" :size="15" /> Neues Projekt
         </button>
       </div>
@@ -373,8 +376,8 @@ onMounted(async () => {
                 <span v-if="p.note" class="proj__note">⚑ {{ p.note }}</span>
               </div>
               <div class="proj__actions">
-                <button class="wf-btn wf-btn--sm" @click.stop="openEdit(p)">Bearbeiten</button>
-                <button class="wf-btn wf-btn--sm wf-btn--danger" @click.stop="remove(p)">Löschen</button>
+                <button class="wf-btn wf-btn--sm" @click.stop="openEdit(p)">{{ canEditP ? 'Bearbeiten' : 'Ansehen' }}</button>
+                <button v-if="canEditP" class="wf-btn wf-btn--sm wf-btn--danger" @click.stop="remove(p)">Löschen</button>
               </div>
             </div>
           </li>
@@ -387,7 +390,7 @@ onMounted(async () => {
       <div class="wf-modal proj__edmodal">
         <header class="proj__edhead">
           <div>
-            <h2 class="proj__edtitle">{{ editing ? 'Projekt bearbeiten' : 'Neues Projekt' }}</h2>
+            <h2 class="proj__edtitle">{{ !canEditP ? 'Projekt ansehen' : editing ? 'Projekt bearbeiten' : 'Neues Projekt' }}</h2>
             <p class="proj__edsub">Bearbeite die Projektdaten und verwalte die zugehörigen Möbel im Einsatz.</p>
           </div>
           <button class="proj__edclose" aria-label="Schließen" @click="editOpen = false">×</button>
@@ -395,7 +398,7 @@ onMounted(async () => {
 
         <div class="proj__edgrid" :class="{ 'proj__edgrid--solo': !editing }">
           <!-- Links: Projektdaten -->
-          <div class="proj__edleft">
+          <fieldset class="proj__edleft proj__fs" :disabled="!canEditP">
             <section class="proj__edsect">
               <h3 class="proj__edsectitle">Allgemeine Informationen</h3>
               <div class="proj__edrow">
@@ -493,7 +496,7 @@ onMounted(async () => {
                 </label>
               </div>
             </section>
-          </div>
+          </fieldset>
 
           <!-- Rechts: Möbel im Einsatz -->
           <div v-if="editing" class="proj__edright">
@@ -507,10 +510,10 @@ onMounted(async () => {
                   <NuxtLink v-if="projectItems.length" :to="`/admin/packliste/${editing.id}`" class="wf-btn wf-btn--sm" title="Druckbare Packliste">
                     <WfIcon name="list" :size="14" /> Packliste
                   </NuxtLink>
-                  <button v-if="projectItems.length" class="wf-btn wf-btn--sm" :disabled="extBusy" title="Angebot für die Verlängerung der Leihdauer" @click="offerExtension">
+                  <button v-if="projectItems.length && perms.canEdit('angebote')" class="wf-btn wf-btn--sm" :disabled="extBusy" title="Angebot für die Verlängerung der Leihdauer" @click="offerExtension">
                     <WfIcon name="file" :size="14" /> Verlängerung
                   </button>
-                  <button class="wf-btn wf-btn--sm wf-btn--primary" @click="showAddItem = !showAddItem">
+                  <button v-if="canEditP" class="wf-btn wf-btn--sm wf-btn--primary" @click="showAddItem = !showAddItem">
                     <WfIcon name="plus" :size="14" /> Möbel hinzufügen
                   </button>
                 </span>
@@ -537,7 +540,7 @@ onMounted(async () => {
                     <WfIcon name="calendar" :size="12" /> Rückgabe {{ formatDate(it.return_date) }}
                   </span>
                   <span v-if="it.note" class="proj__posnote">{{ it.note }}</span>
-                  <button class="proj__iconbtn proj__iconbtn--danger" title="Entfernen" @click="removeItem(it.item_id)">
+                  <button v-if="canEditP" class="proj__iconbtn proj__iconbtn--danger" title="Entfernen" @click="removeItem(it.item_id)">
                     <WfIcon name="trash" :size="15" />
                   </button>
                 </li>
@@ -568,8 +571,8 @@ onMounted(async () => {
 
         <p v-if="saveError" class="proj__error" role="alert">{{ saveError }}</p>
         <footer class="proj__edfoot">
-          <button class="wf-btn" @click="editOpen = false">Abbrechen</button>
-          <button class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
+          <button class="wf-btn" @click="editOpen = false">{{ canEditP ? 'Abbrechen' : 'Schließen' }}</button>
+          <button v-if="canEditP" class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
             {{ saving ? 'Speichere …' : 'Speichern' }}
           </button>
         </footer>
@@ -640,6 +643,7 @@ onMounted(async () => {
   font-size: 1.15em; line-height: 1; cursor: pointer; transition: color .15s, border-color .15s;
 }
 .proj__edclose:hover { color: var(--wf-red); border-color: var(--wf-red); }
+.proj__fs { border: 0; margin: 0; padding: 0; min-width: 0; }
 .proj__posbtns { display: flex; gap: .4em; flex-wrap: wrap; justify-content: flex-end; }
 .proj__edgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6em; align-items: start; }
 .proj__edgrid--solo { grid-template-columns: 1fr; }

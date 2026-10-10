@@ -206,9 +206,9 @@ async function remove(ev: CalEvent) {
   }
 }
 
-// Bearbeiten/Löschen nur für Ersteller oder Superadmin
+// Admin & Designerin verwalten alle Termine, Spediteure nur ihre eigenen
 function canManage(ev: CalEvent) {
-  return user.value?.role === 'superadmin' || (ev.createdBy && ev.createdBy === user.value?.id)
+  return user.value?.role !== 'driver' || (!!ev.createdBy && ev.createdBy === user.value?.id)
 }
 
 function fmtDate(iso: string) {

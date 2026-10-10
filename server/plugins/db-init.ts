@@ -19,7 +19,7 @@ export default defineNitroPlugin(async () => {
       for (const u of adminData.users as any[]) {
         await query(
           'INSERT INTO admin_users (username, salt, pw_hash, role) VALUES (:username, :salt, :hash, :role)',
-          { username: u.username, salt: u.salt, hash: u.hash, role: 'admin' }
+          { username: u.username, salt: u.salt, hash: u.hash, role: 'superadmin' }
         )
         console.log(`[db-init] Admin-User "${u.username}" aus data/admin.json importiert`)
       }

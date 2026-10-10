@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS admin_users (
   position VARCHAR(128) NULL,
   bio VARCHAR(500) NULL,
   avatar_path VARCHAR(190) NULL,
-  role ENUM('superadmin','admin','user') NOT NULL DEFAULT 'user',
+  role ENUM('superadmin','designer','driver') NOT NULL DEFAULT 'driver',
   status ENUM('pending','active','deactivated') NOT NULL DEFAULT 'active',
   invite_token_hash CHAR(64) NULL,
   invite_expires_at TIMESTAMP NULL,
@@ -407,7 +407,7 @@ CREATE TABLE IF NOT EXISTS blog_posts (
 const MIGRATIONS: Array<[string, string]> = [
   ['email', "ADD COLUMN email VARCHAR(190) NULL AFTER pw_hash"],
   ['display_name', "ADD COLUMN display_name VARCHAR(128) NULL AFTER email"],
-  ['role', "ADD COLUMN role ENUM('superadmin','admin','user') NOT NULL DEFAULT 'user' AFTER display_name"],
+  ['role', "ADD COLUMN role ENUM('superadmin','designer','driver') NOT NULL DEFAULT 'driver' AFTER display_name"],
   ['status', "ADD COLUMN status ENUM('pending','active','deactivated') NOT NULL DEFAULT 'active' AFTER role"],
   ['invite_token_hash', "ADD COLUMN invite_token_hash CHAR(64) NULL AFTER status"],
   ['invite_expires_at', "ADD COLUMN invite_expires_at TIMESTAMP NULL AFTER invite_token_hash"],
@@ -508,6 +508,19 @@ export async function migrateSchema() {
   }
   await addCol('contact_inquiries', 'offer_id', 'ADD COLUMN offer_id INT UNSIGNED NULL')
   await addCol('contact_inquiries', 'contact_id', 'ADD COLUMN contact_id INT UNSIGNED NULL')
+  // Rollen: admin → Designerin, user → Spediteur (superadmin bleibt Admin)
+  const rt = await queryOne<{ t: string }>(
+    `SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = :db AND TABLE_NAME = 'admin_users' AND COLUMN_NAME = 'role'`,
+    { db: config.dbName }
+  )
+  if (rt && !String(rt.t).includes('designer')) {
+    await db.query("ALTER TABLE admin_users MODIFY role ENUM('superadmin','admin','user','designer','driver') NOT NULL DEFAULT 'driver'")
+    await db.query("UPDATE admin_users SET role = 'designer' WHERE role = 'admin'")
+    await db.query("UPDATE admin_users SET role = 'driver' WHERE role = 'user'")
+    await db.query("ALTER TABLE admin_users MODIFY role ENUM('superadmin','designer','driver') NOT NULL DEFAULT 'driver'")
+    console.log('[db-init] Migration: Rollen Admin/Designerin/Spediteur')
+  }
   await addCol('rental_inquiries', 'transport_calc', 'ADD COLUMN transport_calc TEXT NULL')
   await addCol('invoices', 'reminder_level', 'ADD COLUMN reminder_level TINYINT NOT NULL DEFAULT 0')
   await addCol('invoices', 'last_reminder_at', 'ADD COLUMN last_reminder_at DATE NULL')

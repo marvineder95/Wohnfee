@@ -24,6 +24,7 @@ const detailLoading = ref(false)
 const expandedId = ref<number | null>(null)
 const actionError = ref('')
 
+const perms = usePermissions()
 const tabs = [
   { value: 'alle', label: 'Alle' },
   { value: 'neu', label: 'Neu' },
@@ -65,7 +66,7 @@ async function toggleDetail(item: Inquiry) {
   detailLoading.value = true
   detail.value = null
   // Beim ersten Öffnen automatisch als gelesen markieren
-  if (item.status === 'neu') {
+  if (item.status === 'neu' && perms.canEdit('anfragen')) {
     await setStatus(item, 'gelesen', false)
   }
   try {
@@ -191,20 +192,22 @@ onMounted(load)
           </template>
 
           <div class="inquiries__actions">
-            <button v-if="detail" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(item)">
+            <button v-if="detail && perms.canEdit('angebote')" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(item)">
               <WfIcon name="file" :size="13" />
               {{ detail.offerId ? `Angebot ${detail.offerNumber || ''} öffnen` : (offerBusy ? 'Erstelle …' : 'Angebot erstellen') }}
             </button>
             <a class="wf-btn wf-btn--sm" :href="`mailto:${item.email}?subject=${encodeURIComponent('Re: ' + (item.subject || 'Ihre Anfrage') + ' – WOHNFEE')}`">
               <WfIcon name="mail" :size="13" /> Antworten
             </a>
-            <button v-if="item.status !== 'gelesen'" class="wf-btn wf-btn--sm"
-                    @click="setStatus(item, 'gelesen')">Als gelesen markieren</button>
-            <button v-if="item.status !== 'archiviert'" class="wf-btn wf-btn--sm"
-                    @click="setStatus(item, 'archiviert')">Archivieren</button>
-            <button v-if="item.status === 'archiviert'" class="wf-btn wf-btn--sm"
-                    @click="setStatus(item, 'neu')">Wiederherstellen</button>
-            <button class="wf-btn wf-btn--sm wf-btn--danger" @click="remove(item)">Löschen</button>
+            <template v-if="perms.canEdit('anfragen')">
+              <button v-if="item.status !== 'gelesen'" class="wf-btn wf-btn--sm"
+                      @click="setStatus(item, 'gelesen')">Als gelesen markieren</button>
+              <button v-if="item.status !== 'archiviert'" class="wf-btn wf-btn--sm"
+                      @click="setStatus(item, 'archiviert')">Archivieren</button>
+              <button v-if="item.status === 'archiviert'" class="wf-btn wf-btn--sm"
+                      @click="setStatus(item, 'neu')">Wiederherstellen</button>
+              <button class="wf-btn wf-btn--sm wf-btn--danger" @click="remove(item)">Löschen</button>
+            </template>
           </div>
         </div>
       </li>

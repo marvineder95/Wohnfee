@@ -64,8 +64,13 @@ export async function notifyTeam(payload: { title: string; body: string; url?: s
   try {
     await ensureTable()
     await vapidPublicKey()
+    // Anfragen-Pushes nur an Rollen, die Anfragen bearbeiten (Admin, Designerin)
     const subs: any[] = await query(
-      `SELECT id, endpoint, p256dh, auth FROM push_subscriptions ${onlyUserId ? 'WHERE user_id = :uid' : ''}`,
+      onlyUserId
+        ? 'SELECT id, endpoint, p256dh, auth FROM push_subscriptions WHERE user_id = :uid'
+        : `SELECT s.id, s.endpoint, s.p256dh, s.auth FROM push_subscriptions s
+           JOIN admin_users u ON u.id = s.user_id
+           WHERE u.status = 'active' AND u.role IN ('superadmin', 'designer')`,
       { uid: onlyUserId }
     )
     let sent = 0

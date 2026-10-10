@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ROLES, roleLabel, type Role } from '~~/shared/permissions'
 definePageMeta({ layout: 'admin' })
 
 useHead({
@@ -17,7 +18,7 @@ const devResetUrl = ref('')
 const showInvite = ref(false)
 const invName = ref('')
 const invEmail = ref('')
-const invRole = ref<'user' | 'admin'>('user')
+const invRole = ref<Role>('designer')
 const inviting = ref(false)
 const inviteError = ref('')
 const inviteDevUrl = ref('')
@@ -35,14 +36,14 @@ async function loadUsers() {
 
 onMounted(() => {
   if (user.value?.role !== 'superadmin') {
-    error.value = 'Nur für Superadmins sichtbar.'
+    error.value = 'Nur für Admins sichtbar.'
     return
   }
   loadUsers()
 })
 
 const statusLabel = (s: string) => s === 'active' ? 'Aktiv' : s === 'pending' ? 'Eingeladen' : 'Deaktiviert'
-const roleLabel = (r: string) => r === 'superadmin' ? 'Superadmin' : r === 'admin' ? 'Admin' : 'Mitarbeiter'
+// Rollen-Bezeichnungen & Beschreibungen: shared/permissions.ts
 
 function fmtDate(d: string | null) {
   if (!d) return '—'
@@ -70,7 +71,7 @@ async function sendInvite() {
     showInvite.value = false
     invName.value = ''
     invEmail.value = ''
-    invRole.value = 'user'
+    invRole.value = 'designer'
     await loadUsers()
   } catch (e: any) {
     inviteError.value = e?.data?.statusMessage || 'Einladung fehlgeschlagen'
@@ -172,9 +173,9 @@ async function removeUser(u: any) {
         <label>
           <span>Rolle</span>
           <select v-model="invRole" :disabled="inviting">
-            <option value="user">Mitarbeiter</option>
-            <option value="admin">Admin</option>
+            <option v-for="r in ROLES" :key="r.value" :value="r.value">{{ r.label }}</option>
           </select>
+          <small class="invite-rolehint">{{ ROLES.find(r => r.value === invRole)?.text }}</small>
         </label>
         <div class="invite-actions">
           <button type="submit" class="wf-btn wf-btn--primary" :disabled="inviting">
@@ -216,11 +217,9 @@ async function removeUser(u: any) {
             <td>
               <select v-if="u.id !== user?.id && u.status !== 'pending'" class="role-select"
                       :value="u.role" @change="changeRole(u, ($event.target as HTMLSelectElement).value)">
-                <option value="user">Mitarbeiter</option>
-                <option value="admin">Admin</option>
-                <option value="superadmin">Superadmin</option>
+                <option v-for="r in ROLES" :key="r.value" :value="r.value">{{ r.label }}</option>
               </select>
-              <span v-else class="wf-pill" :class="u.role === 'superadmin' ? '' : u.role === 'admin' ? 'wf-pill--blue' : 'wf-pill--gray'">{{ roleLabel(u.role) }}</span>
+              <span v-else class="wf-pill" :class="u.role === 'superadmin' ? '' : u.role === 'designer' ? 'wf-pill--blue' : 'wf-pill--gray'">{{ roleLabel(u.role) }}</span>
             </td>
             <td><span class="wf-pill" :class="u.status === 'active' ? '' : u.status === 'pending' ? 'wf-pill--amber' : 'wf-pill--gray'">{{ statusLabel(u.status) }}</span></td>
             <td>{{ fmtDate(u.createdAt) }}</td>
@@ -361,6 +360,7 @@ async function removeUser(u: any) {
 
 <style>
 /* unscoped additions for the actions column */
+.invite-rolehint { display: block; margin-top: .35em; font-size: .78em; color: var(--wf-muted); line-height: 1.4; max-width: 22em; }
 .role-select {
   font-size: .85em;
   font-family: inherit;
