@@ -58,7 +58,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   3 Tage gültig ab Versand, Reservierung bis Ende des Gültigkeitstags; nach 48 h Erinnerungsmail.
   Kundenseite `/angebot/<token>` (API `/api/offer/:token`): annehmen → Projekt + Möbel + Liefertermin,
   ablehnen → sofort frei. Status im Angebots-Editor auf angenommen/abgelehnt löst dasselbe aus.
-  Mietanfragen: „+3 Tage" / „Freigeben". Möbel kommen erst über Touren → „Abholung erledigt" zurück
+  Mietanfragen: „+3 Tage" / „Freigeben". Möbel kommen erst über Touren → „Abholung erledigt" (auch Spediteur, Name wird im Projekt vermerkt) zurück
   (Shop / Reinigung-Reparatur = Status `pflege` / defekt).
 - Touren & Rückgaben (`/admin/touren`, API `/api/admin/logistics`): Kalendertermine +
   Projekt-Deadlines mit Möbeln + Überfälliges; Packliste `/admin/packliste/:id` (druckbar).

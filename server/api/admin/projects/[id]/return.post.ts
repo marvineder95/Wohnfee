@@ -1,6 +1,7 @@
 import { requireAdmin } from '../../../../utils/admin-auth'
 import { query, queryOne } from '../../../../utils/db'
 import { syncItemStatus } from '../../../../utils/inventory-sync'
+import { roleLabel } from '../../../../../shared/permissions'
 
 const STATES = ['lager', 'pflege', 'ausser_dienst']
 
@@ -40,8 +41,9 @@ export default defineEventHandler(async (event) => {
 
   const left: any = await queryOne('SELECT COUNT(*) AS n FROM project_items WHERE project_id = :id', { id })
   const today = new Date().toLocaleDateString('de-AT', { timeZone: 'Europe/Vienna' })
-  const who = user?.display_name || user?.displayName || user?.email || 'Team'
-  const line = `Abholung ${today} (${who}): ${done.length} Möbel zurück${done.length ? ` – ${done.join(', ')}` : ''}`.slice(0, 1500)
+  const who = `${user?.displayName || user?.username || 'Team'} (${roleLabel(user?.role)})`
+  const time = new Date().toLocaleTimeString('de-AT', { timeZone: 'Europe/Vienna', hour: '2-digit', minute: '2-digit' })
+  const line = `Abholung erledigt am ${today}, ${time} – gemeldet von ${who}: ${done.length} Möbel zurück${done.length ? ` – ${done.join(', ')}` : ''}`.slice(0, 1500)
   await query(
     `UPDATE projects SET status_info = CONCAT_WS('\n', NULLIF(status_info, ''), :line),
        next_step = IF(:left = 0, 'Abgeschlossen – alle Möbel zurück', next_step) WHERE id = :id`,

@@ -3,7 +3,7 @@
 //
 //   Admin       (superadmin) alles
 //   Designerin  (designer)   alles außer Benutzerverwaltung; Konditionen nur ansehen
-//   Spediteur   (driver)     nur ansehen; eigene Kalendertermine anlegen/ändern;
+//   Spediteur   (driver)     nur ansehen; eigene Kalendertermine anlegen/ändern; Abholung erledigt melden;
 //                            keine Angebote, Rechnungen, Konditionen, Newsletter, Blog, Benutzer
 
 export type Role = 'superadmin' | 'designer' | 'driver'
@@ -16,7 +16,7 @@ export type Area =
 export const ROLES: Array<{ value: Role; label: string; text: string }> = [
   { value: 'superadmin', label: 'Admin', text: 'Voller Zugriff inkl. Benutzerverwaltung und Konditionen.' },
   { value: 'designer', label: 'Designerin', text: 'Kann alles bearbeiten – außer Benutzer verwalten und Konditionen ändern.' },
-  { value: 'driver', label: 'Spediteur', text: 'Sieht Anfragen, Projekte, Touren, Inventar und Kontakte; trägt eigene Termine im Kalender ein. Keine Angebote, Rechnungen oder Konditionen.' }
+  { value: 'driver', label: 'Spediteur', text: 'Sieht Anfragen, Projekte, Touren, Inventar und Kontakte; trägt eigene Termine im Kalender ein und meldet erledigte Abholungen. Keine Angebote, Rechnungen oder Konditionen.' }
 ]
 
 export const roleLabel = (r?: string | null) => ROLES.find(x => x.value === r)?.label || 'Unbekannt'
@@ -73,8 +73,9 @@ export function requirementForApi(path: string, method: string): { area: Area; n
   if (/^(inquiries|rental-inquiries)\/\d+\/offer$/.test(p) || /^projects\/\d+\/extension-offer$/.test(p)) {
     return { area: 'angebote', need: 'edit' }
   }
-  // Abholung erledigt (Möbel zurück ins Lager) gehört zu den Touren
-  if (/^projects\/\d+\/return$/.test(p)) return { area: 'touren', need: 'edit' }
+  // Abholung erledigt (Möbel zurück ins Lager): darf jeder mit Touren-Zugriff – auch der Spediteur.
+  // Wer es gedrückt hat, steht im Projektverlauf.
+  if (/^projects\/\d+\/return$/.test(p)) return { area: 'touren', need: 'view' }
   // Dokumente eines Kontakts enthalten Rechnungen/Angebote
   if (/^contacts\/\d+\/documents$/.test(p)) return { area: 'rechnungen', need: 'view' }
   // Probe-Berechnung ist reines Ansehen

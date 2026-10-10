@@ -170,7 +170,7 @@ async function confirmReturn() {
     retBusy.value = false
   }
 }
-const canReturn = (e: Entry) => !!e.projectId && !!e.itemCount && perms.canEdit('touren') && (e.kind !== 'termin' || e.type === 'abholung')
+const canReturn = (e: Entry) => !!e.projectId && !!e.itemCount && perms.can('touren') && (e.kind !== 'termin' || e.type === 'abholung')
 
 function printPlan() {
   window.print()
