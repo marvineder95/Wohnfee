@@ -188,6 +188,16 @@ export async function acceptOffer(offerId: number, d: Decision): Promise<{ proje
       { pid: projectId, id: inquiry.id }
     )
   }
+  // Rechnungsentwürfe (Monat 1 + Abo + einmalige Leistungen) – Fehler hier dürfen die Annahme nicht kippen
+  if (inquiry) {
+    try {
+      const { createInvoicesForAcceptedOffer } = await import('./offer-invoices')
+      const r = await createInvoicesForAcceptedOffer(offerId, d.by === 'kunde' ? 'Online-Annahme' : (d.name || 'Dashboard'))
+      if (r) console.log(`[angebot] ${offer.number}: Rechnungsentwürfe ${[r.rentInvoice, r.oneTimeInvoice].filter(Boolean).join(', ')}, Abo ${r.recurringMonths} Monate`)
+    } catch (e: any) {
+      console.error(`[angebot] Rechnungen zu ${offer.number} fehlgeschlagen:`, e?.message || e)
+    }
+  }
   if (offer.project_id) {
     // Mietverlängerung: im Projekt vermerken – Deadline passt das Team an
     const line = `Verlängerung ${offer.number} angenommen am ${new Date().toLocaleDateString('de-AT', { timeZone: 'Europe/Vienna' })}`

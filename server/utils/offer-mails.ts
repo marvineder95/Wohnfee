@@ -111,7 +111,7 @@ export function teamDecisionMail(o: { number: string; customer: string; accepted
     `${o.customer} hat das Angebot ${o.number} online ${o.accepted ? 'angenommen' : 'abgelehnt'}.`,
     o.name ? `Bestätigt von: ${o.name}` : '',
     o.reason ? `Grund: ${o.reason}` : '',
-    o.accepted ? 'Ein Projekt mit den Möbeln und ein Liefertermin wurden automatisch angelegt.' : 'Die reservierten Möbel sind wieder im Shop verfügbar.'
+    o.accepted ? 'Automatisch angelegt: Projekt mit den Möbeln, Liefertermin im Kalender sowie Rechnungsentwürfe (Monat 1, einmalige Leistungen) und das Monats-Abo – bitte unter „Rechnungen" prüfen und versenden.' : 'Die reservierten Möbel sind wieder im Shop verfügbar.'
   ].filter(Boolean)
   const text = `${lines.join('\n')}\n\n${o.dashboardUrl}`
   const html = layout(lines.map(l => `<p>${esc(l)}</p>`).join('') + button(o.dashboardUrl, 'Im Dashboard öffnen'))

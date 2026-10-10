@@ -62,6 +62,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   ablehnen → sofort frei. Status im Angebots-Editor auf angenommen/abgelehnt löst dasselbe aus.
   Mietanfragen: „+3 Tage" / „Freigeben". Möbel kommen erst über Touren → „Abholung erledigt" (auch Spediteur, Name wird im Projekt vermerkt) zurück
   (Shop / Reinigung-Reparatur = Status `pflege` / defekt).
+  Annahme → `server/utils/offer-invoices.ts`: Entwurf „Monat 1" (Positionen mit Einheit „Mon."),
+  Entwurf „Einmalige Leistungen" (Transport, Deko) und Abo für Monat 2…N (Vorlage = Monat 1).
 - Touren & Rückgaben (`/admin/touren`, API `/api/admin/logistics`): Kalendertermine +
   Projekt-Deadlines mit Möbeln + Überfälliges; Packliste `/admin/packliste/:id` (druckbar).
 - Abo-Rechnungen: Tabelle `recurring_invoices`, Erzeugung `server/utils/recurring.ts`
