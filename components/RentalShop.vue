@@ -179,6 +179,13 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+  // Link mit #fl-produkte (z. B. „Zum Mietshop" auf der Startseite): erst nach dem Laden
+  // der Produkte springen, sonst verschiebt sich die Seite noch
+  // (kurz verzögert: der Router scrollt beim Seitenwechsel selbst noch nach oben)
+  if (window.location.hash === '#fl-produkte') {
+    await nextTick()
+    setTimeout(scrollToProducts, 350)
+  }
 })
 
 const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(

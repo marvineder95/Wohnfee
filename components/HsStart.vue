@@ -214,7 +214,7 @@ function scrollToId(id: string, e?: Event) {
             </li>
           </ul>
           <div class="hss__actions">
-            <NuxtLink :to="lp('/furniture-leasing.html')" class="hss__btn hss__btn--primary">{{ t('Zum Mietshop', 'To the rental shop') }}</NuxtLink>
+            <NuxtLink :to="lp('/furniture-leasing.html') + '#fl-produkte'" class="hss__btn hss__btn--primary">{{ t('Zum Mietshop', 'To the rental shop') }}</NuxtLink>
           </div>
         </div>
       </div>
