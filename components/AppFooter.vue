@@ -253,6 +253,8 @@ const year = new Date().getFullYear()
   flex-basis: auto;
   justify-content: flex-start;
 }
+/* Social-Icons: Logo mittig in der Kachel (sonst greift die Rücksetzung oben) */
+#footer .inside .wffoot__social { justify-content: center; }
 
 .wffoot {
   display: grid;
