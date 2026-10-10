@@ -55,7 +55,6 @@ export default defineNuxtConfig({
         { rel: 'stylesheet', href: '/system/modules/mobile_menu/assets/css/mobile-menu.min.css' },
         { rel: 'stylesheet', href: '/assets/contao/css/layout.min.css' },
         { rel: 'stylesheet', href: '/assets/contao/css/responsive.min.css' },
-        { rel: 'stylesheet', href: '/files/wohnfee/layout/css/cookiebar.css' },
         { rel: 'stylesheet', href: '/files/wohnfee/layout/css/webfonts.css' },
         { rel: 'stylesheet', href: '/files/wohnfee/layout/css/style.css' },
         { rel: 'stylesheet', href: '/files/wohnfee/layout/css/icons.css' },

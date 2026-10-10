@@ -113,7 +113,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Checkout: Mietdauer im Formular (1/3 Monate) ist unabhängig von der Mietdauer je Artikel
   im Warenkorb – vereinheitlichen?
 - Datenschutz (neu, Seite 11 in pages(-en).json, Layout HsLegal): gelb markierte Lücken ausfüllen
-  (Hosting-Anbieter + Log-Löschfrist, SMTP-Anbieter, OSRM-Betreiber); Fotonachweis nennt noch iStock.
-  Google Analytics nutzt eine alte UA-ID (seit 2023 abgeschaltet) – entfernen oder auf GA4 umstellen.
+  (Hosting-Anbieter + Log-Löschfrist, SMTP-Anbieter, OSRM-Betreiber).
+- Kein Tracking, kein Cookie-Banner (Google Analytics + Cookiebar im Okt. 2026 entfernt). Videos (CeVideo)
+  laden erst nach Klick. Neue externe Dienste nur nach Rücksprache – sonst braucht es wieder ein Banner.
 - Noch nicht im neuen Design: Furniture Leasing unterhalb des Heros, EN-Startseite
   hat englische Daten nur teilweise (Zielgruppen-Elemente ungenutzt).

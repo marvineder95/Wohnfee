@@ -1,8 +1,6 @@
 <script setup lang="ts">
 const { routes } = useSiteData()
 const route = useRoute()
-const { open } = useCookiebar()
-const openSettings = () => open('settings')
 
 const isEn = computed(() => route.path.startsWith('/en/'))
 
@@ -77,7 +75,6 @@ const columns = computed(() => ([
     items: [
       { label: isEn.value ? 'Legal Notice' : 'Impressum', route: '/impressum.html' },
       { label: isEn.value ? 'Privacy Policy' : 'Datenschutzerklärung', route: '/datenschutz.html' },
-      { label: isEn.value ? 'Cookie Settings' : 'Cookie-Einstellungen', action: 'cookies' as const },
       { label: 'AGB', route: '' },
       { label: isEn.value ? 'Right of Withdrawal' : 'Widerrufsbelehrung', route: '' }
     ]
@@ -144,8 +141,7 @@ const year = new Date().getFullYear()
           <h3>{{ col.title }}</h3>
           <ul>
             <li v-for="item in col.items" :key="item.label">
-              <button v-if="'action' in item && item.action === 'cookies'" type="button" class="wffoot__link wffoot__link--btn" @click="openSettings">{{ item.label }}</button>
-              <NuxtLink v-else-if="item.route" :to="linkFor(item.route)" class="wffoot__link">{{ item.label }}</NuxtLink>
+              <NuxtLink v-if="item.route" :to="linkFor(item.route)" class="wffoot__link">{{ item.label }}</NuxtLink>
               <span v-else class="wffoot__link wffoot__link--dead">{{ item.label }}</span>
             </li>
           </ul>
@@ -212,7 +208,6 @@ const year = new Date().getFullYear()
         <nav class="wffoot__barlinks" :aria-label="t.legal">
           <NuxtLink :to="linkFor('/impressum.html')">{{ isEn ? 'Legal Notice' : 'Impressum' }}</NuxtLink>
           <NuxtLink :to="linkFor('/datenschutz.html')">{{ isEn ? 'Privacy Policy' : 'Datenschutzerklärung' }}</NuxtLink>
-          <button type="button" @click="openSettings">{{ isEn ? 'Cookie Settings' : 'Cookie-Einstellungen' }}</button>
           <span class="dead">AGB</span>
           <span class="dead">{{ isEn ? 'Right of Withdrawal' : 'Widerrufsbelehrung' }}</span>
         </nav>
@@ -314,15 +309,6 @@ const year = new Date().getFullYear()
   transition: color .15s ease;
 }
 a.wffoot__link:hover { color: #2f5d40; }
-.wffoot__link--btn {
-  background: none;
-  border: 0;
-  padding: 0;
-  font: inherit;
-  cursor: pointer;
-  text-align: left;
-}
-.wffoot__link--btn:hover { color: #2f5d40; }
 .wffoot__link--dead { color: #9a9a92; cursor: default; }
 
 /* Kontakt */

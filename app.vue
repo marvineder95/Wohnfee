@@ -1,6 +1,6 @@
 <script setup lang="ts">
 const route = useRoute()
-// admin area renders bare (no site header/footer/cookiebar)
+// admin area renders bare (no site header/footer)
 const isAdmin = computed(() => route.path.startsWith('/admin'))
 </script>
 
@@ -21,7 +21,6 @@ const isAdmin = computed(() => route.path.startsWith('/admin'))
       </main>
       <AppFooter />
     </div>
-    <AppCookiebar />
     <AppCartDrawer />
   </template>
 </template>

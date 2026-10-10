@@ -22,7 +22,8 @@ defineProps<{ elements: any[] }>()
     <ModuleSearchbox v-else-if="el.type === 'searchbox'" :el="el" />
     <ModuleSearch v-else-if="el.type === 'search'" :el="el" />
     <ModuleNewsletter v-else-if="el.type === 'newsletter'" :el="el" />
-    <ModuleCookiebutton v-else-if="el.type === 'cookiebutton'" :el="el" />
+    <!-- cookiebutton: kein Cookie-Banner mehr (keine Analyse/Tracking) → nichts anzeigen -->
+    <template v-else-if="el.type === 'cookiebutton'" />
     <div v-else-if="el.type === 'article'" class="article-insert mod_article block" :class="el.cssClass">
       <ContentElements :elements="el.elements" />
     </div>
