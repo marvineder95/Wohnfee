@@ -408,6 +408,8 @@ function scrollToId(id: string, e?: Event) {
   }
   .hss__inside { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center;
     padding: clamp(1em, 3.5vh, 3em) 1.5em clamp(.8em, 2vh, 2em); }
+  /* altes Theme-CSS setzt bei h1 flex: 0 1 100% → Überschrift würde sich strecken */
+  .hss__inside > * { flex: 0 0 auto; }
   .hss__inside > .hss__h1 { max-width: 46rem; font-size: clamp(2em, min(4.4vw, 6.2vh), 3.8em) !important; margin-bottom: clamp(.25em, 1.8vh, .45em); }
   .hss__inside > .hss__eyebrow { margin-bottom: clamp(.6em, 1.8vh, 1.3em); }
   .hss__inside > .hss__lead { font-size: clamp(.95em, 1.9vh, 1.05em); line-height: 1.6; margin-bottom: clamp(.9em, 2.6vh, 1.8em); }
