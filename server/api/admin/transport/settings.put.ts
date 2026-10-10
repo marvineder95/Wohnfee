@@ -22,7 +22,14 @@ export default defineEventHandler(async (event) => {
     truckFactor: num(body?.truckFactor, 0, 200, current.truckFactor),
     freeKm: num(body?.freeKm, 0, 1000, current.freeKm),
     kmRate: num(body?.kmRate, 0, 100, current.kmRate),
-    roundMinutes: Math.round(num(body?.roundMinutes, 1, 120, current.roundMinutes))
+    roundMinutes: Math.round(num(body?.roundMinutes, 1, 120, current.roundMinutes)),
+    decoEnabled: !!body?.decoEnabled,
+    decoTitle: String(body?.decoTitle ?? current.decoTitle).trim().slice(0, 80) || 'Deko-Paket',
+    decoText: String(body?.decoText ?? current.decoText).trim().slice(0, 300),
+    decoPrice: num(body?.decoPrice, 0, 100000, current.decoPrice)
+  }
+  if (next.decoEnabled && !(next.decoPrice > 0)) {
+    throw createError({ statusCode: 400, statusMessage: 'Für das Deko-Paket bitte einen Preis angeben.' })
   }
   if (next.drivers + next.designers < 1) {
     throw createError({ statusCode: 400, statusMessage: 'Mindestens eine Person muss im Team sein.' })

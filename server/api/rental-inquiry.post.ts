@@ -84,7 +84,12 @@ export default defineEventHandler(async (event) => {
     : perk === 'discount'
       ? `Transport: −${Math.round(OTHER_STATES_DISCOUNT * 100)} % Rabatt auf Liefer-/Abholgebühr (außerhalb Wiens)`
       : null
-  const notes = [perkNote, clean(body?.notes, 2000)].filter(Boolean).join('\n') || null
+  // Deko-Paket nur, wenn im Dashboard aktiviert (Preis kommt aus den Konditionen)
+  const { getTransportSettings } = await import('../utils/transport')
+  const ts = await getTransportSettings()
+  const deco = !!body?.decoPackage && ts.decoEnabled && ts.decoPrice > 0
+  const decoNote = deco ? `${ts.decoTitle} gewünscht (einmalig € ${ts.decoPrice.toLocaleString('de-AT', { minimumFractionDigits: 2 })} netto)` : null
+  const notes = [perkNote, decoNote, clean(body?.notes, 2000)].filter(Boolean).join('\n') || null
 
   // Enddatum aus Start + Dauer
   const start = new Date(String(startDate) + 'T00:00:00Z')
@@ -95,10 +100,10 @@ export default defineEventHandler(async (event) => {
   const result: any = await query(
     `INSERT INTO rental_inquiries
        (number, first_name, last_name, company, email, phone, street, zip, city, country,
-        start_date, end_date, duration_months, delivery_option, delivery_notes, monthly_total, notes)
+        start_date, end_date, duration_months, delivery_option, delivery_notes, monthly_total, notes, deco_package)
      VALUES
        ('PENDING', :fn, :ln, :company, :email, :phone, :street, :zip, :city, :country,
-        :start, :end, :dur, :dopt, :dnotes, :total, :notes)`,
+        :start, :end, :dur, :dopt, :dnotes, :total, :notes, :deco)`,
     {
       fn: clean(body?.firstName, 64), ln: lastName,
       company: clean(body?.company, 128), email,
@@ -109,7 +114,8 @@ export default defineEventHandler(async (event) => {
       dopt: clean(body?.deliveryOption, 64) || 'Lieferung & Abholung durch WOHNFEE',
       dnotes: clean(body?.deliveryNotes, 1000),
       total: Math.round(monthlyTotal * 100) / 100,
-      notes
+      notes,
+      deco: deco ? 1 : 0
     }
   )
   countAttempt(limitKey, 60 * 60 * 1000)

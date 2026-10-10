@@ -26,6 +26,11 @@ export interface TransportSettings {
   freeKm: number            // Freikilometer je einfacher Strecke
   kmRate: number            // Kilometergeld € pro km
   roundMinutes: number      // Zeit je Tour aufrunden auf … Minuten
+  // Optionales Deko-Paket im Checkout (einmaliger Preis, netto)
+  decoEnabled: boolean
+  decoTitle: string
+  decoText: string
+  decoPrice: number
 }
 
 export const DEFAULT_TRANSPORT: TransportSettings = {
@@ -40,7 +45,11 @@ export const DEFAULT_TRANSPORT: TransportSettings = {
   truckFactor: 15,
   freeKm: 30,
   kmRate: 0.5,
-  roundMinutes: 15
+  roundMinutes: 15,
+  decoEnabled: false,
+  decoTitle: 'Deko-Paket',
+  decoText: 'Kissen, Plaids, Pflanzen, Bilder & Accessoires – passend zu deinen Möbeln ausgewählt von unserer Designerin.',
+  decoPrice: 0
 }
 
 const KEY = 'transport_settings'

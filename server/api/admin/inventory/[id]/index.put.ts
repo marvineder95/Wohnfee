@@ -56,6 +56,15 @@ export default defineEventHandler(async (event) => {
       pyear: Number(body?.purchasedYear) > 1900 ? Number(body.purchasedYear) : null
     }
   )
+  if (Array.isArray(body?.matches)) {
+    const ids = [...new Set(body.matches.map((m: any) => Number(m)).filter((m: number) => Number.isInteger(m) && m > 0 && m !== id))].slice(0, 8)
+    await query('DELETE FROM item_matches WHERE item_id = :id', { id })
+    let pos = 0
+    for (const mid of ids) {
+      await query('INSERT IGNORE INTO item_matches (item_id, match_id, position) SELECT :id, i.id, :pos FROM inventory_items i WHERE i.id = :mid',
+        { id, mid, pos: pos++ })
+    }
+  }
   if (Array.isArray(body?.tags)) {
     await query('DELETE FROM item_tags WHERE item_id = :id', { id })
     const tags = body.tags.map((t: any) => String(t).trim()).filter(Boolean).slice(0, 20)

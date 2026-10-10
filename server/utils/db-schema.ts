@@ -366,6 +366,16 @@ CREATE TABLE IF NOT EXISTS newsletter_sends (
   KEY idx_newsletter_sends_created (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS item_matches (
+  item_id INT UNSIGNED NOT NULL,
+  match_id INT UNSIGNED NOT NULL,
+  position INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (item_id, match_id),
+  KEY idx_item_matches_match (match_id),
+  CONSTRAINT fk_item_matches_item FOREIGN KEY (item_id) REFERENCES inventory_items(id) ON DELETE CASCADE,
+  CONSTRAINT fk_item_matches_match FOREIGN KEY (match_id) REFERENCES inventory_items(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS recurring_invoices (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   source_invoice_id INT UNSIGNED NOT NULL,
@@ -521,6 +531,7 @@ export async function migrateSchema() {
     await db.query("ALTER TABLE admin_users MODIFY role ENUM('superadmin','designer','driver') NOT NULL DEFAULT 'driver'")
     console.log('[db-init] Migration: Rollen Admin/Designerin/Spediteur')
   }
+  await addCol('rental_inquiries', 'deco_package', 'ADD COLUMN deco_package TINYINT(1) NOT NULL DEFAULT 0')
   await addCol('rental_inquiries', 'transport_calc', 'ADD COLUMN transport_calc TEXT NULL')
   await addCol('invoices', 'reminder_level', 'ADD COLUMN reminder_level TINYINT NOT NULL DEFAULT 0')
   await addCol('invoices', 'last_reminder_at', 'ADD COLUMN last_reminder_at DATE NULL')

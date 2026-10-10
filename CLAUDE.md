@@ -46,6 +46,11 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Abholung + Kilometergeld nur für km über der Freigrenze × 4 Strecken; Vorteile (Wien gratis /
   −50 %) als Preisfaktor. Route via OpenStreetMap (Nominatim + OSRM), Cache-Tabelle `geo_cache`.
   Jede Mietanfrage erzeugt automatisch einen Angebotsentwurf (Möbel × Mietdauer + Transport).
+- Sanfter Upsell (keine Popups, max. ein Hinweis je Schritt): Warenkorb-Vorschläge zur
+  Gratis-Transport-/Mindestwert-Lücke (`CartSuggestions.vue`), „Passt dazu" je Artikel (Tabelle
+  `item_matches`, gepflegt im Inventar-Dialog, im Katalog als `matches`), Checkout-Hinweis
+  Mietdauer/3-Monats-Tarif, optionales Deko-Paket (Konditionen, `/api/rental-extras`, nie
+  vorausgewählt), Home-Staging-Hinweis auf der Bestätigungsseite.
 - Touren & Rückgaben (`/admin/touren`, API `/api/admin/logistics`): Kalendertermine +
   Projekt-Deadlines mit Möbeln + Überfälliges; Packliste `/admin/packliste/:id` (druckbar).
 - Abo-Rechnungen: Tabelle `recurring_invoices`, Erzeugung `server/utils/recurring.ts`

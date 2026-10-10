@@ -17,6 +17,7 @@ interface RentalItem {
   rentPrice1m: number | null
   rentPrice3m: number | null
   quantity: number
+  matches?: number[]
 }
 
 interface CartLine {
@@ -45,7 +46,7 @@ const DE = {
   loading: 'Sortiment wird geladen …',
   empty: 'Keine Produkte für diese Auswahl — Filter anpassen oder alle anzeigen.',
   favAdd: 'Merken', favRemove: 'Von der Merkliste entfernen', photoSoon: 'Foto folgt',
-  addToCart: 'In den Warenkorb', home: 'Startseite',
+  addToCart: 'In den Warenkorb', home: 'Startseite', matches: 'Passt dazu', matchesHint: 'Von unseren Designerinnen zusammengestellt',
   filter: 'Filter', category: 'Kategorie', priceMonth: 'Preis / Monat',
   apply: 'Filter anwenden', resetAll: 'Alle Filter zurücksetzen', results: 'Ergebnisse',
   sortBy: 'Sortieren nach', minDur: 'Mindestmietdauer', availNow: 'Sofort verfügbar', close: 'Schließen',
@@ -90,7 +91,7 @@ const EN: typeof DE = {
   loading: 'Loading the catalogue …',
   empty: 'No products match this selection — adjust the filters or show all.',
   favAdd: 'Save', favRemove: 'Remove from wishlist', photoSoon: 'Photo coming soon',
-  addToCart: 'Add to cart', home: 'Home',
+  addToCart: 'Add to cart', home: 'Home', matches: 'Goes well with', matchesHint: 'Curated by our designers',
   filter: 'Filters', category: 'Category', priceMonth: 'Price / month',
   apply: 'Apply filters', resetAll: 'Reset all filters', results: 'Results',
   sortBy: 'Sort by', minDur: 'Minimum rental period', availNow: 'Available now', close: 'Close',
@@ -372,6 +373,11 @@ function addToCart(i: RentalItem, dur: number, qty: number) {
   persistCart()
   cartOpen.value = true
 }
+// Vorschlag aus dem Warenkorb übernehmen (Drawer bleibt offen)
+function addSuggested(s: { id: number }, dur: number) {
+  const i = litems.value.find((x) => x.id === s.id)
+  if (i) addToCart(i, dur, 1)
+}
 function setQty(line: CartLine, qty: number) {
   if (qty < 1) cart.value = cart.value.filter((l) => l !== line)
   else line.quantity = Math.min(99, qty)
@@ -386,6 +392,11 @@ function removeLine(line: CartLine) {
 const detail = ref<RentalItem | null>(null)
 const detailDur = ref(3)
 const detailQty = ref(1)
+// „Passt dazu" des geöffneten Artikels (nur verfügbare)
+const detailMatches = computed(() => {
+  const ids = detail.value?.matches || []
+  return ids.map((id) => litems.value.find((x) => x.id === id)).filter((x): x is RentalItem => !!x && avail(x) !== 'none')
+})
 function openDetail(i: RentalItem) {
   detail.value = i
   detailDur.value = i.rentPrice3m !== null ? 3 : 1
@@ -731,6 +742,30 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
             <p class="fl__tabhint">{{ t.descHint }}</p>
           </section>
         </div>
+
+        <section v-if="detailMatches.length" class="fl__matches">
+          <div class="fl__matcheshead">
+            <h4>{{ t.matches }}</h4>
+            <small>{{ t.matchesHint }}</small>
+          </div>
+          <ul>
+            <li v-for="m in detailMatches" :key="m.id" class="fl__match">
+              <button type="button" class="fl__matchmedia" @click="openDetail(m)">
+                <img v-if="m.imagePath" :src="m.imagePath" :alt="m.title" loading="lazy">
+                <WfIcon v-else name="bag" :size="22" />
+              </button>
+              <button type="button" class="fl__matchname" @click="openDetail(m)">{{ m.title }}</button>
+              <span class="fl__matchprice">
+                <template v-if="priceFrom(m)">{{ t.fromPrefix }}{{ eur(priceFrom(m)) }} / {{ t.month }}</template>
+                <template v-else>{{ t.onRequest }}</template>
+              </span>
+              <button type="button" class="fl__matchadd" :aria-label="t.addToCart + ': ' + m.title"
+                      @click="addToCart(m, m.rentPrice3m !== null ? 3 : 1, 1)">
+                <WfIcon name="plus" :size="13" />
+              </button>
+            </li>
+          </ul>
+        </section>
       </div>
     </div>
 
@@ -768,6 +803,7 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
         </ul>
         <footer v-if="cart.length" class="fl__drfoot">
           <RentalPerks :lines="cart" />
+          <CartSuggestions :lines="cart" @add="addSuggested" />
           <p class="fl__total"><span>{{ t.totalMonthly }}</span><strong>{{ eur(cartMonthly) }}</strong></p>
           <p class="fl__note">{{ t.feeNoteLong }}</p>
           <button class="fl__add fl__add--lg" :disabled="!perks.minReached" @click="goCheckout">{{ t.checkout }}</button>
@@ -1002,7 +1038,7 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
   font-style: normal;
 }
 .fl__ph em { font-size: .72em; letter-spacing: .1em; text-transform: uppercase; }
-.fl__ph--lg { aspect-ratio: 4 / 3.2; border-radius: 14px; }
+.fl__ph--lg { aspect-ratio: 4 / 3.2; height: auto; border-radius: 14px; } /* height:auto – sonst wächst der Platzhalter über die Spalte hinaus */
 .fl__catchip {
   position: absolute; left: .7em; bottom: .7em;
   display: inline-flex; align-items: center; gap: .35em;
@@ -1088,6 +1124,27 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 .fl__trust { list-style: none; margin: 1.1em 0 0; padding: .9em 0 0; border-top: 1px solid var(--line); display: grid; grid-template-columns: 1fr 1fr; gap: .4em .8em; }
 .fl__trust li { display: flex; align-items: center; gap: .4em; font-size: .78em; color: var(--muted); }
 .fl__trust svg { color: var(--green); flex: 0 0 auto; }
+.fl__matches { margin-top: 1.6em; border-top: 1px solid var(--line); padding-top: 1.1em; }
+.fl__matcheshead { display: flex; align-items: baseline; justify-content: space-between; gap: 1em; margin-bottom: .7em; }
+.fl__matcheshead h4 { margin: 0; font-size: .85em; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
+.fl__matcheshead small { font-size: .74em; color: var(--muted); }
+.fl__matches ul { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5em, 1fr)); gap: .7em; }
+.fl__match { position: relative; display: flex; flex-direction: column; gap: .3em; margin: 0; }
+.fl__matchmedia {
+  aspect-ratio: 1; border: 0; border-radius: 14px; overflow: hidden; background: var(--cream); color: #b4ab97;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; padding: 0;
+}
+.fl__matchmedia img { width: 100%; height: 100%; object-fit: cover; transition: transform .3s; }
+.fl__matchmedia:hover img { transform: scale(1.04); }
+.fl__matchname { border: 0; background: none; padding: 0; font: inherit; font-size: .8em; font-weight: 600; color: var(--ink); text-align: left; cursor: pointer; line-height: 1.3;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.fl__matchprice { font-size: .74em; color: var(--muted); }
+.fl__matchadd {
+  position: absolute; top: .45em; right: .45em; width: 30px; height: 30px; border-radius: 50%; border: 0;
+  background: #fff; color: var(--green); box-shadow: 0 4px 12px rgba(0, 0, 0, .12); cursor: pointer;
+  display: flex; align-items: center; justify-content: center; padding: 0; transition: background .15s, color .15s;
+}
+.fl__matchadd:hover { background: var(--green); color: #fff; }
 .fl__dtabs { margin-top: 1.6em; border-top: 1px solid var(--line); padding-top: 1.1em; }
 .fl__dtabs h4 { margin: 0 0 .4em; font-size: .85em; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .fl__tabtext { font-size: .9em; line-height: 1.65; color: var(--ink); margin: 0; }

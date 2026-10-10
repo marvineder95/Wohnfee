@@ -102,6 +102,36 @@ function removeTag(t: string) {
   tagsArr.value = tagsArr.value.filter(x => x !== t)
 }
 
+// ---------- „Passt dazu" (Empfehlungen im Shop, max. 8) ----------
+interface MatchItem { id: number; title: string; imagePath: string | null }
+const matches = ref<MatchItem[]>([])
+const matchSearch = ref('')
+const matchResults = ref<MatchItem[]>([])
+let matchTimer: any = null
+function onMatchSearch() {
+  clearTimeout(matchTimer)
+  matchTimer = setTimeout(async () => {
+    const q = matchSearch.value.trim()
+    matchResults.value = []
+    if (q.length < 2) return
+    try {
+      const res = await $fetch<{ items: any[] }>(`/api/admin/inventory?q=${encodeURIComponent(q)}&rentable=1&pagelen=8`)
+      matchResults.value = res.items
+        .filter((i: any) => i.id !== editing.value?.id && !matches.value.some(m => m.id === i.id))
+        .map((i: any) => ({ id: i.id, title: i.title, imagePath: i.imagePath }))
+    } catch { /* ignorieren */ }
+  }, 300)
+}
+function addMatch(m: MatchItem) {
+  if (matches.value.length >= 8) return
+  matches.value.push(m)
+  matchSearch.value = ''
+  matchResults.value = []
+}
+function removeMatch(id: number) {
+  matches.value = matches.value.filter(m => m.id !== id)
+}
+
 // ---------- Fotos (Mehrfach-Upload mit Vorschau) ----------
 interface Photo { key: string; id: number | null; path: string | null; file: File | null; url: string }
 const photos = ref<Photo[]>([])
@@ -203,6 +233,7 @@ async function openNew() {
     purchasedAt: '', purchasedYear: '', description: '', descriptionEn: ''
   })
   tagsArr.value = []
+  matches.value = []
   tagInput.value = ''
   resetPhotos()
   imgError.value = ''
@@ -230,6 +261,9 @@ async function openEdit(item: Item) {
       description: res.item.description || '', descriptionEn: res.item.descriptionEn || ''
     })
     tagsArr.value = res.tags
+    matches.value = (res as any).matches || []
+    matchSearch.value = ''
+    matchResults.value = []
     tagInput.value = ''
     resetPhotos()
     imgError.value = ''
@@ -254,7 +288,7 @@ async function openEdit(item: Item) {
 async function save() {
   saving.value = true
   saveError.value = ''
-  const payload = { ...form, tags: tagsArr.value }
+  const payload = { ...form, tags: tagsArr.value, matches: matches.value.map(m => m.id) }
   try {
     let itemId: number
     if (editing.value) {
@@ -574,6 +608,25 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
             </section>
 
             <section class="inv__sec">
+              <h3 class="inv__sech"><WfIcon name="heart" :size="15" /> Passt dazu <small>(Shop)</small></h3>
+              <p class="inv__hint">Bis zu 8 Artikel, die im Shop unter diesem Möbel als Empfehlung erscheinen – z. B. Bett → Nachttisch, Lampe, Teppich.</p>
+              <ul v-if="matches.length" class="inv__matches">
+                <li v-for="m in matches" :key="m.id">
+                  <img v-if="m.imagePath" :src="m.imagePath" alt="">
+                  <span v-else class="inv__matchph"><WfIcon name="box" :size="13" /></span>
+                  <span class="inv__matchtitle">{{ m.title }}</span>
+                  <button type="button" title="Entfernen" @click="removeMatch(m.id)">×</button>
+                </li>
+              </ul>
+              <div v-if="matches.length < 8" class="inv__matchsearch">
+                <input v-model="matchSearch" type="search" placeholder="Vermietbaren Artikel suchen …" @input="onMatchSearch">
+                <ul v-if="matchResults.length" class="inv__matchresults">
+                  <li v-for="r in matchResults" :key="r.id"><button type="button" @click="addMatch(r)">+ {{ r.title }}</button></li>
+                </ul>
+              </div>
+            </section>
+
+            <section class="inv__sec">
               <h3 class="inv__sech"><WfIcon name="tag" :size="15" /> Tags <small>(optional)</small></h3>
               <div class="inv__tagbox">
                 <span v-for="t in tagsArr" :key="t" class="inv__tagpill">
@@ -770,6 +823,16 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
 }
 .inv__field input:focus, .inv__field select:focus, .inv__field textarea:focus { border-color: var(--wf-green); box-shadow: 0 0 0 3px rgba(47, 93, 64, .12); }
 .inv__hint { margin: -.3em 0 .4em; font-size: .78em; color: var(--wf-muted); }
+.inv__matches { list-style: none; margin: 0 0 .6em; padding: 0; display: grid; gap: .35em; }
+.inv__matches li { display: flex; align-items: center; gap: .5em; padding: .35em .5em; border: 1px solid var(--wf-line); border-radius: 10px; background: #fff; font-size: .82em; }
+.inv__matches img, .inv__matchph { width: 28px; height: 28px; border-radius: 6px; object-fit: cover; flex: none; background: #f3eee2; display: flex; align-items: center; justify-content: center; color: #b4ab97; }
+.inv__matchtitle { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.inv__matches button { border: 0; background: none; color: var(--wf-muted); cursor: pointer; font-size: 1.2em; line-height: 1; }
+.inv__matchsearch { position: relative; }
+.inv__matchsearch input { width: 100%; box-sizing: border-box; padding: .5em .7em; border: 1px solid var(--wf-line); border-radius: 10px; font: inherit; font-size: .85em; }
+.inv__matchresults { list-style: none; margin: .3em 0 0; padding: .3em; border: 1px solid var(--wf-line); border-radius: 10px; background: #fff; box-shadow: 0 8px 20px rgba(0,0,0,.08); }
+.inv__matchresults button { width: 100%; text-align: left; border: 0; background: none; padding: .4em .5em; border-radius: 6px; font: inherit; font-size: .82em; cursor: pointer; }
+.inv__matchresults button:hover { background: var(--wf-green-soft); color: var(--wf-green); }
 .inv__fs { border: 0; margin: 0; padding: 0; min-width: 0; }
 .inv__fs:disabled .inv__photoupload, .inv__fs:disabled .inv__photoadd, .inv__fs:disabled .inv__photox { display: none; }
 .inv__dialogactions { display: flex; justify-content: flex-end; gap: .6em; margin-top: .4em; }

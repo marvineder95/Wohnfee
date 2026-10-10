@@ -117,8 +117,13 @@ export async function createOfferForInquiry(inquiryId: number, markInProgress = 
     } else {
       await addPos('Lieferung & Abholung durch WOHNFEE – Transportkosten werden ergänzt', 1, 'Pausch.', 0)
     }
+    // Optionales Deko-Paket (im Checkout gewählt)
+    if (inquiry.deco_package) {
+      const ds = quote.settings
+      await addPos(`${ds.decoTitle} – ${ds.decoText}`, 1, 'Pausch.', ds.decoPrice)
+    }
     // In der Kundentabelle (Dokumente) auftauchen lassen
-    const netto = monthly * months + (quote.ok ? quote.total : 0)
+    const netto = monthly * months + (quote.ok ? quote.total : 0) + (inquiry.deco_package ? quote.settings.decoPrice : 0)
     const brutto = Math.round(netto * 1.2 * 100) / 100
     await conn.query(
       `INSERT IGNORE INTO documents (contact_id, kind, number, customer_raw, doc_date, total, return_date, file_path, source)

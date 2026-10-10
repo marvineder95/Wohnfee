@@ -124,6 +124,66 @@ const inquiryResult = ref<{ number: string; monthlyTotal: number } | null>(null)
 function loadCart() {
   try { cart.value = JSON.parse(localStorage.getItem('wf_rental_cart') || '[]') } catch { cart.value = [] }
 }
+// ---------- Optionales Deko-Paket (im Dashboard unter „Konditionen" aktivierbar) ----------
+const deco = ref<{ title: string; text: string; price: number } | null>(null)
+const wantDeco = ref(false)
+onMounted(async () => {
+  try { deco.value = (await $fetch<{ deco: any }>('/api/rental-extras')).deco } catch { deco.value = null }
+})
+
+// ---------- Sanfte Hinweise (höchstens einer, nur wenn er etwas bringt) ----------
+const catalog = useRentalCatalog()
+onMounted(catalog.load)
+function persistCart() {
+  localStorage.setItem('wf_rental_cart', JSON.stringify(cart.value))
+  window.dispatchEvent(new CustomEvent('wf:cart-changed'))
+}
+// Ersparnis, wenn Artikel mit 1-Monats-Tarif auf den 3-Monats-Tarif umgestellt werden
+const tariffSaving = computed(() => {
+  if (form.durationMonths < 3) return 0
+  return Math.round(cart.value.reduce((sum, l) => {
+    const c = catalog.items.value.find((i) => i.id === l.id)
+    return l.durationMonths < 3 && c?.rentPrice3m != null && l.price !== null && c.rentPrice3m < l.price
+      ? sum + (l.price - c.rentPrice3m) * l.quantity : sum
+  }, 0) * 100) / 100
+})
+function switchToThreeMonthTariff() {
+  const merged: CartLine[] = []
+  for (const l of cart.value) {
+    const c = catalog.items.value.find((i) => i.id === l.id)
+    const next = l.durationMonths < 3 && c?.rentPrice3m != null ? { ...l, durationMonths: 3, price: c.rentPrice3m } : l
+    const same = merged.find((m) => m.id === next.id && m.durationMonths === next.durationMonths)
+    if (same) same.quantity += next.quantity
+    else merged.push({ ...next })
+  }
+  cart.value = merged
+  persistCart()
+}
+const hint = computed<null | { kind: 'perk' | 'tariff'; text: string; action: string }>(() => {
+  if (!cart.value.length) return null
+  if (form.durationMonths < 3 && rentalPerks(cart.value, 3).transportUnlocked) {
+    return {
+      kind: 'perk',
+      text: isEn.value ? 'From 3 months: free transport in Vienna (−50% elsewhere).' : 'Ab 3 Monaten: Gratis-Transport in Wien (sonst −50 %).',
+      action: isEn.value ? 'Switch to 3 months' : 'Auf 3 Monate ändern'
+    }
+  }
+  if (tariffSaving.value > 0) {
+    return {
+      kind: 'tariff',
+      text: isEn.value
+        ? `Some items use the 1-month rate – the 3-month rate saves ${eur(tariffSaving.value)}/month.`
+        : `Einige Artikel laufen zum 1-Monats-Tarif – der 3-Monats-Tarif spart ${eur(tariffSaving.value)}/Monat.`,
+      action: isEn.value ? 'Use 3-month rate' : 'Tarif umstellen'
+    }
+  }
+  return null
+})
+function applyHint() {
+  if (hint.value?.kind === 'perk') form.durationMonths = 3
+  else if (hint.value?.kind === 'tariff') switchToThreeMonthTariff()
+}
+
 function clearCart() {
   cart.value = []
   localStorage.setItem('wf_rental_cart', '[]')
@@ -317,6 +377,7 @@ async function submit() {
         startDate: form.startDate, durationMonths: Number(form.durationMonths),
         deliveryOption: form.deliveryOption === 'self' ? 'Selbstabholung' : 'Lieferung & Abholung durch WOHNFEE',
         deliveryNotes: form.deliveryNotes,
+        decoPackage: !!(deco.value && wantDeco.value),
         items: cart.value.map((l) => ({ id: l.id, quantity: l.quantity, durationMonths: l.durationMonths }))
       }
     })
@@ -472,6 +533,13 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
                 <small v-if="endDateStr" class="co__durend">{{ isEn ? 'until' : 'bis' }} {{ endDateStr }}</small>
               </div>
             </div>
+            <Transition name="co-pop">
+              <p v-if="hint" class="co__tip">
+                <WfIcon name="diamond" :size="15" />
+                <span>{{ hint.text }}</span>
+                <button type="button" @click="applyHint">{{ hint.action }}</button>
+              </p>
+            </Transition>
 
             <div class="co__ship">
               <span class="co__shipicon"><WfIcon name="truck" :size="24" /></span>
@@ -483,6 +551,15 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
                 </ul>
               </div>
             </div>
+
+            <label v-if="deco" class="co__deco" :class="{ 'is-on': wantDeco }">
+              <input v-model="wantDeco" type="checkbox">
+              <span class="co__decobox" aria-hidden="true"><WfIcon name="check" :size="12" /></span>
+              <span class="co__decomain">
+                <strong>{{ deco.title }} <em>+ {{ eur(deco.price) }} {{ isEn ? 'one-off' : 'einmalig' }}</em></strong>
+                <small>{{ deco.text }}</small>
+              </span>
+            </label>
 
             <label class="co__fld co__fld--last"><span>{{ t.deliveryNotes }}</span>
               <textarea v-model="form.deliveryNotes" rows="3" :placeholder="t.deliveryPh" />
@@ -524,6 +601,9 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
               <p class="co__transport" :class="{ 'is-free': transport === 'free' || transport === 'discount' || transport === 'unlocked' }">
                 <span>{{ isEn ? 'Delivery & pick-up' : 'Lieferung & Abholung' }}</span><strong>{{ transportText }}</strong>
               </p>
+              <p v-if="deco && wantDeco" class="co__transport is-free">
+                <span>{{ deco.title }}</span><strong>{{ eur(deco.price) }} {{ isEn ? 'one-off' : 'einmalig' }}</strong>
+              </p>
               <p class="co__total"><span>{{ t.totalMonthly }}</span><strong>{{ eur(cartMonthly) }}</strong></p>
               <p v-if="transport === 'none'" class="co__note">{{ t.feeNote }}</p>
               <p v-else-if="transport === 'discount'" class="co__note">{{ isEn ? 'Delivery address outside Vienna – the discounted fee is shown in your offer.' : 'Lieferadresse außerhalb Wiens – die reduzierte Gebühr steht in deinem Angebot.' }}</p>
@@ -558,6 +638,15 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
             <small>{{ n[1] }}</small>
           </li>
         </ol>
+        <!-- Cross-Sell erst NACH dem Abschluss: dezent, ein Satz, ein Link -->
+        <div class="co__cross">
+          <span class="co__crossicon"><WfIcon name="home" :size="20" /></span>
+          <div>
+            <strong>{{ isEn ? 'Selling or letting a property?' : 'Ihr verkauft oder vermietet eine Immobilie?' }}</strong>
+            <p>{{ isEn ? 'With Home Staging it sells faster and makes a better first impression – from a single room to the whole home.' : 'Mit Home Staging wirkt sie sofort wohnlich und findet schneller Käufer oder Mieter – vom einzelnen Raum bis zur ganzen Wohnung.' }}</p>
+            <NuxtLink :to="isEn ? '/en/home-staging.html' : '/home-staging.html'">{{ isEn ? 'Discover Home Staging' : 'Home Staging entdecken' }} →</NuxtLink>
+          </div>
+        </div>
         <div class="co__successbtns">
           <NuxtLink :to="shopUrl" class="co__btn">{{ t.backToProducts }} <WfIcon name="arrow" :size="16" /></NuxtLink>
           <NuxtLink :to="homeUrl" class="co__btn co__btn--ghost">{{ t.toHome }}</NuxtLink>
@@ -615,6 +704,20 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
   -webkit-text-stroke: 1px #b9c9bc; flex: none;
 }
 .co__h2 { font-size: 1.35em !important; margin: 0; line-height: 1.2; }
+.co__deco {
+  position: relative; display: flex; gap: .8em; align-items: flex-start; margin: 0 0 1.2em; padding: 1em 1.1em;
+  border: 1.5px dashed #d8d0bd; border-radius: 16px; cursor: pointer; transition: border-color .15s, background .15s;
+}
+.co__deco:hover { border-color: #b9c9bc; }
+.co__deco.is-on { border-style: solid; border-color: var(--green); background: var(--green-soft); }
+.co__deco input { position: absolute; opacity: 0; pointer-events: none; }
+.co__deco:has(input:focus-visible) { box-shadow: 0 0 0 4px rgba(47, 93, 64, .15); }
+.co__decobox { flex: none; width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid #cfc7b4; background: #fff; color: transparent; display: flex; align-items: center; justify-content: center; margin-top: .1em; }
+.co__deco.is-on .co__decobox { background: var(--green); border-color: var(--green); color: #fff; }
+.co__decomain { display: flex; flex-direction: column; gap: .25em; }
+.co__decomain strong { font-size: .92em; }
+.co__decomain em { font-style: normal; font-weight: 600; color: var(--green); margin-left: .3em; }
+.co__decomain small { font-size: .8em; color: var(--muted); line-height: 1.5; }
 .co__hint { margin: .15em 0 0; font-size: .85em; color: var(--muted); }
 
 .co__row { display: grid; grid-template-columns: 1fr 1fr; gap: 0 1em; }
@@ -704,6 +807,17 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
 .co-pop-enter-active, .co-pop-leave-active { transition: opacity .15s, transform .15s; }
 .co-pop-enter-from, .co-pop-leave-to { opacity: 0; transform: translateY(-6px); }
 
+.co__tip {
+  display: flex; align-items: center; gap: .7em; flex-wrap: wrap; margin: -.2em 0 1.2em; padding: .7em .9em;
+  border-radius: 14px; background: #fbf6ea; border: 1px solid #efe1bf; font-size: .84em; color: var(--ink);
+}
+.co__tip svg { color: #b3842c; flex: none; }
+.co__tip span { flex: 1; min-width: 12em; line-height: 1.45; }
+.co__tip button {
+  border: 1.5px solid var(--green); background: #fff; color: var(--green); border-radius: 999px; padding: .4em .9em;
+  font: inherit; font-size: .92em; font-weight: 700; cursor: pointer; transition: background .15s, color .15s;
+}
+.co__tip button:hover { background: var(--green); color: #fff; }
 .co__ship {
   display: flex; gap: 1em; align-items: flex-start; margin: .3em 0 1.3em; padding: 1.2em 1.3em;
   border-radius: 18px; background: var(--green-soft); border: 1px solid #d4e1d6;
@@ -803,6 +917,14 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
 .co__nextno { font-family: var(--serif); font-size: 1.6em; color: transparent; -webkit-text-stroke: 1px #b9c9bc; line-height: 1; margin-bottom: .2em; }
 .co__next strong { font-size: .92em; }
 .co__next small { font-size: .78em; color: var(--muted); line-height: 1.45; }
+.co__cross {
+  display: flex; gap: 1em; align-items: flex-start; text-align: left; margin: 0 0 1.8em; padding: 1.2em 1.3em;
+  border-radius: 18px; background: var(--cream); border: 1px solid var(--line);
+}
+.co__crossicon { flex: none; width: 44px; height: 44px; border-radius: 12px; background: #fff; color: var(--green); display: flex; align-items: center; justify-content: center; }
+.co__cross strong { display: block; font-size: .95em; margin-bottom: .25em; }
+.co__cross p { margin: 0 0 .5em; font-size: .84em; color: var(--muted); line-height: 1.55; }
+.co__cross a { font-size: .86em; font-weight: 700; color: var(--green); text-decoration: none; border-bottom: 1px solid #b9c9bc; }
 .co__successbtns { display: flex; gap: .7em; justify-content: center; flex-wrap: wrap; }
 
 /* ── Responsive ──────────────────────── */

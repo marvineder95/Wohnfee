@@ -20,5 +20,11 @@ export default defineEventHandler(async (event) => {
   const images = await query(
     'SELECT id, path FROM item_images WHERE item_id = :id ORDER BY position, id', { id }
   )
-  return { item, tags: tags.map(t => t.tag), images }
+  // „Passt dazu"-Empfehlungen für den Shop (von den Designerinnen gepflegt)
+  const matches = await query(
+    `SELECT i.id, i.title, i.image_path AS imagePath, i.rentable, i.status
+     FROM item_matches m JOIN inventory_items i ON i.id = m.match_id
+     WHERE m.item_id = :id ORDER BY m.position, i.title`, { id }
+  )
+  return { item, tags: tags.map(t => t.tag), images, matches }
 })

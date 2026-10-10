@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { rentalPerks } from '~~/shared/rental-perks'
+import type { CatalogItem } from '~/composables/useRentalCatalog'
 // Seitenweiter Warenkorb-Drawer: Das Header-Icon feuert 'wf:open-cart'; auf allen
 // Seiten außer dem Shop selbst öffnet sich dieser Drawer an Ort und Stelle (keine
 // Weiterleitung). Auf der Furniture-Leasing-Seite übernimmt der Drawer von RentalShop.
@@ -32,6 +33,14 @@ const count = computed(() => cart.value.reduce((s, l) => s + l.quantity, 0))
 const monthly = computed(() =>
   Math.round(cart.value.reduce((s, l) => s + (l.price ?? 0) * l.quantity, 0) * 100) / 100
 )
+// Vorschlag übernehmen (gleiches Zeilenformat wie im Shop)
+function addSuggested(i: CatalogItem, dur: number) {
+  const price = dur === 1 ? i.rentPrice1m : i.rentPrice3m
+  const existing = cart.value.find((l) => l.id === i.id && l.durationMonths === dur)
+  if (existing) existing.quantity = Math.min(99, existing.quantity + 1)
+  else cart.value.push({ id: i.id, title: (isEn.value && i.titleEn) || i.title, imagePath: i.imagePath, durationMonths: dur, quantity: 1, price })
+  persistCart()
+}
 function setQty(line: CartLine, qty: number) {
   if (qty < 1) cart.value = cart.value.filter((l) => l !== line)
   else line.quantity = qty
@@ -108,6 +117,7 @@ onBeforeUnmount(() => {
 
       <div v-if="cart.length" class="wcd__foot">
         <RentalPerks :lines="cart" />
+        <CartSuggestions :lines="cart" @add="addSuggested" />
         <p class="wcd__total"><span>{{ t('Gesamt (monatlich)', 'Total (monthly)') }}</span><strong>{{ eur(monthly) }}</strong></p>
         <p class="wcd__note">{{ t('zzgl. einmaliger Liefer-/Abholgebühr — wird im Angebot ausgewiesen.', 'plus a one-off delivery/collection fee — shown in the quote.') }}</p>
         <button class="wcd__btn" :disabled="!perks.minReached" @click="goCheckout">{{ t('Zum Checkout →', 'To checkout →') }}</button>

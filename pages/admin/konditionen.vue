@@ -10,6 +10,7 @@ interface Settings {
   hourlyRate: number; drivers: number; designers: number
   onSiteDeliveryMin: number; onSitePickupMin: number
   truckFactor: number; freeKm: number; kmRate: number; roundMinutes: number
+  decoEnabled: boolean; decoTitle: string; decoText: string; decoPrice: number
 }
 
 const perms = usePermissions()
@@ -17,7 +18,8 @@ const canEditK = computed(() => perms.canEdit('konditionen'))
 
 const form = reactive<Settings>({
   depotAddress: '', depotLat: null, depotLon: null, hourlyRate: 0, drivers: 2, designers: 1,
-  onSiteDeliveryMin: 90, onSitePickupMin: 60, truckFactor: 15, freeKm: 30, kmRate: 0.5, roundMinutes: 15
+  onSiteDeliveryMin: 90, onSitePickupMin: 60, truckFactor: 15, freeKm: 30, kmRate: 0.5, roundMinutes: 15,
+  decoEnabled: false, decoTitle: 'Deko-Paket', decoText: '', decoPrice: 0
 })
 const loading = ref(true)
 const saving = ref(false)
@@ -159,6 +161,21 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
 
         <p v-if="error" class="kond__error" role="alert">{{ error }}</p>
         <p v-if="msg" class="kond__ok">{{ msg }}</p>
+          <section class="kond__card wf-card">
+            <h2 class="kond__h2"><WfIcon name="diamond" :size="16" /> Deko-Paket im Checkout</h2>
+            <label class="kond__switch">
+              <input v-model="form.decoEnabled" type="checkbox">
+              <span>Kunden können das Deko-Paket im Checkout optional dazuwählen (nie vorausgewählt)</span>
+            </label>
+            <div class="kond__row">
+              <label class="kond__fld"><span>Bezeichnung</span><input v-model="form.decoTitle" type="text" maxlength="80"></label>
+              <label class="kond__fld"><span>Preis einmalig (netto)</span>
+                <span class="kond__unit"><input v-model.number="form.decoPrice" type="number" min="0" step="10"><em>€</em></span>
+              </label>
+            </div>
+            <label class="kond__fld"><span>Beschreibung für den Kunden</span><input v-model="form.decoText" type="text" maxlength="300"></label>
+            <p class="kond__hint">Wird gewählt, erscheint es als eigene Position im automatisch erstellten Angebot.</p>
+          </section>
         </fieldset>
         <div v-if="canEditK" class="kond__actions">
           <button type="submit" class="wf-btn wf-btn--primary" :disabled="saving">{{ saving ? 'Speichere …' : 'Konditionen speichern' }}</button>
@@ -240,6 +257,8 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
 .kond__ok { color: var(--wf-green); background: var(--wf-green-soft); border-radius: 10px; padding: .6em .9em; font-size: .88em; margin: 0; }
 .kond__fs { border: 0; margin: 0; padding: 0; min-width: 0; display: grid; gap: 1em; }
 .kond__ro { display: flex; align-items: center; gap: .5em; margin: 0; padding: .6em .9em; border-radius: 10px; background: #f6f3ec; color: var(--wf-muted); font-size: .86em; }
+.kond__switch { display: flex; align-items: flex-start; gap: .6em; margin-bottom: 1em; font-size: .88em; cursor: pointer; }
+.kond__switch input { margin-top: .2em; accent-color: var(--wf-green); width: 16px; height: 16px; }
 .kond__actions { display: flex; justify-content: flex-end; }
 .kond__testbtn { width: 100%; justify-content: center; }
 .kond__result { margin-top: 1.1em; padding-top: 1em; border-top: 1px solid var(--wf-line); }
