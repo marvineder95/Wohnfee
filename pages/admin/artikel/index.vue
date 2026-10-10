@@ -1,9 +1,19 @@
 <script setup lang="ts">
 definePageMeta({ layout: 'admin' })
-useHead({ title: 'Blog-Artikel - WOHNFEE Dashboard' })
+useHead({ title: 'Beiträge - WOHNFEE Dashboard' })
+
+// Rubriken der Website (Blog-Menü): Aktuell, Projekte, Trends & Tipps, Events
+const SECTIONS = [
+  { value: 'aktuelles', label: 'Aktuell' },
+  { value: 'projekte', label: 'Projekte' },
+  { value: 'trends-tipps', label: 'Trends & Tipps' },
+  { value: 'events', label: 'Events' }
+] as const
+const sectionLabel = (s: string) => SECTIONS.find(x => x.value === s)?.label || s
 
 interface Article {
   id: number
+  section: string
   title: string
   teaser: string
   coverImage: string
@@ -20,21 +30,29 @@ const error = ref('')
 const msg = ref('')
 const filter = ref<'alle' | 'veroeffentlicht' | 'entwurf'>('alle')
 const search = ref('')
+const route = useRoute()
+const section = ref<string>(SECTIONS.some(s => s.value === route.query.rubrik) ? String(route.query.rubrik) : 'alle')
+watch(section, (s) => useRouter().replace({ query: s === 'alle' ? {} : { rubrik: s } }))
 
 // statische Bestandsartikel (aus der alten Website, nicht im Dashboard bearbeitbar)
-const legacyCount = blogItems('trends-tipps').length
+const legacyCount = computed(() => section.value === 'alle'
+  ? SECTIONS.reduce((n, s) => n + blogItems(s.value).length, 0)
+  : blogItems(section.value).length)
+const sectionCount = (s: string) => items.value.filter(a => s === 'alle' || a.section === s).length
+const newLink = computed(() => `/admin/artikel/neu${section.value !== 'alle' ? `?rubrik=${section.value}` : ''}`)
 
 const isScheduled = (a: Article) => a.status === 'veroeffentlicht' && !!a.publishedAt && new Date(a.publishedAt) > new Date()
 
+const inSection = computed(() => items.value.filter(a => section.value === 'alle' || a.section === section.value))
 const counts = computed(() => ({
-  alle: items.value.length,
-  veroeffentlicht: items.value.filter(a => a.status === 'veroeffentlicht').length,
-  entwurf: items.value.filter(a => a.status === 'entwurf').length
+  alle: inSection.value.length,
+  veroeffentlicht: inSection.value.filter(a => a.status === 'veroeffentlicht').length,
+  entwurf: inSection.value.filter(a => a.status === 'entwurf').length
 }))
 
 const visible = computed(() => {
   const q = search.value.trim().toLowerCase()
-  return items.value
+  return inSection.value
     .filter(a => filter.value === 'alle' || a.status === filter.value)
     .filter(a => !q || a.title.toLowerCase().includes(q) || a.teaser.toLowerCase().includes(q))
 })
@@ -76,19 +94,26 @@ onMounted(load)
     <section class="wf-hero">
       <div class="wf-hero-text">
         <p class="wf-eyebrow">Website</p>
-        <h1 class="wf-title">Blog-Artikel</h1>
-        <p class="wf-subtitle">Neue Beiträge für „Trends &amp; Tipps“ schreiben, mit Bildern gestalten und direkt auf der Website veröffentlichen.</p>
+        <h1 class="wf-title">Beiträge</h1>
+        <p class="wf-subtitle">Aktuelles, Projekte, Trends &amp; Tipps und Events schreiben, mit Bildern gestalten und direkt auf der Website veröffentlichen.</p>
       </div>
       <div class="wf-hero-img">
         <img src="/files/wohnfee/bilder/blog/Wohn.Fee Brandingfotos_23-18 Kopie.jpg" alt="">
-        <NuxtLink to="/admin/artikel/neu" class="wf-btn wf-btn--primary wf-hero-cta">
-          <WfIcon name="plus" :size="15" /> Neuer Artikel
+        <NuxtLink :to="newLink" class="wf-btn wf-btn--primary wf-hero-cta">
+          <WfIcon name="plus" :size="15" /> Neuer Beitrag
         </NuxtLink>
       </div>
     </section>
 
     <p v-if="error" class="bl-admin__error" role="alert">{{ error }}</p>
     <p v-if="msg" class="bl-admin__success">{{ msg }}</p>
+
+    <nav class="bl-admin__sections" aria-label="Rubriken">
+      <button v-for="s in [{ value: 'alle', label: 'Alle Rubriken' }, ...SECTIONS]" :key="s.value" type="button"
+              :class="{ 'is-active': section === s.value }" @click="section = s.value">
+        {{ s.label }} <span>{{ sectionCount(s.value) }}</span>
+      </button>
+    </nav>
 
     <section class="wf-card bl-admin__card">
       <div class="bl-admin__toolbar">
@@ -104,11 +129,11 @@ onMounted(load)
 
       <p v-if="loading" class="bl-admin__muted">Artikel werden geladen …</p>
 
-      <div v-else-if="!items.length" class="bl-admin__empty">
+      <div v-else-if="!inSection.length" class="bl-admin__empty">
         <WfIcon name="edit" :size="28" />
-        <h2>Noch keine Artikel im Dashboard</h2>
-        <p>Schreiben Sie den ersten Beitrag – er erscheint nach dem Veröffentlichen sofort unter „Trends &amp; Tipps“.</p>
-        <NuxtLink to="/admin/artikel/neu" class="wf-btn wf-btn--primary"><WfIcon name="plus" :size="15" /> Ersten Artikel schreiben</NuxtLink>
+        <h2>Noch keine Beiträge im Dashboard</h2>
+        <p>Schreib den ersten Beitrag – nach dem Veröffentlichen erscheint er sofort in der gewählten Rubrik auf der Website.</p>
+        <NuxtLink :to="newLink" class="wf-btn wf-btn--primary"><WfIcon name="plus" :size="15" /> Ersten Beitrag schreiben</NuxtLink>
       </div>
 
       <p v-else-if="!visible.length" class="bl-admin__muted">Keine Artikel für diese Auswahl.</p>
@@ -123,6 +148,7 @@ onMounted(load)
             <NuxtLink :to="`/admin/artikel/${a.id}`" class="bl-admin__title">{{ a.title }}</NuxtLink>
             <p v-if="a.teaser" class="bl-admin__teaser">{{ a.teaser }}</p>
             <p class="bl-admin__meta">
+              <span class="bl-admin__sec">{{ sectionLabel(a.section) }}</span>
               <span v-if="isScheduled(a)" class="wf-pill wf-pill--blue">Geplant · {{ fmt(a.publishedAt) }}</span>
               <span v-else-if="a.status === 'veroeffentlicht'" class="wf-pill wf-pill--green">Veröffentlicht · {{ fmt(a.publishedAt) }}</span>
               <span v-else class="wf-pill wf-pill--amber">Entwurf</span>
@@ -140,7 +166,7 @@ onMounted(load)
 
       <p class="bl-admin__legacy">
         <WfIcon name="leaf" :size="14" />
-        Zusätzlich sind {{ legacyCount }} ältere Beiträge aus der bisherigen Website online. Diese bleiben unverändert und werden hier nicht bearbeitet.
+        Zusätzlich sind {{ legacyCount }} ältere Beiträge{{ section !== 'alle' ? ` in „${sectionLabel(section)}“` : '' }} aus der bisherigen Website online. Diese bleiben unverändert und werden hier nicht bearbeitet.
       </p>
     </section>
   </div>
@@ -148,6 +174,14 @@ onMounted(load)
 
 <style scoped>
 .bl-admin__card { padding: 1.2rem 1.3rem; }
+.bl-admin__sections { display: flex; gap: .4rem; flex-wrap: wrap; margin: 0 0 1rem; }
+.bl-admin__sections button {
+  display: inline-flex; align-items: center; gap: .5em; padding: .55em 1.05em; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--wf-line); background: var(--wf-card); color: var(--wf-ink); font: inherit; font-size: .9em; font-weight: 600;
+}
+.bl-admin__sections button span { font-size: .8em; color: #99927f; font-weight: 500; }
+.bl-admin__sections button.is-active { background: var(--wf-green-soft); border-color: #c9d8cc; color: var(--wf-green); }
+.bl-admin__sec { font-size: .9em; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--wf-green); }
 .bl-admin__toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 1rem; }
 .bl-admin__tabs { display: flex; gap: .35rem; flex-wrap: wrap; }
 .bl-admin__tabs button {

@@ -54,7 +54,7 @@ export const blogElements = (n: any): any[] => {
 }
 
 /** Sektionen, deren Artikel (auch) im Dashboard angelegt werden können */
-const DB_SECTIONS = ['trends-tipps']
+const DB_SECTIONS = ['aktuelles', 'projekte', 'trends-tipps', 'events']
 
 /**
  * Alle Artikel einer oder mehrerer Sektionen: statische (news.json) + im Dashboard

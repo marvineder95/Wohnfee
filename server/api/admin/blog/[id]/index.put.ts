@@ -12,7 +12,8 @@ export default defineEventHandler(async (event) => {
   await query(
     `UPDATE blog_posts SET section = :section, slug = :slug, title = :title, teaser = :teaser,
        body_html = :bodyHtml, cover_image = :coverImage, cover_alt = :coverAlt,
-       meta_description = :metaDescription, status = :status, published_at = :publishedAt
+       meta_description = :metaDescription, status = :status, published_at = :publishedAt,
+       categories = :categories, gallery = :gallery
      WHERE id = :id`,
     { ...d, id }
   )

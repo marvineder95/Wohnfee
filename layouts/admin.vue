@@ -97,7 +97,7 @@ const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
     { to: '/admin/rechnungen', label: 'Rechnungen', icon: 'receipt', exact: false, area: 'rechnungen' }
   ] },
   { label: 'Website', items: [
-    { to: '/admin/artikel', label: 'Blog-Artikel', icon: 'edit', exact: false, area: 'artikel' },
+    { to: '/admin/artikel', label: 'Beiträge', icon: 'edit', exact: false, area: 'artikel' },
     { to: '/admin/newsletter', label: 'Newsletter', icon: 'mail', exact: false, area: 'newsletter' }
   ] },
   { label: 'Verwaltung', items: [

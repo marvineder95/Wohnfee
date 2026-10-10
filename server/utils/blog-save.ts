@@ -1,6 +1,6 @@
 // Gemeinsame Validierung für Anlegen/Speichern von Blog-Artikeln (Dashboard).
 import { query, queryOne } from './db'
-import { articleRoute, cleanText, isBlogSection, isStaticRoute, sanitizeBody, slugify } from './blog'
+import { articleRoute, cleanText, isBlogSection, isStaticRoute, sanitizeBody, slugify, PROJECT_CATEGORIES } from './blog'
 
 const toMysqlDate = (v: unknown): string | null => {
   if (!v) return null
@@ -48,6 +48,15 @@ export async function readBlogInput(body: any, ownId: number | null) {
     coverImage: cleanImagePath(body.coverImage),
     coverAlt: cleanText(body.coverAlt, 190) || null,
     metaDescription: cleanText(body.metaDescription, 300) || null,
+    // Projekte: Zielgruppen; Projekte/Events: Bildergalerie (max. 40 Bilder)
+    categories: section === 'projekte' && Array.isArray(body.categories)
+      ? body.categories.map(String).filter((c: string) => PROJECT_CATEGORIES.includes(c)).join(',') || null
+      : null,
+    gallery: Array.isArray(body.gallery)
+      ? JSON.stringify(body.gallery
+        .map((g: any) => ({ src: cleanImagePath(g?.src), alt: cleanText(g?.alt, 190) }))
+        .filter((g: any) => g.src).slice(0, 40)) || null
+      : null,
     status,
     publishedAt
   }

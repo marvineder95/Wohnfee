@@ -4,11 +4,27 @@ definePageMeta({ layout: 'admin' })
 const route = useRoute()
 const router = useRouter()
 const isNew = computed(() => route.params.id === 'neu')
-useHead(() => ({ title: `${isNew.value ? 'Neuer Artikel' : 'Artikel bearbeiten'} - WOHNFEE Dashboard` }))
+useHead(() => ({ title: `${isNew.value ? 'Neuer Beitrag' : 'Beitrag bearbeiten'} - WOHNFEE Dashboard` }))
 
-const PREFIX = '/blogartikel-trends-tipps/'
+// Rubriken (wie im Blog-Menü der Website) – Link-Präfix je Rubrik wie am Server (server/utils/blog.ts)
+const SECTIONS = [
+  { value: 'aktuelles', label: 'Aktuell', prefix: '/blogartikel-aktuelles/' },
+  { value: 'projekte', label: 'Projekte', prefix: '/blogartikel-projekte/' },
+  { value: 'trends-tipps', label: 'Trends & Tipps', prefix: '/blogartikel-trends-tipps/' },
+  { value: 'events', label: 'Events', prefix: '/blogartikel-events/' }
+] as const
+// Zielgruppen der Projekte (Filter auf /projekte.html)
+const PROJECT_CATS = [
+  { id: '2', label: 'Bauträger' },
+  { id: '1', label: 'Makler' },
+  { id: '3', label: 'Privatpersonen' }
+]
+const startSection = SECTIONS.some(x => x.value === route.query.rubrik) ? String(route.query.rubrik) : 'trends-tipps'
 
 interface Form {
+  section: string
+  categories: string[]
+  gallery: Array<{ src: string, alt: string }>
   title: string
   slug: string
   teaser: string
@@ -20,6 +36,7 @@ interface Form {
   publishedAt: string // datetime-local (Ortszeit)
 }
 const empty = (): Form => ({
+  section: startSection, categories: [], gallery: [],
   title: '', slug: '', teaser: '', bodyHtml: '', coverImage: '', coverAlt: '',
   metaDescription: '', status: 'entwurf', publishedAt: ''
 })
@@ -58,7 +75,9 @@ watch(() => form.title, (t) => { if (!slugTouched.value) form.slug = slugify(t) 
 const words = computed(() => form.bodyHtml.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(Boolean).length)
 const readMin = computed(() => Math.max(1, Math.round((words.value + form.teaser.split(/\s+/).length) / 200)))
 const isScheduled = computed(() => form.status === 'veroeffentlicht' && !!form.publishedAt && new Date(form.publishedAt) > new Date())
-const publicUrl = computed(() => `${PREFIX}${form.slug}.html`)
+const PREFIX = computed(() => SECTIONS.find(x => x.value === form.section)?.prefix || '/blogartikel-trends-tipps/')
+const sectionLabel = computed(() => SECTIONS.find(x => x.value === form.section)?.label || '')
+const publicUrl = computed(() => `${PREFIX.value}${form.slug}.html`)
 const metaText = computed(() => form.metaDescription || form.teaser)
 
 async function load() {
@@ -67,6 +86,7 @@ async function load() {
   try {
     const a = await $fetch<any>(`/api/admin/blog/${route.params.id}`)
     Object.assign(form, {
+      section: a.section, categories: a.categories || [], gallery: a.gallery || [],
       title: a.title, slug: a.slug, teaser: a.teaser, bodyHtml: a.bodyHtml, coverImage: a.coverImage,
       coverAlt: a.coverAlt, metaDescription: a.metaDescription, status: a.status, publishedAt: toLocal(a.publishedAt)
     })
@@ -88,7 +108,7 @@ async function save(nextStatus?: Form['status']) {
   if (form.status === 'veroeffentlicht' && !form.publishedAt) form.publishedAt = toLocal(new Date().toISOString())
   saving.value = true
   try {
-    const body = { ...form, section: 'trends-tipps', publishedAt: toIso(form.publishedAt) }
+    const body = { ...form, publishedAt: toIso(form.publishedAt) }
     const a = isNew.value
       ? await $fetch<any>('/api/admin/blog', { method: 'POST', body })
       : await $fetch<any>(`/api/admin/blog/${route.params.id}`, { method: 'PUT', body })
@@ -127,6 +147,37 @@ async function onCover(e: Event) {
   }
 }
 
+// ---------- Bildergalerie (Projekte & Events) ----------
+const galleryUploading = ref(0)
+const galleryInput = ref<HTMLInputElement | null>(null)
+async function onGallery(e: Event) {
+  const files = Array.from((e.target as HTMLInputElement).files || [])
+  ;(e.target as HTMLInputElement).value = ''
+  error.value = ''
+  for (const file of files.slice(0, 40 - form.gallery.length)) {
+    galleryUploading.value++
+    try {
+      const fd = new FormData()
+      fd.append('file', file)
+      const res = await $fetch<{ path: string }>('/api/admin/blog/upload', { method: 'POST', body: fd })
+      form.gallery.push({ src: res.path, alt: '' })
+    } catch (err: any) {
+      error.value = err?.data?.statusMessage || `„${file.name}“ konnte nicht hochgeladen werden.`
+    } finally {
+      galleryUploading.value--
+    }
+  }
+}
+function moveGallery(i: number, d: -1 | 1) {
+  const j = i + d
+  if (j < 0 || j >= form.gallery.length) return
+  const g = form.gallery.splice(i, 1)[0]
+  form.gallery.splice(j, 0, g)
+}
+function toggleCat(id: string) {
+  form.categories = form.categories.includes(id) ? form.categories.filter(c => c !== id) : [...form.categories, id]
+}
+
 async function remove() {
   if (isNew.value) return
   if (!confirm(`Artikel „${form.title}“ wirklich löschen? Das kann nicht rückgängig gemacht werden.`)) return
@@ -148,9 +199,12 @@ const previewArticle = computed(() => ({
   text: null,
   image: form.coverImage || null,
   imageAlt: form.coverAlt || null,
-  elements: form.bodyHtml ? [{ id: 'preview', type: 'text', headline: '', html: form.bodyHtml }] : [],
-  section: 'trends-tipps',
-  categories: []
+  elements: [
+    ...(form.bodyHtml ? [{ id: 'preview', type: 'text', headline: '', html: form.bodyHtml }] : []),
+    ...(form.gallery.length ? [{ id: 'preview-gallery', type: 'gallery', items: form.gallery.map(g => ({ type: 'image', src: g.src, alt: g.alt })) }] : [])
+  ],
+  section: form.section,
+  categories: form.categories
 }))
 
 // Ungespeicherte Änderungen nicht verlieren
@@ -179,7 +233,7 @@ watch(showPreview, v => { document.body.style.overflow = v ? 'hidden' : '' })
 <template>
   <div class="ed">
     <div class="ed__top">
-      <NuxtLink to="/admin/artikel" class="ed__back"><WfIcon name="chevron" :size="14" class="ed__backicon" /> Alle Artikel</NuxtLink>
+      <NuxtLink to="/admin/artikel" class="ed__back"><WfIcon name="chevron" :size="14" class="ed__backicon" /> Alle Beiträge</NuxtLink>
       <div class="ed__topright">
         <span v-if="dirty" class="ed__dirty">Ungespeicherte Änderungen</span>
         <button type="button" class="wf-btn" :disabled="loading" @click="showPreview = true"><WfIcon name="eye" :size="15" /> Vorschau</button>
@@ -192,13 +246,13 @@ watch(showPreview, v => { document.body.style.overflow = v ? 'hidden' : '' })
       <a v-if="form.status === 'veroeffentlicht' && !isScheduled && !dirty" :href="publicUrl" target="_blank" rel="noopener">Auf der Website ansehen →</a>
     </p>
 
-    <p v-if="loading" class="ed__muted">Artikel wird geladen …</p>
+    <p v-if="loading" class="ed__muted">Beitrag wird geladen …</p>
 
     <div v-else class="ed__grid">
       <!-- ── Inhalt ── -->
       <div class="ed__main">
         <section class="wf-card ed__card">
-          <input v-model="form.title" class="ed__title" type="text" maxlength="190" placeholder="Titel des Artikels" aria-label="Titel">
+          <input v-model="form.title" class="ed__title" type="text" maxlength="190" placeholder="Titel des Beitrags" aria-label="Titel">
           <label class="ed__field">
             <span>Teaser <em>– kurzer Einstieg, erscheint in der Übersicht und unter dem Titel</em></span>
             <textarea v-model="form.teaser" class="wf-input" rows="3" maxlength="600"
@@ -208,7 +262,7 @@ watch(showPreview, v => { document.body.style.overflow = v ? 'hidden' : '' })
         </section>
 
         <section class="ed__editor">
-          <AdminRichEditor v-model="form.bodyHtml" placeholder="Hier den Artikel schreiben … Zwischenüberschriften mit H2, Bilder über das Bild-Symbol einfügen." />
+          <AdminRichEditor v-model="form.bodyHtml" :placeholder="form.section === 'projekte' ? 'Projekt beschreiben … z. B. Zwischenüberschriften „Aufgabe“ und „Die Lösung“ mit H2.' : 'Hier den Beitrag schreiben … Zwischenüberschriften mit H2, Bilder über das Bild-Symbol einfügen.'" />
           <p class="ed__stats">{{ words }} Wörter · ca. {{ readMin }} Min. Lesezeit · Tipp: <kbd>⌘</kbd>/<kbd>Strg</kbd> + <kbd>S</kbd> speichert</p>
         </section>
       </div>
@@ -216,6 +270,21 @@ watch(showPreview, v => { document.body.style.overflow = v ? 'hidden' : '' })
       <!-- ── Seitenleiste ── -->
       <aside class="ed__side">
         <section class="wf-card ed__card">
+          <h2 class="ed__h">Rubrik</h2>
+          <div class="ed__sections" role="radiogroup" aria-label="Rubrik">
+            <button v-for="sec in SECTIONS" :key="sec.value" type="button" role="radio" :aria-checked="form.section === sec.value"
+                    :class="{ 'is-on': form.section === sec.value }" @click="form.section = sec.value">{{ sec.label }}</button>
+          </div>
+          <em v-if="!isNew && form.status === 'veroeffentlicht'" class="ed__hint">Ein Rubrikwechsel ändert den Link des Beitrags.</em>
+          <template v-if="form.section === 'projekte'">
+            <p class="ed__subh">Zielgruppe <em>– für den Filter auf der Projektseite</em></p>
+            <div class="ed__cats">
+              <label v-for="c in PROJECT_CATS" :key="c.id" :class="{ 'is-on': form.categories.includes(c.id) }">
+                <input type="checkbox" :checked="form.categories.includes(c.id)" @change="toggleCat(c.id)"> {{ c.label }}
+              </label>
+            </div>
+          </template>
+          <hr class="ed__sep">
           <h2 class="ed__h">Veröffentlichung</h2>
           <p class="ed__state">
             <span v-if="form.status === 'entwurf'" class="wf-pill wf-pill--amber">Entwurf</span>
@@ -241,7 +310,27 @@ watch(showPreview, v => { document.body.style.overflow = v ? 'hidden' : '' })
               <button type="button" class="wf-btn" :disabled="saving" @click="save('entwurf')">Zurück auf Entwurf</button>
             </template>
           </div>
-          <button v-if="!isNew" type="button" class="ed__delete" @click="remove"><WfIcon name="trash" :size="14" /> Artikel löschen</button>
+          <button v-if="!isNew" type="button" class="ed__delete" @click="remove"><WfIcon name="trash" :size="14" /> Beitrag löschen</button>
+        </section>
+
+        <section class="wf-card ed__card">
+          <h2 class="ed__h">Bildergalerie <em class="ed__hsub">{{ form.section === 'projekte' || form.section === 'events' ? 'empfohlen' : 'optional' }}</em></h2>
+          <p class="ed__muted ed__gallerytip">Erscheint unter dem Text als Galerie mit Großansicht – ideal für Vorher/Nachher und Projektfotos.</p>
+          <ul v-if="form.gallery.length" class="ed__gallery">
+            <li v-for="(g, i) in form.gallery" :key="g.src">
+              <img :src="g.src" alt="">
+              <div class="ed__gallerybar">
+                <button type="button" title="Nach vorne" :disabled="i === 0" @click="moveGallery(i, -1)"><WfIcon name="chevron" :size="12" class="ed__flip" /></button>
+                <button type="button" title="Nach hinten" :disabled="i === form.gallery.length - 1" @click="moveGallery(i, 1)"><WfIcon name="chevron" :size="12" /></button>
+                <button type="button" title="Entfernen" @click="form.gallery.splice(i, 1)"><WfIcon name="trash" :size="12" /></button>
+              </div>
+            </li>
+          </ul>
+          <button type="button" class="wf-btn wf-btn--sm ed__galleryadd" :disabled="galleryUploading > 0 || form.gallery.length >= 40" @click="galleryInput?.click()">
+            <WfIcon name="camera" :size="14" /> {{ galleryUploading ? `Lädt hoch … (${galleryUploading})` : 'Bilder hinzufügen' }}
+          </button>
+          <small class="ed__count">{{ form.gallery.length }} / 40 Bilder · mehrere auf einmal möglich</small>
+          <input ref="galleryInput" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden @change="onGallery">
         </section>
 
         <section class="wf-card ed__card">
@@ -282,8 +371,8 @@ watch(showPreview, v => { document.body.style.overflow = v ? 'hidden' : '' })
             <small class="ed__count" :class="{ warn: metaText.length > 160 }">{{ metaText.length }} / 160 empfohlen</small>
           </label>
           <div class="ed__serp" aria-label="Google-Vorschau">
-            <span class="ed__serpurl">wohnfee.at › blogartikel-trends-tipps › {{ form.slug || '…' }}</span>
-            <span class="ed__serptitle">{{ form.title || 'Titel des Artikels' }} - WOHNFEE Home Staging</span>
+            <span class="ed__serpurl">wohnfee.at › {{ PREFIX.replace(/\//g, '') }} › {{ form.slug || '…' }}</span>
+            <span class="ed__serptitle">{{ form.title || 'Titel des Beitrags' }} - WOHNFEE Home Staging</span>
             <span class="ed__serpdesc">{{ metaText ? (metaText.length > 160 ? metaText.slice(0, 157) + ' …' : metaText) : 'Hier erscheint die Beschreibung …' }}</span>
           </div>
         </section>
@@ -294,7 +383,7 @@ watch(showPreview, v => { document.body.style.overflow = v ? 'hidden' : '' })
     <Teleport to="body">
       <div v-if="showPreview" class="ed__preview" role="dialog" aria-label="Artikel-Vorschau">
         <div class="ed__previewbar">
-          <span><strong>Vorschau</strong> – so erscheint der Artikel auf der Website</span>
+          <span><strong>Vorschau</strong> – so erscheint der Beitrag in „{{ sectionLabel }}“ auf der Website</span>
           <button type="button" class="wf-btn wf-btn--sm" @click="showPreview = false">Schließen (Esc)</button>
         </div>
         <div class="ed__previewbody">
@@ -336,6 +425,32 @@ watch(showPreview, v => { document.body.style.overflow = v ? 'hidden' : '' })
 .ed__stats { margin: .5rem .2rem 0; font-size: .78em; color: #99927f; }
 .ed__stats kbd { font-family: inherit; font-size: .9em; padding: .05em .35em; border: 1px solid #e4ddcb; border-radius: 4px; background: #fff; }
 
+.ed__sections { display: grid; grid-template-columns: 1fr 1fr; gap: .35rem; margin-bottom: .5rem; }
+.ed__sections button {
+  padding: .55em .6em; border-radius: 10px; border: 1px solid #e4ddcb; background: #fff; cursor: pointer;
+  font: inherit; font-size: .84em; font-weight: 600; color: #55554e; transition: background .15s, color .15s, border-color .15s;
+}
+.ed__sections button.is-on { background: var(--wf-green); border-color: var(--wf-green); color: #fff; }
+.ed__subh { margin: .8rem 0 .4rem; font-size: .82em; font-weight: 600; color: #55554e; }
+.ed__subh em, .ed__hsub { font-weight: 400; color: #99927f; font-style: normal; font-size: .82em; }
+.ed__cats { display: flex; flex-wrap: wrap; gap: .35rem; }
+.ed__cats label {
+  display: inline-flex; align-items: center; gap: .35em; padding: .35em .75em; border-radius: 999px; border: 1px solid #e4ddcb;
+  font-size: .82em; cursor: pointer; background: #fff;
+}
+.ed__cats label.is-on { background: var(--wf-green-soft); border-color: #c9d8cc; color: var(--wf-green); font-weight: 600; }
+.ed__cats input { accent-color: var(--wf-green); margin: 0; }
+.ed__sep { border: 0; border-top: 1px solid #f1ece2; margin: 1rem 0; }
+.ed__gallerytip { margin: -.4rem 0 .8rem; }
+.ed__gallery { list-style: none; margin: 0 0 .7rem; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; }
+.ed__gallery li { position: relative; aspect-ratio: 1; border-radius: 8px; overflow: hidden; background: #f4f1ea; }
+.ed__gallery img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ed__gallerybar { position: absolute; inset: auto 0 0 0; display: flex; justify-content: center; gap: 2px; padding: 3px; background: linear-gradient(transparent, rgba(0,0,0,.45)); opacity: 0; transition: opacity .15s; }
+.ed__gallery li:hover .ed__gallerybar, .ed__gallery li:focus-within .ed__gallerybar { opacity: 1; }
+.ed__gallerybar button { width: 24px; height: 24px; border: 0; border-radius: 6px; background: rgba(255,255,255,.92); color: #2b2b28; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 0; }
+.ed__gallerybar button:disabled { opacity: .4; cursor: default; }
+.ed__flip { transform: rotate(180deg); }
+.ed__galleryadd { width: 100%; justify-content: center; }
 .ed__state { display: flex; align-items: center; gap: .6em; margin: 0 0 .9rem; font-size: .9em; }
 .ed__buttons { display: grid; gap: .5rem; }
 .ed__buttons .wf-btn { justify-content: center; }

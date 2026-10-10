@@ -18,8 +18,10 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Artikel in `data/news.json` / `data/news-en.json`, Routing über `data/routes.json`.
 - Zentrale Seite: `pages/[...slug].vue` – wählt je Seite das neue Layout über
   `pageRoute` (DE-Route, auch für `/en/…`).
-- Blog-Artikel aus dem Dashboard: Tabelle `blog_posts`, nur Sektion `trends-tipps`, nur DE.
-  Öffentlich via `/api/blog`; Trends & Tipps, Aktuell und Sitemap werden daher live gerendert.
+- Beiträge aus dem Dashboard (`/admin/artikel`): Tabelle `blog_posts`, Rubriken aktuelles,
+  projekte, trends-tipps, events (`BLOG_SECTIONS` in server/utils/blog.ts, Links
+  `/blogartikel-<rubrik>/<slug>.html`), Projekte mit Zielgruppen (`categories`), Galerie (`gallery`).
+  Nur DE. Öffentlich via `/api/blog`; Blog-Übersichten, Artikel und Sitemap werden live gerendert.
 
 ## Furniture Leasing – Mietregeln
 - Zentral in `shared/rental-perks.ts`: Mindestmietwert € 100/Monat (Checkout gesperrt, auch

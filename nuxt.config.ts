@@ -77,7 +77,13 @@ export default defineNuxtConfig({
       // live statt vorgerendert (Dashboard-Artikel), auch falls der Link-Crawler aktiv ist
       '/trends-tipps.html': { prerender: false },
       '/aktuelles.html': { prerender: false },
+      '/projekte.html': { prerender: false },
+      '/projekte/category/**': { prerender: false },
+      '/events.html': { prerender: false },
       '/blogartikel-trends-tipps/**': { prerender: false },
+      '/blogartikel-aktuelles/**': { prerender: false },
+      '/blogartikel-projekte/**': { prerender: false },
+      '/blogartikel-events/**': { prerender: false },
       '/sitemap.xml': { prerender: false }
     },
     prerender: {
@@ -98,9 +104,12 @@ export default defineNuxtConfig({
         '/admin/kontakte',
         '/admin/inventar',
         '/admin/artikel',
-        // Trends & Tipps (Übersicht + Artikel), Aktuell und die Sitemap werden live gerendert,
-        // damit im Dashboard veröffentlichte Artikel sofort ohne Neu-Build erscheinen
-        ...Object.keys(routesJson).filter(r => !['/trends-tipps.html', '/aktuelles.html'].includes(r) && !r.startsWith('/blogartikel-trends-tipps/'))
+        // Blog-Übersichten (Aktuell, Projekte, Trends & Tipps, Events), ihre Artikel und die
+        // Sitemap werden live gerendert, damit Dashboard-Artikel sofort ohne Neu-Build erscheinen
+        ...Object.keys(routesJson).filter(r =>
+          !['/trends-tipps.html', '/aktuelles.html', '/projekte.html', '/events.html'].includes(r)
+          && !r.startsWith('/projekte/category/')
+          && !/^\/blogartikel-(trends-tipps|aktuelles|projekte|events)\//.test(r))
       ]
     }
   }

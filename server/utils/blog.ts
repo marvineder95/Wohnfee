@@ -5,9 +5,20 @@
 import sanitizeHtml from 'sanitize-html'
 import routesJson from '../../data/routes.json'
 
+// Rubriken, die im Dashboard geschrieben werden können (archive = Contao-Archiv der statischen Artikel)
 export const BLOG_SECTIONS: Record<string, { label: string, prefix: string, archive: string }> = {
-  'trends-tipps': { label: 'Trends & Tipps', prefix: '/blogartikel-trends-tipps/', archive: '5' }
+  aktuelles: { label: 'Aktuell', prefix: '/blogartikel-aktuelles/', archive: '13' },
+  projekte: { label: 'Projekte', prefix: '/blogartikel-projekte/', archive: '11' },
+  'trends-tipps': { label: 'Trends & Tipps', prefix: '/blogartikel-trends-tipps/', archive: '5' },
+  events: { label: 'Events', prefix: '/blogartikel-events/', archive: '9' }
 }
+
+/** Zielgruppen der Projekte (IDs wie in categories.json / HsBlogList) */
+export const PROJECT_CATEGORIES = ['2', '1', '3'] // Bauträger, Makler, Privatpersonen
+
+const parseJson = (v: any, fallback: any) => { try { return v ? JSON.parse(v) : fallback } catch { return fallback } }
+export const galleryOf = (r: any): Array<{ src: string, alt: string }> => parseJson(r.gallery, [])
+export const categoriesOf = (r: any): string[] => String(r.categories || '').split(',').filter(Boolean)
 
 export const isBlogSection = (s: unknown): s is string =>
   typeof s === 'string' && Object.prototype.hasOwnProperty.call(BLOG_SECTIONS, s)
@@ -85,10 +96,14 @@ export function toPublicArticle(r: any) {
     image: r.cover_image || null,
     imageAlt: r.cover_alt || null,
     description: r.meta_description || r.teaser || '',
-    elements: r.body_html ? [{ id: `db-${r.id}`, type: 'text', headline: '', html: r.body_html }] : [],
+    elements: [
+      ...(r.body_html ? [{ id: `db-${r.id}`, type: 'text', headline: '', html: r.body_html }] : []),
+      // Bildergalerie (Projekte/Events) – HsArticle zeigt sie mit Lightbox
+      ...(galleryOf(r).length ? [{ id: `db-${r.id}-gallery`, type: 'gallery', items: galleryOf(r).map(g => ({ type: 'image', src: g.src, alt: g.alt })) }] : [])
+    ],
     archive: BLOG_SECTIONS[r.section]?.archive || '',
     section: r.section,
-    categories: [],
+    categories: categoriesOf(r),
     url: '',
     source: 'db',
     author: r.author_name || null
@@ -110,6 +125,8 @@ export function toAdminArticle(r: any) {
     status: r.status,
     publishedAt: r.published_at,
     authorName: r.author_name || '',
+    categories: categoriesOf(r),
+    gallery: galleryOf(r),
     createdAt: r.created_at,
     updatedAt: r.updated_at,
     route: articleRoute(r.section, r.slug)
