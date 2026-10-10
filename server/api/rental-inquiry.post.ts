@@ -149,6 +149,14 @@ export default defineEventHandler(async (event) => {
     console.error('[rental-inquiry] Benachrichtigungsmail fehlgeschlagen:', e)
   }
 
+  // Push an das Team (PWA)
+  import('../utils/push').then(({ notifyTeam }) => notifyTeam({
+    title: 'Neue Mietanfrage',
+    body: `${[clean(body?.firstName, 64), lastName].filter(Boolean).join(' ')} · ${city} · ${(Math.round(monthlyTotal * 100) / 100).toLocaleString('de-AT', { style: 'currency', currency: 'EUR' })}/Monat`,
+    url: '/admin/mietanfragen',
+    tag: `rental-${inquiryId}`
+  })).catch(() => {})
+
   // Angebot inkl. berechneter Transportkosten automatisch als Entwurf anlegen –
   // im Hintergrund, damit der Kunde nicht auf die Routenberechnung warten muss
   import('../utils/offer-create')

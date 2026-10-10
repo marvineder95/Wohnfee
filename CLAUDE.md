@@ -53,6 +53,12 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Mahnwesen: `server/utils/dunning.ts` (Ziel 14 Tage, 3 Stufen, +7 Tage je Stufe).
 - Newsletter: Double-Opt-in (Status ausstehend/aktiv/abgemeldet), Seiten unter
   `server/routes/newsletter/*`, persönlicher Abmeldelink + List-Unsubscribe-Header.
+- Push (PWA): `server/utils/push.ts` (web-push, VAPID-Schlüssel in `settings`, Tabelle
+  `push_subscriptions`), Auslöser bei neuer Kontakt-/Mietanfrage; Aktivieren je Gerät über
+  Topbar-Hinweis oder Profil → Benachrichtigungen (`composables/usePush.ts`). Service Worker
+  `public/wf-admin-sw.js` (im Dev mit ?dev=1 ohne Caching). iOS: nur als installierte App.
+- Achtung: Die Kimi-App startet eine ALTE Projektkopie auf Port 7100 (gleiche DB) – nicht
+  mit diesem Projekt verwechseln.
 - Sicherheit: Login max. 10 Fehlversuche/15 min je IP, „Passwort vergessen" 5/h,
   Mietanfragen 5/h (`server/utils/rate-limit.ts`). Reset-Links nie in API-Antworten.
   In Produktion `NUXT_SITE_URL` setzen (Basis für Links in Mails).

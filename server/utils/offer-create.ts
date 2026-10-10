@@ -8,7 +8,9 @@ import { quoteTransport, type TransportQuote } from './transport'
 // im Wohnfee-Design (Tabelle offers + offer_items) und verknuepft beides.
 // Idempotent: existiert bereits ein Angebot, wird das Bestehende zurueckgegeben.
 // Aufgerufen vom Dashboard: Mietanfrage → „Angebot erstellen".
-export async function createOfferForInquiry(inquiryId: number): Promise<{ offerId: number; number: string; created: boolean }> {
+// markInProgress: nur beim manuellen Erstellen im Dashboard – das automatische Angebot
+// beim Eingang lässt die Anfrage auf „neu", damit sie in Glocke & Übersicht auftaucht.
+export async function createOfferForInquiry(inquiryId: number, markInProgress = false): Promise<{ offerId: number; number: string; created: boolean }> {
   const inquiry: any = await queryOne('SELECT * FROM rental_inquiries WHERE id = :id', { id: inquiryId })
   if (!inquiry) throw new Error('Mietanfrage nicht gefunden')
 
@@ -124,7 +126,7 @@ export async function createOfferForInquiry(inquiryId: number): Promise<{ offerI
       [contactId, number, docDate, brutto, `dashboard/${number.replace(/[^a-z0-9/_-]+/gi, '_')}.pdf`]
     )
     await conn.query(
-      "UPDATE rental_inquiries SET offer_id = ?, transport_calc = ?, status = IF(status = 'neu', 'in_bearbeitung', status) WHERE id = ?",
+      `UPDATE rental_inquiries SET offer_id = ?, transport_calc = ?${markInProgress ? ", status = IF(status = 'neu', 'in_bearbeitung', status)" : ''} WHERE id = ?`,
       [offerId, JSON.stringify({ ...quote, settings: undefined, at: new Date().toISOString() }), inquiryId])
     await conn.commit()
     return { offerId, number, created: true }

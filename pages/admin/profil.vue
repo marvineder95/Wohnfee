@@ -134,6 +134,9 @@ const deviceInfo = computed(() => {
   return `${os} · ${browser}`
 })
 const nowStr = new Date().toLocaleString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })
+
+const push = usePush()
+onMounted(() => push.refresh())
 </script>
 
 <template>
@@ -252,7 +255,28 @@ const nowStr = new Date().toLocaleString('de-AT', { day: '2-digit', month: '2-di
         </section>
         <section v-else-if="tab === 'benachrichtigungen'" class="prof__card">
           <h2 class="prof__cardtitle"><WfIcon name="bell" :size="15" /> Benachrichtigungen</h2>
-          <p class="prof__placeholder">Hier kannst du künftig festlegen, zu welchen Ereignissen du Benachrichtigungen erhältst.</p>
+          <p class="prof__pushintro">
+            Push-Benachrichtigungen bei <strong>neuen Kontakt- und Mietanfragen</strong> – auch wenn das Dashboard geschlossen ist.
+            Die Einstellung gilt je Gerät (Handy, Laptop …).
+          </p>
+          <div class="prof__pushstate" :class="{ 'is-on': push.subscribed.value }">
+            <WfIcon :name="push.subscribed.value ? 'check' : 'bell'" :size="16" />
+            <span v-if="!push.supported.value && !push.iosNeedsInstall.value">Dieser Browser unterstützt keine Push-Benachrichtigungen.</span>
+            <span v-else-if="push.iosNeedsInstall.value">Auf iPhone/iPad: Dashboard zuerst über <em>Teilen → Zum Home-Bildschirm</em> installieren und dort öffnen – dann hier aktivieren.</span>
+            <span v-else-if="push.permission.value === 'denied'">Benachrichtigungen sind im Browser blockiert – bitte in den Website-Einstellungen erlauben.</span>
+            <span v-else-if="push.subscribed.value">Auf diesem Gerät aktiv.</span>
+            <span v-else>Auf diesem Gerät noch nicht aktiviert.</span>
+          </div>
+          <div v-if="push.supported.value && push.permission.value !== 'denied'" class="prof__pushbtns">
+            <button v-if="!push.subscribed.value" class="wf-btn wf-btn--primary" :disabled="push.busy.value" @click="push.enable().then(ok => ok && push.test())">
+              <WfIcon name="bell" :size="14" /> Auf diesem Gerät aktivieren
+            </button>
+            <template v-else>
+              <button class="wf-btn" :disabled="push.busy.value" @click="push.test()">Test senden</button>
+              <button class="wf-btn wf-btn--danger" :disabled="push.busy.value" @click="push.disable()">Deaktivieren</button>
+            </template>
+          </div>
+          <p v-if="push.error.value" class="prof__pusherr">{{ push.error.value }}</p>
         </section>
 
         <!-- Zugriffe & Rollen -->
@@ -304,6 +328,11 @@ const nowStr = new Date().toLocaleString('de-AT', { day: '2-digit', month: '2-di
 </template>
 
 <style scoped>
+.prof__pushintro { margin: 0 0 1em; color: var(--wf-muted); font-size: .9em; line-height: 1.6; }
+.prof__pushstate { display: flex; align-items: center; gap: .6em; padding: .8em 1em; border-radius: 12px; background: #f6f3ec; font-size: .9em; margin-bottom: 1em; }
+.prof__pushstate.is-on { background: var(--wf-green-soft); color: var(--wf-green); font-weight: 600; }
+.prof__pushbtns { display: flex; gap: .5em; flex-wrap: wrap; }
+.prof__pusherr { color: var(--wf-red); font-size: .85em; margin: .8em 0 0; }
 /* ---------- Kopf ---------- */
 .prof__head {
   display: flex; align-items: center; gap: 1.3em; flex-wrap: wrap;

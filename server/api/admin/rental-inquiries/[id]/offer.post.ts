@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
   const id = Number(getRouterParam(event, 'id'))
   if (!Number.isInteger(id) || id < 1) throw createError({ statusCode: 400, statusMessage: 'Ungültige Anfrage-ID' })
   try {
-    return { ok: true, ...(await createOfferForInquiry(id)) }
+    return { ok: true, ...(await createOfferForInquiry(id, true)) }
   } catch (e: any) {
     throw createError({ statusCode: 400, statusMessage: e?.message || 'Angebot konnte nicht erstellt werden.' })
   }

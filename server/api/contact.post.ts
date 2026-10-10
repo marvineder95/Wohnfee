@@ -95,5 +95,13 @@ export default defineEventHandler(async (event) => {
     console.error('[contact] Benachrichtigungsmail fehlgeschlagen:', e?.message || e)
   }
 
+  // Push an das Team (PWA)
+  import('../utils/push').then(({ notifyTeam }) => notifyTeam({
+    title: 'Neue Kontaktanfrage',
+    body: `${name}${subject ? ' · ' + subject : ''}`,
+    url: '/admin/anfragen',
+    tag: `contact-${inquiryId}`
+  })).catch(() => {})
+
   return { ok: true, id: inquiryId }
 })

@@ -17,11 +17,28 @@ useHead({
   ]
 })
 
-// PWA: Service Worker nur in Produktion registrieren (im Dev stört er nur)
-if (import.meta.client && !import.meta.dev && 'serviceWorker' in navigator) {
+// PWA: Service Worker registrieren – im Dev mit ?dev=1 (dann nur Push, kein Caching)
+if (import.meta.client && 'serviceWorker' in navigator) {
   onMounted(() => {
-    navigator.serviceWorker.register('/wf-admin-sw.js').catch(() => {})
+    navigator.serviceWorker.register(import.meta.dev ? '/wf-admin-sw.js?dev=1' : '/wf-admin-sw.js', { scope: '/' }).catch(() => {})
   })
+}
+
+// Push-Benachrichtigungen (neue Anfragen) – Hinweis in der Topbar, solange nicht aktiv
+const push = usePush()
+const pushDismissed = ref(false)
+onMounted(() => {
+  push.refresh()
+  try { pushDismissed.value = localStorage.getItem('wf_push_dismissed') === '1' } catch { /* privat */ }
+})
+const showPushPrompt = computed(() =>
+  push.supported.value && !push.subscribed.value && push.permission.value !== 'denied' && !pushDismissed.value)
+async function enablePush() {
+  if (await push.enable()) push.test().catch(() => {})
+}
+function dismissPush() {
+  pushDismissed.value = true
+  try { localStorage.setItem('wf_push_dismissed', '1') } catch { /* privat */ }
 }
 
 // Install-Prompt (Chrome/Edge; iOS hat keins → dort manuell über "Zum Home-Bildschirm")
@@ -126,10 +143,15 @@ async function loadOverdueCount() {
   } catch { /* optional */ }
 }
 
-function loadBadges() {
-  loadInquiryCount()
-  loadRentalInquiryCount()
-  loadOverdueCount()
+async function loadBadges() {
+  await Promise.all([loadInquiryCount(), loadRentalInquiryCount(), loadOverdueCount()])
+  // Zähler am App-Symbol der installierten PWA
+  try {
+    const n = newInquiries.value + newRentalInquiries.value
+    const nav: any = navigator
+    if (n > 0) await nav.setAppBadge?.(n)
+    else await nav.clearAppBadge?.()
+  } catch { /* nicht unterstützt */ }
 }
 
 watch(user, (u) => { if (u) loadBadges() }, { immediate: true })
@@ -210,6 +232,12 @@ const initials = computed(() => {
           <button v-if="canInstall" class="wf-btn wf-btn--sm" @click="installApp">
             <WfIcon name="download" :size="14" /> App installieren
           </button>
+          <span v-if="showPushPrompt" class="admin-shell__pushprompt">
+            <button type="button" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="push.busy.value" @click="enablePush">
+              <WfIcon name="bell" :size="14" /> Benachrichtigungen aktivieren
+            </button>
+            <button type="button" class="admin-shell__pushx" title="Später" @click="dismissPush">×</button>
+          </span>
           <NuxtLink :to="newInquiries > 0 || !newRentalInquiries ? '/admin/anfragen' : '/admin/mietanfragen'"
                     class="admin-shell__iconbtn admin-shell__bell"
                     :title="`${newInquiries} neue Kontaktanfrage(n), ${newRentalInquiries} neue Mietanfrage(n)`">
@@ -401,6 +429,11 @@ const initials = computed(() => {
 
 .admin-shell__topright { display: flex; align-items: center; gap: .8em; margin-left: auto; }
 
+.admin-shell__pushprompt { display: inline-flex; align-items: center; gap: .2em; }
+.admin-shell__pushx { border: 0; background: none; color: var(--wf-muted); font-size: 1.2em; cursor: pointer; padding: 0 .3em; line-height: 1; }
+.admin-shell__pushx:hover { color: var(--wf-ink); }
+@media (max-width: 520px) { .admin-shell__pushprompt .wf-btn { font-size: .78em; } }
+
 .admin-shell__bellbadge {
   position: absolute;
   top: 0;
@@ -461,6 +494,6 @@ const initials = computed(() => {
 
 @media (max-width: 520px) {
   .admin-shell__search { max-width: none; }
-  .admin-shell__top .wf-btn { display: none; }
+  .admin-shell__top .wf-btn:not(.admin-shell__pushprompt .wf-btn) { display: none; }
 }
 </style>
