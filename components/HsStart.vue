@@ -398,6 +398,23 @@ function scrollToId(id: string, e?: Event) {
 .hss__stext { display: grid; gap: .15em; flex: 1; min-width: 0; }
 .hss__stext strong { font-family: var(--serif); font-weight: 500; font-size: 1.15em; }
 .hss__stext small { font-size: .8em; line-height: 1.4; color: var(--muted); }
+/* Desktop: Hero inkl. Leistungskarten passt genau in den sichtbaren Bereich (100vh minus Header).
+   Schrift und Abstände skalieren mit der Fensterhöhe, damit auch Laptops nichts abschneiden. */
+@media (min-width: 1001px) {
+  .hss__hero {
+    justify-content: space-between;
+    height: calc(100vh - var(--hs-head, 108px)); height: calc(100svh - var(--hs-head, 108px));
+    min-height: 520px;
+  }
+  .hss__inside { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; justify-content: center;
+    padding: clamp(1em, 3.5vh, 3em) 1.5em clamp(.8em, 2vh, 2em); }
+  .hss__inside > .hss__h1 { max-width: 46rem; font-size: clamp(2em, min(4.4vw, 6.2vh), 3.8em) !important; margin-bottom: clamp(.25em, 1.8vh, .45em); }
+  .hss__inside > .hss__eyebrow { margin-bottom: clamp(.6em, 1.8vh, 1.3em); }
+  .hss__inside > .hss__lead { font-size: clamp(.95em, 1.9vh, 1.05em); line-height: 1.6; margin-bottom: clamp(.9em, 2.6vh, 1.8em); }
+  .hss__inside > .hss__dots { margin-top: clamp(.9em, 2.4vh, 2em); }
+  .hss__services { padding-bottom: clamp(.9em, 2.8vh, 2.2em); }
+  .hss__service { padding: clamp(.65em, 1.6vh, 1.1em) 1.3em; }
+}
 .hss__service svg { flex: none; width: 1.2em; height: 1.2em; fill: none; stroke: var(--green); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
 /* ── Split-Layouts ── */
