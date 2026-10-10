@@ -576,7 +576,7 @@ onMounted(async () => {
               <div v-for="(it, i) in items" :key="i" class="off__posrow">
                 <span class="off__posgrip" aria-hidden="true">⋮⋮</span>
                 <div class="off__posmain">
-                  <div class="off__posdesc">{{ it.description }}</div>
+                  <div class="off__posdesc" :title="it.description">{{ it.description }}</div>
                   <div class="off__posmeta">
                     {{ fmtQty(it.quantity) }} {{ it.unit || 'Stk.' }} × {{ fmtEuro(Number(String(it.unit_price).replace(',', '.')) || 0) }}
                   </div>
@@ -727,7 +727,7 @@ onMounted(async () => {
 .off__loading, .off__empty { color: var(--wf-muted); padding: 2em 0; text-align: center; }
 
 /* ── Editor-Modal (neues Design) ─────────────────────────── */
-.off__modal { max-width: 62em; }
+.off__modal { max-width: min(72em, 96vw); }
 .off__edhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 1em; margin-bottom: 1.1em; }
 .off__edtitle { margin: 0; font-family: var(--wf-serif); font-weight: 500; font-size: 1.55em; color: var(--wf-ink); }
 .off__edtitle--sm { font-size: 1.25em; margin-bottom: .6em; }
@@ -737,9 +737,12 @@ onMounted(async () => {
   cursor: pointer; padding: .1em .3em; border-radius: 8px;
 }
 .off__edclose:hover { color: var(--wf-ink); background: var(--wf-green-soft); }
-.off__edgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4em; align-items: start; }
+/* links schmale Detail-/Kundenspalte, rechts die Positionen; minmax(0, …) verhindert,
+   dass lange Positionstexte die Spalte über den Dialogrand hinaus dehnen */
+.off__edgrid { display: grid; grid-template-columns: minmax(16em, 20em) minmax(0, 1fr); gap: 1.8em; align-items: start; }
+.off__edgrid > * { min-width: 0; }
 .off__edsec { margin-bottom: 1.3em; }
-.off__edsectitle { font-family: var(--wf-serif); font-weight: 500; font-size: 1.05em; margin: 0 0 .6em; color: var(--wf-ink); }
+.off__edsectitle { font-family: var(--wf-serif); font-weight: 500; font-size: 1.05em; margin: 0 0 .6em; color: var(--wf-ink); text-align: left; }
 .off__eddetails { display: flex; flex-wrap: wrap; gap: .8em; align-items: flex-start; }
 
 .off__formrow { display: flex; gap: .8em; flex-wrap: wrap; }
@@ -803,7 +806,8 @@ onMounted(async () => {
 }
 .off__posgrip { color: var(--wf-line); font-size: 1em; user-select: none; }
 .off__posmain { flex: 1; min-width: 0; }
-.off__posdesc { font-size: .9em; color: var(--wf-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* lange (automatisch erzeugte) Texte: max. 2 Zeilen, voller Text als Tooltip */
+.off__posdesc { font-size: .9em; line-height: 1.4; color: var(--wf-ink); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
 .off__posmeta { font-size: .76em; color: var(--wf-muted); margin-top: .15em; }
 .off__posamount { font-size: .92em; font-weight: 600; color: var(--wf-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 

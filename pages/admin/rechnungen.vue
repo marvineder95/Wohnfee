@@ -766,7 +766,7 @@ onMounted(async () => {
               <div v-for="(it, i) in items" :key="i" class="inv__posrow">
                 <span class="inv__posgrip" aria-hidden="true">⋮⋮</span>
                 <div class="inv__posmain">
-                  <div class="inv__posdesc">{{ it.description }}</div>
+                  <div class="inv__posdesc" :title="it.description">{{ it.description }}</div>
                   <div class="inv__posmeta">
                     {{ fmtQty(it.quantity) }} {{ it.unit || 'Stk.' }} × {{ fmtEuro(Number(String(it.unit_price).replace(',', '.')) || 0) }}
                   </div>
@@ -963,7 +963,7 @@ onMounted(async () => {
 .inv__loading, .inv__empty { color: var(--wf-muted); padding: 2em 0; text-align: center; }
 
 /* ── Editor-Modal (neues Design) ─────────────────────────── */
-.inv__modal { max-width: 62em; }
+.inv__modal { max-width: min(72em, 96vw); }
 .inv__edhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 1em; margin-bottom: 1.1em; }
 .inv__edtitle { margin: 0; font-family: var(--wf-serif); font-weight: 500; font-size: 1.55em; color: var(--wf-ink); }
 .inv__edsub { margin: .25em 0 0; font-size: .88em; color: var(--wf-muted); }
@@ -1000,9 +1000,12 @@ onMounted(async () => {
 .inv__lockbar > span { flex: 1; min-width: 14em; }
 .inv__lockstatus { display: inline-flex; align-items: center; gap: .5em; font-weight: 600; }
 .inv__lockstatus select { font: inherit; padding: .3em .6em; border-radius: 8px; border: 1px solid #e3cf9f; background: #fff; }
-.inv__edgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.4em; align-items: start; }
+/* links schmale Detail-/Kundenspalte, rechts die Positionen; minmax(0, …) verhindert,
+   dass lange Positionstexte die Spalte über den Dialogrand hinaus dehnen */
+.inv__edgrid { display: grid; grid-template-columns: minmax(16em, 20em) minmax(0, 1fr); gap: 1.8em; align-items: start; }
+.inv__edgrid > * { min-width: 0; }
 .inv__edsec { margin-bottom: 1.3em; }
-.inv__edsectitle { font-family: var(--wf-serif); font-weight: 500; font-size: 1.05em; margin: 0 0 .6em; color: var(--wf-ink); }
+.inv__edsectitle { font-family: var(--wf-serif); font-weight: 500; font-size: 1.05em; margin: 0 0 .6em; color: var(--wf-ink); text-align: left; }
 .inv__eddetails { display: flex; flex-wrap: wrap; gap: .8em; align-items: flex-start; }
 
 .inv__formrow { display: flex; gap: .8em; flex-wrap: wrap; }
@@ -1066,7 +1069,8 @@ onMounted(async () => {
 }
 .inv__posgrip { color: var(--wf-line); font-size: 1em; user-select: none; }
 .inv__posmain { flex: 1; min-width: 0; }
-.inv__posdesc { font-size: .9em; color: var(--wf-ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* lange (automatisch erzeugte) Texte: max. 2 Zeilen, voller Text als Tooltip */
+.inv__posdesc { font-size: .9em; line-height: 1.4; color: var(--wf-ink); overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow-wrap: anywhere; }
 .inv__posmeta { font-size: .76em; color: var(--wf-muted); margin-top: .15em; }
 .inv__posamount { font-size: .92em; font-weight: 600; color: var(--wf-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
 
