@@ -53,6 +53,13 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   `item_matches`, gepflegt im Inventar-Dialog, im Katalog als `matches`), Checkout-Hinweis
   Mietdauer/3-Monats-Tarif, optionales Deko-Paket (Konditionen, `/api/rental-extras`, nie
   vorausgewählt), Home-Staging-Hinweis auf der Bestätigungsseite.
+- Reservierung & Online-Annahme (`server/utils/reservations.ts`, Job `reservation-job.ts` alle 15 min):
+  Mietanfrage → Möbel 3 Tage reserviert (nicht im Shop, auch nicht manuell zuweisbar); Angebot senden →
+  3 Tage gültig ab Versand, Reservierung bis Ende des Gültigkeitstags; nach 48 h Erinnerungsmail.
+  Kundenseite `/angebot/<token>` (API `/api/offer/:token`): annehmen → Projekt + Möbel + Liefertermin,
+  ablehnen → sofort frei. Status im Angebots-Editor auf angenommen/abgelehnt löst dasselbe aus.
+  Mietanfragen: „+3 Tage" / „Freigeben". Möbel kommen erst über Touren → „Abholung erledigt" zurück
+  (Shop / Reinigung-Reparatur = Status `pflege` / defekt).
 - Touren & Rückgaben (`/admin/touren`, API `/api/admin/logistics`): Kalendertermine +
   Projekt-Deadlines mit Möbeln + Überfälliges; Packliste `/admin/packliste/:id` (druckbar).
 - Abo-Rechnungen: Tabelle `recurring_invoices`, Erzeugung `server/utils/recurring.ts`

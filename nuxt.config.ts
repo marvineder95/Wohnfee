@@ -84,7 +84,9 @@ export default defineNuxtConfig({
       '/blogartikel-aktuelles/**': { prerender: false },
       '/blogartikel-projekte/**': { prerender: false },
       '/blogartikel-events/**': { prerender: false },
-      '/sitemap.xml': { prerender: false }
+      '/sitemap.xml': { prerender: false },
+      // Online-Angebote (Link aus der Angebotsmail) – immer live, nie im Index
+      '/angebot/**': { prerender: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
     },
     prerender: {
       failOnError: true,

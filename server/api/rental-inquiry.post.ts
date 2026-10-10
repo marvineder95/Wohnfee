@@ -1,6 +1,7 @@
 import { query, queryOne } from '../utils/db'
 import { clientIp, assertNotLimited, countAttempt } from '../utils/rate-limit'
 import { assignedQuantity } from '../utils/inventory-sync'
+import { reservedQuantity, startReservation } from '../utils/reservations'
 import { rentalPerks, transportPerk, MIN_MONTHLY, OTHER_STATES_DISCOUNT } from '../../shared/rental-perks'
 
 function clean(v: any, max = 190): string | null {
@@ -57,7 +58,8 @@ export default defineEventHandler(async (event) => {
     )
     // nur vermietbare, lagernde Objekte, Menge begrenzt auf realen Bestand
     if (!item || !item.rentable || item.status !== 'lager') continue
-    const stock = Math.max(0, (Number(item.stock) || 0) - await assignedQuantity(itemId))
+    // frei = Bestand − in Projekten − von offenen Anfragen reserviert
+    const stock = Math.max(0, (Number(item.stock) || 0) - await assignedQuantity(itemId) - await reservedQuantity(itemId))
     if (stock < 1) continue
     const price = dur === 1 ? (item.p1 !== null ? Number(item.p1) : null)
       : (item.p3 !== null ? Number(item.p3) : null)
@@ -131,6 +133,9 @@ export default defineEventHandler(async (event) => {
       { iid: inquiryId, item: it.item_id, title: it.title, qty: it.quantity, dur: it.duration_months, price: it.monthly_price }
     )
   }
+
+  // Möbel für 3 Tage reservieren – sie verschwinden sofort aus dem Shop
+  await startReservation(inquiryId)
 
   // Benachrichtigung an office@wohnfee.at — Fehler beim Mailversand dürfen
   // die Anfrage nicht scheitern lassen (ohne SMTP wird sie nur geloggt).

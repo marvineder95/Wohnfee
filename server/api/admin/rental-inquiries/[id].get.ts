@@ -15,6 +15,9 @@ export default defineEventHandler(async (event) => {
             delivery_option AS deliveryOption, delivery_notes AS deliveryNotes,
             monthly_total AS monthlyTotal, notes, offer_id AS offerId, transport_calc AS transportCalc,
             (SELECT number FROM offers o WHERE o.id = rental_inquiries.offer_id) AS offerNumber,
+            reservation_status AS reservationStatus, DATE_FORMAT(reserved_until, '%Y-%m-%dT%H:%i:%sZ') AS reservedUntil,
+            project_id AS projectId,
+            (SELECT status FROM offers o WHERE o.id = rental_inquiries.offer_id) AS offerStatus,
             created_at AS createdAt
      FROM rental_inquiries WHERE id = :id`, { id }
   )

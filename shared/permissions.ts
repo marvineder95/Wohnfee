@@ -73,6 +73,8 @@ export function requirementForApi(path: string, method: string): { area: Area; n
   if (/^(inquiries|rental-inquiries)\/\d+\/offer$/.test(p) || /^projects\/\d+\/extension-offer$/.test(p)) {
     return { area: 'angebote', need: 'edit' }
   }
+  // Abholung erledigt (Möbel zurück ins Lager) gehört zu den Touren
+  if (/^projects\/\d+\/return$/.test(p)) return { area: 'touren', need: 'edit' }
   // Dokumente eines Kontakts enthalten Rechnungen/Angebote
   if (/^contacts\/\d+\/documents$/.test(p)) return { area: 'rechnungen', need: 'view' }
   // Probe-Berechnung ist reines Ansehen

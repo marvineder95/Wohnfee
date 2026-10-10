@@ -18,6 +18,9 @@ export default defineEventHandler(async (event) => {
     `SELECT id, number, status, first_name AS firstName, last_name AS lastName, company,
             email, phone, city, start_date AS startDate, end_date AS endDate,
             duration_months AS durationMonths, monthly_total AS monthlyTotal,
+            reservation_status AS reservationStatus, DATE_FORMAT(reserved_until, '%Y-%m-%dT%H:%i:%sZ') AS reservedUntil,
+            project_id AS projectId,
+            (SELECT status FROM offers o WHERE o.id = rental_inquiries.offer_id) AS offerStatus,
             created_at AS createdAt
      FROM rental_inquiries
      ${where}

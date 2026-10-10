@@ -127,6 +127,51 @@ async function offerExtension(e: Entry) {
   }
 }
 
+// Abholung erledigt → Möbel zurück ins Lager. Erst dann sind sie wieder im Shop
+// (oder bewusst in Reinigung/Reparatur bzw. defekt).
+interface ReturnLine { itemId: number; title: string; quantity: number; pick: boolean; state: 'lager' | 'pflege' | 'ausser_dienst'; note: string }
+const ret = ref<{ projectId: number; label: string; lines: ReturnLine[] } | null>(null)
+const retBusy = ref(false)
+const retError = ref('')
+const RETURN_STATES = [
+  { value: 'lager', label: 'Zurück in den Shop' },
+  { value: 'pflege', label: 'Reinigung / Reparatur' },
+  { value: 'ausser_dienst', label: 'Defekt' }
+] as const
+async function openReturn(e: Entry) {
+  if (!e.projectId) return
+  retError.value = ''
+  try {
+    const res = await $fetch<{ items: any[] }>(`/api/admin/projects/${e.projectId}/items`)
+    ret.value = {
+      projectId: e.projectId,
+      label: projectLabel(e) || `Projekt #${e.projectId}`,
+      lines: res.items.map((i) => ({ itemId: i.item_id, title: i.title, quantity: Number(i.quantity) || 1, pick: true, state: 'lager', note: '' }))
+    }
+  } catch (err: any) {
+    error.value = err?.data?.statusMessage || 'Möbel des Projekts konnten nicht geladen werden.'
+  }
+}
+async function confirmReturn() {
+  if (!ret.value) return
+  const picked = ret.value.lines.filter((l) => l.pick)
+  if (!picked.length) { retError.value = 'Bitte mindestens ein Möbelstück auswählen.'; return }
+  retBusy.value = true
+  retError.value = ''
+  try {
+    await $fetch(`/api/admin/projects/${ret.value.projectId}/return`, {
+      method: 'POST', body: { items: picked.map((l) => ({ itemId: l.itemId, state: l.state, note: l.note })) }
+    })
+    ret.value = null
+    await load()
+  } catch (err: any) {
+    retError.value = err?.data?.statusMessage || 'Speichern fehlgeschlagen.'
+  } finally {
+    retBusy.value = false
+  }
+}
+const canReturn = (e: Entry) => !!e.projectId && !!e.itemCount && perms.canEdit('touren') && (e.kind !== 'termin' || e.type === 'abholung')
+
 function printPlan() {
   window.print()
 }
@@ -165,6 +210,7 @@ function printPlan() {
               <small>{{ o.title }} · fällig {{ fmtDate(o.date) }} · {{ o.pieceCount || o.itemCount }} Stück</small>
             </span>
             <span class="tour__acts no-print">
+              <button v-if="canReturn(o)" class="wf-btn wf-btn--sm wf-btn--primary" @click="openReturn(o)"><WfIcon name="check" :size="13" /> Abholung erledigt</button>
               <NuxtLink v-if="o.projectId" :to="`/admin/packliste/${o.projectId}?modus=abholung`" class="wf-btn wf-btn--sm"><WfIcon name="list" :size="13" /> Packliste</NuxtLink>
               <button v-if="perms.canEdit('angebote')" class="wf-btn wf-btn--sm" :disabled="extBusy === o.projectId" @click="offerExtension(o)"><WfIcon name="file" :size="13" /> Verlängerung anbieten</button>
               <NuxtLink v-if="o.projectId" :to="`/admin/projekte?open=${o.projectId}&cat=${o.projectCategory}`" class="wf-btn wf-btn--sm">Projekt</NuxtLink>
@@ -198,12 +244,44 @@ function printPlan() {
               <NuxtLink v-if="e.projectId && e.itemCount" :to="`/admin/packliste/${e.projectId}?modus=${e.kind === 'termin' && e.type !== 'abholung' ? 'lieferung' : 'abholung'}`" class="wf-btn wf-btn--sm">
                 <WfIcon name="list" :size="13" /> Packliste
               </NuxtLink>
+              <button v-if="canReturn(e)" class="wf-btn wf-btn--sm wf-btn--primary" @click="openReturn(e)"><WfIcon name="check" :size="13" /> Abholung erledigt</button>
               <button v-if="e.kind !== 'termin' && e.projectId && perms.canEdit('angebote')" class="wf-btn wf-btn--sm" :disabled="extBusy === e.projectId" @click="offerExtension(e)">Verlängerung anbieten</button>
             </span>
           </li>
         </ul>
       </section>
     </template>
+
+    <!-- Abholung erledigt -->
+    <div v-if="ret" class="wf-modal-overlay" @click.self="ret = null">
+      <div class="wf-modal tour__retmodal">
+        <h2 class="tour__rettitle">Abholung erledigt</h2>
+        <p class="tour__retsub">{{ ret.label }} – was ist mit den Möbeln? Nur „Zurück in den Shop" macht sie sofort wieder mietbar.
+          Nicht angehakte Stücke bleiben im Projekt.</p>
+        <p v-if="!ret.lines.length" class="tour__muted">Dem Projekt sind keine Möbel mehr zugewiesen.</p>
+        <ul class="tour__retlist">
+          <li v-for="l in ret.lines" :key="l.itemId" :class="{ 'is-off': !l.pick }">
+            <label class="tour__retpick">
+              <input v-model="l.pick" type="checkbox">
+              <span><strong>{{ l.title }}</strong><small v-if="l.quantity > 1">{{ l.quantity }} Stück</small></span>
+            </label>
+            <div class="tour__retstates" role="radiogroup">
+              <button v-for="st in RETURN_STATES" :key="st.value" type="button" class="tour__retstate"
+                      :class="[{ 'is-on': l.state === st.value }, 'is-' + st.value]" :disabled="!l.pick" @click="l.state = st.value">{{ st.label }}</button>
+            </div>
+            <input v-if="l.pick && l.state !== 'lager'" v-model="l.note" type="text" class="tour__retnote" maxlength="120"
+                   :placeholder="l.state === 'pflege' ? 'z. B. Bezug waschen' : 'z. B. Bein gebrochen'">
+          </li>
+        </ul>
+        <p v-if="retError" class="tour__error">{{ retError }}</p>
+        <div class="tour__retacts">
+          <button class="wf-btn" @click="ret = null">Abbrechen</button>
+          <button class="wf-btn wf-btn--primary" :disabled="retBusy || !ret.lines.length" @click="confirmReturn">
+            {{ retBusy ? 'Speichert …' : 'Ins Lager buchen' }}
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -235,6 +313,25 @@ function printPlan() {
 .tour__main small { font-size: .78em; color: var(--wf-muted); }
 .tour__notes { font-style: italic; }
 .tour__acts { display: flex; gap: .4em; flex-wrap: wrap; }
+
+.tour__retmodal { max-width: 640px; width: calc(100vw - 32px); }
+.tour__rettitle { margin: 0 0 .3em; font-size: 1.25em; text-align: left; }
+.tour__retsub { margin: 0 0 1em; color: var(--wf-muted); font-size: .88em; }
+.tour__retlist { list-style: none; margin: 0 0 1em; padding: 0; display: grid; gap: .5em; max-height: 55vh; overflow: auto; }
+.tour__retlist li { display: grid; gap: .5em; padding: .7em .8em; border: 1px solid var(--wf-line); border-radius: 12px; background: #fff; }
+.tour__retlist li.is-off { opacity: .55; }
+.tour__retpick { display: flex; gap: .6em; align-items: center; cursor: pointer; min-width: 0; }
+.tour__retpick span { display: flex; flex-direction: column; min-width: 0; }
+.tour__retpick strong { font-size: .92em; overflow-wrap: anywhere; }
+.tour__retpick small { color: var(--wf-muted); font-size: .78em; }
+.tour__retstates { display: flex; flex-wrap: wrap; gap: .35em; }
+.tour__retstate { border: 1px solid var(--wf-line); background: #fff; border-radius: 999px; padding: .3em .8em; font: inherit; font-size: .8em; cursor: pointer; color: var(--wf-ink); }
+.tour__retstate.is-on.is-lager { background: var(--wf-green); border-color: var(--wf-green); color: #fff; }
+.tour__retstate.is-on.is-pflege { background: #c98a1f; border-color: #c98a1f; color: #fff; }
+.tour__retstate.is-on.is-ausser_dienst { background: var(--wf-red); border-color: var(--wf-red); color: #fff; }
+.tour__retstate:disabled { cursor: default; }
+.tour__retnote { font: inherit; font-size: .85em; padding: .45em .7em; border: 1px solid var(--wf-line); border-radius: 8px; }
+.tour__retacts { display: flex; justify-content: flex-end; gap: .5em; flex-wrap: wrap; }
 
 @media print {
   .no-print { display: none !important; }

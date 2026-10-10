@@ -19,7 +19,7 @@ interface Item {
   rentPrice1m: number | null
   rentPrice3m: number | null
   rentable: 0 | 1
-  status: 'lager' | 'vermietet' | 'verkauft' | 'ausser_dienst'
+  status: 'lager' | 'vermietet' | 'pflege' | 'verkauft' | 'ausser_dienst'
   warehouse: string | null
   customerLocation: string | null
   purchasedYear: number | null
@@ -30,7 +30,7 @@ const perms = usePermissions()
 const canEditI = computed(() => perms.canEdit('inventar'))
 
 const STATUS_LABELS: Record<string, string> = {
-  lager: 'Im Lager', vermietet: 'Vermietet', verkauft: 'Verkauft', ausser_dienst: 'Außer Dienst'
+  lager: 'Im Lager', vermietet: 'Vermietet', pflege: 'Reinigung/Reparatur', verkauft: 'Verkauft', ausser_dienst: 'Außer Dienst'
 }
 
 const items = ref<Item[]>([])
@@ -416,7 +416,7 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
           <td>{{ eur(i.originalPrice) }}</td>
           <td>{{ eur(i.rentPrice3m) }}</td>
           <td>
-            <span class="wf-pill" :class="i.status === 'vermietet' ? 'wf-pill--blue' : i.status === 'verkauft' ? 'wf-pill--gray' : i.status === 'ausser_dienst' ? 'wf-pill--red' : ''">{{ STATUS_LABELS[i.status] }}</span>
+            <span class="wf-pill" :class="i.status === 'vermietet' ? 'wf-pill--blue' : i.status === 'verkauft' ? 'wf-pill--gray' : i.status === 'ausser_dienst' ? 'wf-pill--red' : i.status === 'pflege' ? 'wf-pill--amber' : ''">{{ STATUS_LABELS[i.status] }}</span>
             <span class="inv__loc">{{ i.status === 'vermietet' ? (i.customerLocation || '—') : (i.warehouse || '—') }}</span>
             <span v-if="i.status === 'vermietet' && i.returnDate" class="inv__ret"
                   :class="{ 'is-overdue': String(i.returnDate).slice(0, 10) < localToday() }">

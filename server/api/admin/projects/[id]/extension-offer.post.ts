@@ -43,10 +43,10 @@ export default defineEventHandler(async (event) => {
       '\nDie Preise verstehen sich pro Monat; die Verlängerung ist monatlich kündbar.'
     const [res]: any = await conn.query(
       `INSERT INTO offers (number, contact_id, customer_name, customer_street, customer_zip, customer_city, customer_country,
-                           doc_date, valid_until, subject, lang, vat_rate, vat_free, note, status)
-       VALUES (?, ?, ?, ?, ?, ?, 'AT', ?, ?, ?, 'de', 20, 0, ?, 'entwurf')`,
+                           doc_date, valid_until, subject, lang, vat_rate, vat_free, note, status, project_id)
+       VALUES (?, ?, ?, ?, ?, ?, 'AT', ?, ?, ?, 'de', 20, 0, ?, 'entwurf', ?)`,
       [number, contact?.id || null, customer, contact?.street || null, contact?.zip || null, contact?.city || null,
-       docDate, todayVienna(14), `Mietverlängerung ${project.title || ''}`.trim().slice(0, 190), note]
+       docDate, todayVienna(14), `Mietverlängerung ${project.title || ''}`.trim().slice(0, 190), note, id]
     )
     const offerId = res.insertId
     // gleiche Möbel (Titel + Preis) zu einer Position zusammenfassen

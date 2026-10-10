@@ -39,6 +39,24 @@ const editing = ref<OfferRow | null>(null)
 const linkedInvoice = ref<{ id: number; number: string } | null>(null)
 const saving = ref(false)
 const saveError = ref('')
+// Online-Annahme: Kundenlink, Antwort des Kunden, Reservierung der Mietanfrage
+const online = ref<{
+  link: string
+  respondedAt: string | null; responseBy: string | null; responseName: string | null; declineReason: string | null
+  rental: { number: string; reservationStatus: string | null; reservedUntil: string | null; projectId: number | null } | null
+} | null>(null)
+const linkCopied = ref(false)
+async function copyLink() {
+  if (!online.value) return
+  try { await navigator.clipboard.writeText(online.value.link); linkCopied.value = true; setTimeout(() => (linkCopied.value = false), 2000) } catch { /* Clipboard gesperrt */ }
+}
+function fmtDateTime(v: string | null) {
+  return v ? new Date(v).toLocaleString('de-AT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : ''
+}
+const RES_LABELS: Record<string, string> = {
+  aktiv: 'Möbel reserviert', angenommen: 'Möbel im Projekt', abgelehnt: 'Reservierung aufgehoben (abgelehnt)',
+  abgelaufen: 'Reservierung abgelaufen – Möbel wieder im Shop', freigegeben: 'Reservierung von Hand freigegeben'
+}
 
 const form = reactive({
   contact_id: null as number | null,
@@ -98,6 +116,7 @@ async function load() {
 function openNew() {
   editing.value = null
   linkedInvoice.value = null
+  online.value = null
   Object.assign(form, {
     contact_id: null,
     customer_name: '', customer_street: '', customer_zip: '', customer_city: '',
@@ -134,8 +153,12 @@ async function openEdit(off: OfferRow) {
   linkedInvoice.value = null
   saveError.value = ''
   try {
-    const res = await $fetch<{ offer: any; items: any[]; invoice: any }>(`/api/admin/offers/${off.id}`)
+    const res = await $fetch<{ offer: any; items: any[]; invoice: any; link: string; rental: any }>(`/api/admin/offers/${off.id}`)
     const i = res.offer
+    online.value = {
+      link: res.link, respondedAt: i.responded_at, responseBy: i.response_by, responseName: i.response_name,
+      declineReason: i.decline_reason, rental: res.rental || null
+    }
     Object.assign(form, {
       contact_id: i.contact_id,
       customer_name: i.customer_name || '', customer_street: i.customer_street || '',
@@ -431,6 +454,29 @@ onMounted(async () => {
           Das Angebot ist daher nicht mehr änderbar.
         </div>
 
+        <div v-if="editing && online" class="off__online">
+          <div class="off__onlinerow">
+            <WfIcon name="globe" :size="16" />
+            <span class="off__onlinetxt">
+              <strong>Online-Angebot für den Kunden</strong>
+              <small>Wird beim Senden automatisch in die Mail eingefügt – der Kunde kann dort annehmen oder ablehnen.</small>
+            </span>
+            <button class="wf-btn wf-btn--sm" @click="copyLink">{{ linkCopied ? 'Kopiert ✓' : 'Link kopieren' }}</button>
+            <a class="wf-btn wf-btn--sm" :href="online.link" target="_blank" rel="noopener">Ansehen</a>
+          </div>
+          <p v-if="online.respondedAt" class="off__onlineinfo" :class="form.status === 'abgelehnt' ? 'is-no' : 'is-yes'">
+            {{ form.status === 'abgelehnt' ? 'Abgelehnt' : 'Angenommen' }}
+            {{ online.responseBy === 'kunde' ? 'vom Kunden online' : 'im Dashboard' }} am {{ fmtDateTime(online.respondedAt) }}<template v-if="online.responseName"> · {{ online.responseName }}</template>
+            <template v-if="online.declineReason"><br>Grund: „{{ online.declineReason }}"</template>
+          </p>
+          <p v-if="online.rental" class="off__onlineinfo">
+            Mietanfrage {{ online.rental.number }}:
+            <strong>{{ RES_LABELS[online.rental.reservationStatus || ''] || 'keine Reservierung' }}</strong>
+            <template v-if="online.rental.reservationStatus === 'aktiv' && online.rental.reservedUntil"> bis {{ fmtDateTime(online.rental.reservedUntil) }}</template>
+            <template v-if="online.rental.projectId"> · <NuxtLink :to="`/admin/projekte?open=${online.rental.projectId}&cat=leasing`">Projekt öffnen</NuxtLink></template>
+          </p>
+        </div>
+
         <div class="off__edgrid">
           <!-- Linke Spalte -->
           <div>
@@ -670,8 +716,10 @@ onMounted(async () => {
       <div class="wf-modal off__sendmodal">
         <h2>Angebot {{ sendTarget?.number }} senden</h2>
         <p class="off__sendinfo">
-          Das Angebot wird als PDF-Anhang an die angegebene Adresse verschickt.
-          Beim erfolgreichen Versand wird der Status auf „Gesendet" gesetzt.
+          Das Angebot wird als PDF-Anhang an die angegebene Adresse verschickt – mit Link, über den der Kunde
+          online annehmen oder ablehnen kann. Beim erfolgreichen Versand wird der Status auf „Gesendet" gesetzt.
+          <br><strong>Mietangebote:</strong> gültig 3 Tage ab heute, die Möbel bleiben so lange reserviert;
+          nach 2 Tagen ohne Antwort geht automatisch eine freundliche Erinnerung raus.
         </p>
         <label class="off__field">
           <span>E-Mail-Adresse Empfänger</span>
@@ -704,6 +752,15 @@ onMounted(async () => {
 </template>
 
 <style scoped>
+.off__online { border: 1px solid var(--wf-line); background: #f7f5ef; border-radius: 14px; padding: .8em 1em; margin-bottom: 1em; display: grid; gap: .5em; }
+.off__onlinerow { display: flex; align-items: center; gap: .7em; flex-wrap: wrap; color: var(--wf-green); }
+.off__onlinetxt { flex: 1; min-width: 14em; display: flex; flex-direction: column; color: var(--wf-ink); }
+.off__onlinetxt small { color: var(--wf-muted); font-size: .8em; }
+.off__onlineinfo { margin: 0; font-size: .86em; }
+.off__onlineinfo.is-yes { color: var(--wf-green); font-weight: 600; }
+.off__onlineinfo.is-no { color: var(--wf-red); font-weight: 600; }
+.off__onlineinfo a { color: var(--wf-green); }
+
 .off__num { text-align: right; font-variant-numeric: tabular-nums; }
 .off__number { border: 0; background: none; padding: 0; font: inherit; color: var(--wf-green); cursor: pointer; text-align: left; font-weight: 600; }
 .off__actions { white-space: nowrap; }

@@ -3,6 +3,7 @@ import { getDb, query, queryOne } from './db'
 import { nextOfferNumber } from './invoices'
 import { getSetting } from './settings'
 import { quoteTransport, type TransportQuote } from './transport'
+import { OFFER_VALID_DAYS } from './reservations'
 
 // Erzeugt aus einer Mietanfrage (rental_inquiries) automatisch ein Angebot
 // im Wohnfee-Design (Tabelle offers + offer_items) und verknuepft beides.
@@ -38,7 +39,8 @@ export async function createOfferForInquiry(inquiryId: number, markInProgress = 
   const start = fmt(inquiry.start_date)
   const end = fmt(inquiry.end_date)
   const docDate = todayVienna()
-  const validUntil = todayVienna(14)
+  // Möbel sind nur kurz reserviert → Angebot ebenso kurz gültig (beim Versand neu ab dem Versandtag)
+  const validUntil = todayVienna(OFFER_VALID_DAYS)
 
   const subject = `Möbelmiete${start ? ` ${start}` : ''}${end ? ` – ${end}` : ''}`
   // Standardtext der Angebote + Abwicklungs-Infos aus der Anfrage

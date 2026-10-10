@@ -106,7 +106,7 @@ CREATE TABLE IF NOT EXISTS inventory_items (
   rent_price_1m DECIMAL(10,2) NULL,
   rent_price_3m DECIMAL(10,2) NULL,
   rentable TINYINT(1) NOT NULL DEFAULT 0,
-  status ENUM('lager','vermietet','verkauft','ausser_dienst') NOT NULL DEFAULT 'lager',
+  status ENUM('lager','vermietet','pflege','verkauft','ausser_dienst') NOT NULL DEFAULT 'lager',
   warehouse VARCHAR(64) NULL,
   customer_location VARCHAR(190) NULL,
   purchased_at VARCHAR(32) NULL,

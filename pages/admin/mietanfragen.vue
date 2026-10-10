@@ -17,6 +17,10 @@ interface Inquiry {
   endDate: string | null
   durationMonths: number | null
   monthlyTotal: string | null
+  reservationStatus: string | null
+  reservedUntil: string | null
+  projectId: number | null
+  offerStatus: string | null
   createdAt: string
 }
 
@@ -183,6 +187,36 @@ async function makeOffer(item: Inquiry) {
   }
 }
 
+// Reservierung der Möbel (3 Tage ab Anfrage bzw. bis „gültig bis" des versendeten Angebots)
+function reservation(i: Inquiry): { label: string; tone: string } | null {
+  const active = i.reservationStatus === 'aktiv' && i.reservedUntil && new Date(i.reservedUntil).getTime() > Date.now()
+  if (active) {
+    const h = Math.max(1, Math.round((new Date(i.reservedUntil!).getTime() - Date.now()) / 3600000))
+    return { label: `Reserviert · noch ${h >= 48 ? Math.round(h / 24) + ' Tage' : h + ' Std.'}`, tone: 'wf-pill--blue' }
+  }
+  if (i.reservationStatus === 'angenommen') return { label: 'Angenommen · im Projekt', tone: 'wf-pill--green' }
+  if (i.reservationStatus === 'abgelehnt') return { label: 'Abgelehnt · freigegeben', tone: 'wf-pill--red' }
+  if (i.reservationStatus === 'aktiv' || i.reservationStatus === 'abgelaufen') return { label: 'Reservierung abgelaufen', tone: 'wf-pill--gray' }
+  if (i.reservationStatus === 'freigegeben') return { label: 'Freigegeben', tone: 'wf-pill--gray' }
+  return null
+}
+const resBusy = ref(false)
+async function changeReservation(item: Inquiry, action: 'extend' | 'release') {
+  if (action === 'release' && !confirm('Reservierung aufheben? Die Möbel sind dann sofort wieder im Shop – auch wenn der Kunde das Angebot noch annehmen möchte.')) return
+  resBusy.value = true
+  actionError.value = ''
+  try {
+    const r = await $fetch<{ reservationStatus: string; reservedUntil: string }>(`/api/admin/rental-inquiries/${item.id}/reservation`, { method: 'POST', body: { action } })
+    item.reservationStatus = r.reservationStatus
+    item.reservedUntil = r.reservedUntil
+    if (detail.value && detail.value.id === item.id) Object.assign(detail.value, r)
+  } catch (e: any) {
+    actionError.value = e?.data?.statusMessage || 'Reservierung konnte nicht geändert werden.'
+  } finally {
+    resBusy.value = false
+  }
+}
+
 onMounted(load)
 </script>
 
@@ -237,6 +271,7 @@ onMounted(load)
               <template v-if="item.city"> · {{ item.city }}</template>
             </span>
           </span>
+          <span v-if="reservation(item)" class="wf-pill rental-inquiries__res" :class="reservation(item)!.tone">{{ reservation(item)!.label }}</span>
           <span class="rental-inquiries__total">{{ money(item.monthlyTotal) }}<small>/Mon.</small></span>
           <span class="rental-inquiries__meta">
             <span class="rental-inquiries__date">{{ formatDateTime(item.createdAt) }}</span>
@@ -299,6 +334,23 @@ onMounted(load)
               <strong>Anmerkungen:</strong> {{ detail.notes }}
             </p>
 
+            <div v-if="reservation(item)" class="rental-inquiries__reserve">
+              <span>
+                <strong><WfIcon name="lock" :size="14" /> {{ reservation(item)!.label }}</strong>
+                <small v-if="item.reservationStatus === 'aktiv' && item.reservedUntil && new Date(item.reservedUntil).getTime() > Date.now()">
+                  bis {{ new Date(item.reservedUntil).toLocaleString('de-AT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) }} –
+                  so lange sind die Möbel nicht im Shop. Danach automatisch wieder frei.
+                </small>
+                <small v-else-if="item.reservationStatus === 'angenommen'">Die Möbel sind dem Projekt zugewiesen, bis die Abholung in „Touren" erledigt ist.</small>
+                <small v-else-if="!['abgelehnt'].includes(item.reservationStatus || '')">Die Möbel sind wieder im Shop. Wird das Angebot trotzdem angenommen, prüfen wir vorher die Verfügbarkeit.</small>
+              </span>
+              <span v-if="perms.canEdit('mietanfragen') && !['angenommen', 'abgelehnt'].includes(item.reservationStatus || '')" class="rental-inquiries__resacts">
+                <button class="wf-btn wf-btn--sm" :disabled="resBusy" @click="changeReservation(item, 'extend')">+3 Tage</button>
+                <button v-if="item.reservationStatus === 'aktiv'" class="wf-btn wf-btn--sm" :disabled="resBusy" @click="changeReservation(item, 'release')">Freigeben</button>
+              </span>
+              <NuxtLink v-if="item.projectId" :to="`/admin/projekte?open=${item.projectId}&cat=leasing`" class="wf-btn wf-btn--sm">Projekt öffnen</NuxtLink>
+            </div>
+
             <div class="rental-inquiries__actions">
               <button v-if="perms.canEdit('angebote')" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(item)">
                 <WfIcon name="file" :size="13" />
@@ -325,6 +377,13 @@ onMounted(load)
 </template>
 
 <style scoped>
+.rental-inquiries__res { white-space: nowrap; font-size: .74em; }
+.rental-inquiries__reserve { display: flex; align-items: center; gap: .8em; flex-wrap: wrap; margin: 1em 0 0; padding: .75em 1em; border-radius: 12px; background: #eef3f8; border: 1px solid #d5e1ec; }
+.rental-inquiries__reserve > span:first-child { flex: 1; min-width: 14em; display: flex; flex-direction: column; gap: .15em; }
+.rental-inquiries__reserve strong { display: inline-flex; align-items: center; gap: .4em; font-size: .9em; }
+.rental-inquiries__reserve small { color: var(--wf-muted); font-size: .8em; }
+.rental-inquiries__resacts { display: flex; gap: .4em; }
+
 .rental-inquiries__tabs {
   display: flex;
   gap: .5em;

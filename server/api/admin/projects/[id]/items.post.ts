@@ -1,6 +1,7 @@
 import { requireAdmin } from '../../../../utils/admin-auth'
 import { query, queryOne } from '../../../../utils/db'
 import { assignedQuantity, syncItemStatus } from '../../../../utils/inventory-sync'
+import { reservedQuantity, reservationHolders } from '../../../../utils/reservations'
 
 function clean(v: any, max = 190) {
   return String(v ?? '').trim().slice(0, max) || null
@@ -33,6 +34,16 @@ export default defineEventHandler(async (event) => {
   // Doppelbelegung verhindern: Menge darf den noch freien Bestand nicht übersteigen
   const elsewhere = await assignedQuantity(itemId, id)
   const free = Math.max(0, stock - elsewhere)
+  // Für offene Mietanfragen reservierte Stücke sind ebenfalls nicht frei
+  const reserved = await reservedQuantity(itemId)
+  if (qty > free - reserved && qty <= free) {
+    const holders = await reservationHolders(itemId)
+    throw createError({
+      statusCode: 409,
+      statusMessage: `${free - reserved > 0 ? `Nur noch ${free - reserved} Stück frei, der Rest ist` : 'Dieses Objekt ist'} reserviert für Mietanfrage ${holders.join(', ')}. ` +
+        'Wird das Angebot angenommen, landet es automatisch im Projekt; sonst die Reservierung unter „Mietanfragen" freigeben.'
+    })
+  }
   if (qty > free) {
     const where: any[] = await query(
       `SELECT COALESCE(p.customer, p.title) AS label FROM project_items pi JOIN projects p ON p.id = pi.project_id

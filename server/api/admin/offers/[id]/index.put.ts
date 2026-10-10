@@ -3,6 +3,7 @@ import { requireAdmin } from '../../../../utils/admin-auth'
 import { getDb, queryOne } from '../../../../utils/db'
 import { parseItems, invClean, invMoney, invDate } from '../../../../utils/invoices'
 import { setSetting } from '../../../../utils/settings'
+import { acceptOffer, declineOffer } from '../../../../utils/reservations'
 
 // PUT /api/admin/offers/:id — Angebot aktualisieren (Positionen werden ersetzt)
 // Nicht mehr aenderbar, sobald daraus eine Rechnung erzeugt wurde.
@@ -12,7 +13,7 @@ export default defineEventHandler(async (event) => {
   if (!Number.isInteger(id) || id < 1) {
     throw createError({ statusCode: 400, statusMessage: 'Ungültige Angebots-ID' })
   }
-  const offer = await queryOne('SELECT id, number, invoice_id FROM offers WHERE id = :id', { id })
+  const offer = await queryOne('SELECT id, number, invoice_id, status FROM offers WHERE id = :id', { id })
   if (!offer) throw createError({ statusCode: 404, statusMessage: 'Angebot nicht gefunden' })
   if ((offer as any).invoice_id) {
     throw createError({ statusCode: 409, statusMessage: 'Aus diesem Angebot wurde bereits eine Rechnung erstellt — das Angebot ist nicht mehr änderbar.' })
@@ -29,6 +30,12 @@ export default defineEventHandler(async (event) => {
   const contactId = Number(body?.contact_id) > 0 ? Number(body.contact_id) : null
   const vatFree = body?.vat_free ? 1 : 0
   const vatRate = vatFree ? 0 : Math.min(100, invMoney(body?.vat_rate ?? 20) || 20)
+
+  // Status von Hand auf angenommen/abgelehnt (z. B. Zusage am Telefon) → gleiche Abläufe wie online:
+  // angenommen = Projekt + Möbel, abgelehnt = Reservierung freigeben
+  const newStatus = body?.status
+  if (newStatus === 'angenommen' && (offer as any).status !== 'angenommen') await acceptOffer(id, { by: 'team' })
+  if (newStatus === 'abgelehnt' && (offer as any).status !== 'abgelehnt') await declineOffer(id, { by: 'team' })
 
   const conn = await getDb().getConnection()
   try {

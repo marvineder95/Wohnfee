@@ -2,7 +2,7 @@ import { requireAdmin } from '../../../../utils/admin-auth'
 import { query, queryOne } from '../../../../utils/db'
 import { INVENTORY_CATEGORY_KEYS } from '../../../../../shared/inventory-categories'
 
-const STATUSES = ['lager', 'vermietet', 'verkauft', 'ausser_dienst']
+const STATUSES = ['lager', 'vermietet', 'pflege', 'verkauft', 'ausser_dienst']
 
 function clean(v: any, max = 190) {
   return String(v ?? '').trim().slice(0, max) || null

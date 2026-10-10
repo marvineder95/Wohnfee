@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
 
   const where: string[] = []
   const params: any = {}
-  if (['lager', 'vermietet', 'verkauft', 'ausser_dienst'].includes(status)) {
+  if (['lager', 'vermietet', 'pflege', 'verkauft', 'ausser_dienst'].includes(status)) {
     where.push('status = :status')
     params.status = status
   }

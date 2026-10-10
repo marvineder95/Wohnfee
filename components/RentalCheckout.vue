@@ -49,7 +49,7 @@ const DE = {
   emptyText: 'Lege zuerst Möbel in den Warenkorb — dann kannst du hier deine Mietanfrage absenden.',
   toShop: 'Zu den Produkten',
   thanks: 'Vielen Dank für deine Anfrage!',
-  thanksText: 'Wir haben deine Mietanfrage erfolgreich erhalten und melden uns in Kürze persönlich bei dir.',
+  thanksText: 'Wir haben deine Mietanfrage erhalten – deine Möbel sind ab sofort 3 Tage für dich reserviert. Dein persönliches Angebot bekommst du per E-Mail und kannst es dort mit einem Klick annehmen.',
   inquiryNo: 'Anfragenummer', periodLabel: 'Mietzeitraum',
   backToProducts: 'Zurück zu den Produkten', trust: ['Lieferung & Abholung', 'Flexible Mietdauer', 'Persönliche Beratung'],
   eyebrow: 'Furniture Leasing · Mietanfrage', heroTitle: 'Fast geschafft.',
@@ -57,7 +57,7 @@ const DE = {
   contactHint: 'Wie erreichen wir dich?', addressHint: 'Wohin dürfen wir liefern?', periodHint: 'Ab wann und wie lange?',
   yourPick: 'Deine Auswahl', edit: 'Ändern', nonBinding: 'Unverbindlich – du zahlst erst nach Annahme des Angebots.',
   nextTitle: 'So geht es weiter',
-  next: [['Prüfung', 'Wir prüfen Verfügbarkeit und Liefertermin.'], ['Angebot', 'Du erhältst dein persönliches Angebot per E-Mail.'], ['Lieferung', 'Unser Team liefert und richtet alles für dich ein.']] as [string, string][],
+  next: [['Reserviert', 'Deine Möbel sind 3 Tage exklusiv für dich reserviert.'], ['Angebot', 'Du erhältst dein Angebot per E-Mail und nimmst es online mit einem Klick an.'], ['Lieferung', 'Unser Team liefert und richtet alles für dich ein.']] as [string, string][],
   toHome: 'Zur Startseite'
 }
 const EN: typeof DE = {
@@ -93,7 +93,7 @@ const EN: typeof DE = {
   emptyText: 'Add some furniture to your cart first — then you can send your rental request here.',
   toShop: 'Browse products',
   thanks: 'Thank you for your request!',
-  thanksText: 'We have received your rental request and will get back to you personally shortly.',
+  thanksText: 'We have received your rental request – your furniture is now reserved for you for 3 days. You will receive your personal offer by e-mail and can accept it there with one click.',
   inquiryNo: 'Inquiry no.', periodLabel: 'Rental period',
   backToProducts: 'Back to the products', trust: ['Delivery & pick-up', 'Flexible rental period', 'Personal consultation'],
   eyebrow: 'Furniture Leasing · Rental request', heroTitle: 'Almost there.',
@@ -101,7 +101,7 @@ const EN: typeof DE = {
   contactHint: 'How can we reach you?', addressHint: 'Where should we deliver?', periodHint: 'From when and for how long?',
   yourPick: 'Your selection', edit: 'Edit', nonBinding: 'Non-binding – you only pay once you accept the offer.',
   nextTitle: 'What happens next',
-  next: [['Check', 'We check availability and the delivery date.'], ['Offer', 'You receive your personal offer by e-mail.'], ['Delivery', 'Our team delivers and sets everything up for you.']] as [string, string][],
+  next: [['Reserved', 'Your furniture is reserved exclusively for you for 3 days.'], ['Offer', 'You receive your offer by e-mail and accept it online with one click.'], ['Delivery', 'Our team delivers and sets everything up for you.']] as [string, string][],
   toHome: 'Back to home'
 }
 const t = computed(() => (isEn.value ? EN : DE))

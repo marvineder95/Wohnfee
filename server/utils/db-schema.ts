@@ -105,7 +105,7 @@ CREATE TABLE IF NOT EXISTS inventory_items (
   rent_price_1m DECIMAL(10,2) NULL,
   rent_price_3m DECIMAL(10,2) NULL,
   rentable TINYINT(1) NOT NULL DEFAULT 0,
-  status ENUM('lager','vermietet','verkauft','ausser_dienst') NOT NULL DEFAULT 'lager',
+  status ENUM('lager','vermietet','pflege','verkauft','ausser_dienst') NOT NULL DEFAULT 'lager',
   warehouse VARCHAR(64) NULL,
   customer_location VARCHAR(190) NULL,
   purchased_at VARCHAR(32) NULL,
@@ -549,6 +549,28 @@ export async function migrateSchema() {
   if (ns && !String(ns.t).includes('ausstehend')) {
     await db.query("ALTER TABLE newsletter_subscribers MODIFY status ENUM('ausstehend','aktiv','abgemeldet') NOT NULL DEFAULT 'ausstehend'")
     console.log('[db-init] Migration: newsletter_subscribers.status um AUSSTEHEND erweitert')
+  }
+  // Reservierung & Online-Annahme von Angeboten
+  await addCol('rental_inquiries', 'reservation_status', 'ADD COLUMN reservation_status VARCHAR(16) NULL')
+  await addCol('rental_inquiries', 'reserved_until', 'ADD COLUMN reserved_until DATETIME NULL, ADD KEY idx_ri_reserved (reservation_status, reserved_until)')
+  await addCol('rental_inquiries', 'project_id', 'ADD COLUMN project_id INT UNSIGNED NULL')
+  await addCol('offers', 'public_token', 'ADD COLUMN public_token VARCHAR(48) NULL, ADD UNIQUE KEY uq_offers_token (public_token)')
+  await addCol('offers', 'sent_at', 'ADD COLUMN sent_at DATETIME NULL')
+  await addCol('offers', 'reminder_sent_at', 'ADD COLUMN reminder_sent_at DATETIME NULL')
+  await addCol('offers', 'responded_at', 'ADD COLUMN responded_at DATETIME NULL')
+  await addCol('offers', 'response_by', 'ADD COLUMN response_by VARCHAR(16) NULL')
+  await addCol('offers', 'response_name', 'ADD COLUMN response_name VARCHAR(190) NULL')
+  await addCol('offers', 'decline_reason', 'ADD COLUMN decline_reason TEXT NULL')
+  await addCol('offers', 'project_id', 'ADD COLUMN project_id INT UNSIGNED NULL')
+  // Lagerstatus „pflege" = zurück, aber in Reinigung/Reparatur (nicht im Shop)
+  const is = await queryOne<{ t: string }>(
+    `SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = :db AND TABLE_NAME = 'inventory_items' AND COLUMN_NAME = 'status'`,
+    { db: config.dbName }
+  )
+  if (is && !String(is.t).includes('pflege')) {
+    await db.query("ALTER TABLE inventory_items MODIFY status ENUM('lager','vermietet','pflege','verkauft','ausser_dienst') NOT NULL DEFAULT 'lager'")
+    console.log('[db-init] Migration: inventory_items.status um PFLEGE erweitert')
   }
   // Jeder Abonnent braucht einen persönlichen Abmelde-Token (für den Link in jeder Mail)
   await db.query("UPDATE newsletter_subscribers SET unsub_token = LOWER(HEX(RANDOM_BYTES(16))) WHERE unsub_token IS NULL")

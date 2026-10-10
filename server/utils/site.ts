@@ -11,3 +11,8 @@ export function todayVienna(offsetDays = 0): string {
   const d = new Date(Date.now() + offsetDays * 86400000)
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'Europe/Vienna', year: 'numeric', month: '2-digit', day: '2-digit' }).format(d)
 }
+
+/** Basis-URL ohne Request (Hintergrund-Jobs): NUXT_SITE_URL, sonst die Live-Domain */
+export function siteOrigin(): string {
+  return String(useRuntimeConfig().siteUrl || '').trim().replace(/\/+$/, '') || 'https://www.wohnfee.at'
+}
