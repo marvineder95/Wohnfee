@@ -91,7 +91,7 @@ export function acceptedMail(o: { number: string; name?: string | null; period?:
   // Privatkunden: Bestätigung auf dauerhaftem Datenträger inkl. Widerrufsbelehrung, Formular und ggf. Verlangen auf vorzeitigen Beginn
   const early = o.privat && o.earlyStart ? earlyStartTexts(o.lang) : null
   const earlyText = early ? `\n\n${t('Ihre Erklärungen bei der Annahme', 'Your statements on acceptance')}:\n✓ ${early.request}\n✓ ${early.ack}` : ''
-  const wText = o.privat ? `\n\n${t('Den Vertrag können Sie auch online widerrufen („Vertrag widerrufen" auf Ihrer Angebotsseite)', 'You can also withdraw online ("Withdraw from contract" on your offer page)')}: ${o.url}\n${withdrawalText(o.lang)}` : ''
+  const wText = o.privat ? `\n\n${t('Den Vertrag können Sie auch online widerrufen („Vertrag widerrufen“ auf Ihrer Angebotsseite)', 'You can also withdraw online ("Withdraw from contract" on your offer page)')}: ${o.url}\n${withdrawalText(o.lang)}` : ''
   const text = `${t('Sehr geehrte Damen und Herren', 'Dear Sir or Madam')},\n\n${lines.join('\n')}\n\n${t('Ihr Angebot', 'Your offer')}: ${o.url}${earlyText}\n\n${t('Mit freundlichen Grüßen', 'Kind regards')}${SIGN_TEXT}${wText}`
   const html = layout(
     `<p>${t('Sehr geehrte Damen und Herren', 'Dear Sir or Madam')},</p>` + lines.map(l => `<p>${esc(l)}</p>`).join('') +
