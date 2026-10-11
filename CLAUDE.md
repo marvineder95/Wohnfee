@@ -8,6 +8,9 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - `npm run dev` (Port 7100; falls belegt z. B. `npx nuxt dev --port 3000`)
 - MySQL lokal: 127.0.0.1:3307, DB `wohnfee` (Docker). Schema/Migrationen laufen beim
   Serverstart automatisch (`server/plugins/db-init.ts`, `server/utils/db-schema.ts`).
+- Deployment: `Dockerfile` + `deploy/` (Compose: App, MySQL 8.4, Caddy/HTTPS; Backup/Restore-Skripte;
+  Anleitung `deploy/README.md`). Ziel: IONOS-VPS 87.106.27.101, erst neu.wohnfee.at. Dateinamen/Daten in
+  Unicode-NFC halten (Linux-Build findet sonst „Küche.jpg" nicht).
 - Betrieb nur als Node-Server (`nuxt build`), **nicht** `nuxt generate` – Dashboard,
   Formulare, Shop und Blog-API brauchen den Server.
 - `public/uploads/` (Inventar, Avatare, Blog-Bilder) muss beim Deployment erhalten bleiben;

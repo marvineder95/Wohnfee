@@ -1,0 +1,56 @@
+# WOHNFEE auf dem Server: App + MySQL + Caddy (automatisches HTTPS via Let's Encrypt)
+name: wohnfee
+# Start:  cd /opt/wohnfee/deploy && docker compose up -d --build
+services:
+  app:
+    build: ..
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NUXT_DB_HOST: db
+      NUXT_DB_PORT: 3306
+    volumes:
+      - uploads:/app/public/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  db:
+    image: mysql:8.4
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${NUXT_DB_NAME}
+      MYSQL_USER: ${NUXT_DB_USER}
+      MYSQL_PASSWORD: ${NUXT_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      TZ: UTC
+    command: ["--character-set-server=utf8mb4", "--collation-server=utf8mb4_unicode_ci"]
+    volumes:
+      - dbdata:/var/lib/mysql
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 20
+    # bewusst KEIN Port nach außen – nur die App erreicht die Datenbank
+
+  caddy:
+    image: caddy:2
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      SITE_DOMAINS: ${SITE_DOMAINS}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - app
+
+volumes:
+  uploads:
+  dbdata:
+  caddy_data:
+  caddy_config:

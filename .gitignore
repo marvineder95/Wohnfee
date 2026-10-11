@@ -16,3 +16,7 @@ public/uploads/*
 # OS/Editor
 .DS_Store
 *.log
+
+# Vorlage für die Server-Konfiguration (ohne Geheimnisse)
+!deploy/.env.example
+deploy/backups/
