@@ -130,10 +130,25 @@ const href = (p: any) => (isEn.value ? '/en' : '') + p.route
 .hsi__lead { max-width: 40rem; color: var(--muted); line-height: 1.7; margin: 0 0 2em; }
 .hsi__filters { display: flex; flex-wrap: wrap; gap: .6em; align-items: center; padding: .7em; background: #fff; border: 1px solid var(--line); border-radius: 18px; box-shadow: 0 10px 30px -18px rgba(60, 50, 30, .3); }
 .hsi__seg { display: inline-flex; padding: 3px; background: var(--cream); border-radius: 999px; }
-.hsi__seg button { border: 0; background: none; font: inherit; font-size: .9em; padding: .5em 1.1em; border-radius: 999px; cursor: pointer; color: var(--ink); }
+.hsi__seg button { border: 0; background: none; font: inherit; font-size: .9em; height: 2.4em; padding: 0 1.1em; border-radius: 999px; cursor: pointer; color: var(--ink); }
 .hsi__seg button.is-on { background: var(--green); color: #fff; }
-.hsi__filters select, .hsi__filters input { font: inherit; font-size: .9em; padding: .6em .9em; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--ink); min-width: 0; }
-.hsi__filters input { flex: 1; min-width: 12em; }
+/* Dropdowns + Suche im Stil der Segment-Schalter: Pillenform, Creme, eigener Pfeil */
+.hsi__filters select, .hsi__filters input {
+  font: inherit; font-size: .9em; height: 2.75em; box-sizing: border-box; padding: 0 1.1em; min-width: 0;
+  border: 1px solid transparent; border-radius: 999px; background-color: var(--cream); color: var(--ink);
+  transition: border-color .15s, background-color .15s, box-shadow .15s; outline: none;
+}
+.hsi__filters select {
+  -webkit-appearance: none; appearance: none; cursor: pointer; padding-right: 2.6em; font-weight: 500;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f5d40' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 1em center; background-size: 1em;
+}
+.hsi__filters select:hover, .hsi__filters input:hover { background-color: #f1ece2; }
+.hsi__filters select:focus-visible, .hsi__filters input:focus { border-color: var(--green); background-color: #fff; box-shadow: 0 0 0 3px rgba(47, 93, 64, .12); }
+.hsi__filters input { flex: 1; min-width: 12em; padding-left: 2.7em;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236f6a5e' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='m21 21-5.2-5.2'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: left 1em center; background-size: 1em; }
+.hsi__filters input::placeholder { color: #9b9483; }
 .hsi__list { padding: 1.5em 0 4em; }
 .hsi__count { color: var(--muted); font-size: .9em; margin: 0 0 1em; }
 .hsi__grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 330px), 1fr)); gap: 1.4em; }
