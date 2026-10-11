@@ -212,10 +212,8 @@ const year = new Date().getFullYear()
           <span class="dead">{{ isEn ? 'Right of Withdrawal' : 'Widerrufsbelehrung' }}</span>
         </nav>
         <div class="wffoot__pay" aria-hidden="true">
-          <span class="pay pay--visa">VISA</span>
-          <span class="pay pay--mc"><i></i><i></i></span>
-          <span class="pay pay--amex">AMEX</span>
-          <span class="pay pay--bill">{{ isEn ? 'Invoice' : 'Rechnung' }}</span>
+          <!-- keine Kartenzahlung – abgerechnet wird ausschließlich per Rechnung -->
+          <span class="pay pay--bill">{{ isEn ? 'Payment by invoice' : 'Zahlung per Rechnung' }}</span>
         </div>
       </div>
     </div>
@@ -441,16 +439,6 @@ a.wffoot__link:hover { color: #2f5d40; }
   letter-spacing: .02em;
   color: #1a1f71;
 }
-.pay--mc { gap: 0; width: 2.6em; padding: 0; border: 1px solid #ddd6c6; position: relative; }
-.pay--mc i {
-  width: .95em;
-  height: .95em;
-  border-radius: 50%;
-  display: block;
-}
-.pay--mc i:first-child { background: #eb001b; margin-right: -.45em; }
-.pay--mc i:last-child { background: #f79e1b; opacity: .9; }
-.pay--amex { background: #2e77bc; color: #fff; font-style: normal; }
 .pay--bill { color: #55554e; font-weight: 600; font-style: normal; }
 
 /* Responsive */
