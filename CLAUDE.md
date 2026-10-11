@@ -9,7 +9,10 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - MySQL lokal: 127.0.0.1:3307, DB `wohnfee` (Docker). Schema/Migrationen laufen beim
   Serverstart automatisch (`server/plugins/db-init.ts`, `server/utils/db-schema.ts`).
 - Deployment: `Dockerfile` + `deploy/` (Compose: App, MySQL 8.4, Caddy/HTTPS; Backup/Restore-Skripte;
-  Anleitung `deploy/README.md`). Ziel: IONOS-VPS 87.106.27.101, erst neu.wohnfee.at. Dateinamen/Daten in
+  Anleitung `deploy/README.md`). Läuft seit 12.10.2026 auf IONOS-VPS 87.106.27.101 unter https://neu.wohnfee.at (Benutzer `wohnfee`, SSH nur per Schlüssel,
+  Code in /opt/wohnfee, Backup täglich 03:15). www.wohnfee.at zeigt noch auf die ALTE Seite (Domainfactory) – nicht umstellen
+  ohne Freigabe. Alte es-gmbh.at-Container (es_web/es_api/es_db) gestoppt, DB-Sicherung /opt/wohnfee/es_gmbh-db-backup.sql.gz.
+  Update: `cd /opt/wohnfee && git pull && cd deploy && docker compose up -d --build`. Dateinamen/Daten in
   Unicode-NFC halten (Linux-Build findet sonst „Küche.jpg" nicht).
 - Betrieb nur als Node-Server (`nuxt build`), **nicht** `nuxt generate` – Dashboard,
   Formulare, Shop und Blog-API brauchen den Server.
