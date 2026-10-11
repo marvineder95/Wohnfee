@@ -20,3 +20,4 @@ public/uploads/*
 # Vorlage für die Server-Konfiguration (ohne Geheimnisse)
 !deploy/.env.example
 deploy/backups/
+deploy/logs/

@@ -64,9 +64,17 @@ wohnfee$ ./backup.sh && ls -lh backups/
 **Zweiter Ort (empfohlen):** z. B. Hetzner Storage Box oder IONOS-Backup; Ziel als `BACKUP_REMOTE=…` in `.env` eintragen.
 Wiederherstellen testen (am besten einmal pro Quartal): `./restore.sh backups/db-….sql.gz backups/uploads-….tar.gz`
 
-## Updates einspielen
+## Updates einspielen (automatisch über den Zweig `live`)
+Der Server prüft alle 5 Minuten den GitHub-Zweig **live**. Gibt es einen neuen Commit: Backup → neu bauen
+(alte Seite läuft weiter) → austauschen → Health-Check; schlägt etwas fehl, bleibt/kommt die vorherige Version.
+Ergebnis kommt als Push-Meldung ins Dashboard. Log: `deploy/logs/update.log`.
 ```bash
-wohnfee$ cd /opt/wohnfee && git pull && cd deploy && docker compose up -d --build
+mac$ git push origin redesign-website:live              # „jetzt live stellen"
+wohnfee$ /opt/wohnfee/deploy/auto-update.sh --force     # sofort statt in ≤5 Min.
+```
+Einrichtung (einmalig, als wohnfee):
+```bash
+wohnfee$ (crontab -l; echo '*/5 * * * * /opt/wohnfee/deploy/auto-update.sh >> /opt/wohnfee/deploy/logs/update.log 2>&1') | crontab -
 ```
 
 ## Live gehen (www.wohnfee.at)

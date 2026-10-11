@@ -12,7 +12,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Anleitung `deploy/README.md`). Läuft seit 12.10.2026 auf IONOS-VPS 87.106.27.101 unter https://neu.wohnfee.at (Benutzer `wohnfee`, SSH nur per Schlüssel,
   Code in /opt/wohnfee, Backup täglich 03:15). www.wohnfee.at zeigt noch auf die ALTE Seite (Domainfactory) – nicht umstellen
   ohne Freigabe. Alte es-gmbh.at-Container (es_web/es_api/es_db) gestoppt, DB-Sicherung /opt/wohnfee/es_gmbh-db-backup.sql.gz.
-  Update: `cd /opt/wohnfee && git pull && cd deploy && docker compose up -d --build`. Dateinamen/Daten in
+  Updates automatisch: Server holt alle 5 Min. den Zweig `live` (deploy/auto-update.sh, Rollback + Push-Meldung).
+  Live stellen = `git push origin redesign-website:live` – NUR auf ausdrücklichen Wunsch. Dateinamen/Daten in
   Unicode-NFC halten (Linux-Build findet sonst „Küche.jpg" nicht).
 - Betrieb nur als Node-Server (`nuxt build`), **nicht** `nuxt generate` – Dashboard,
   Formulare, Shop und Blog-API brauchen den Server.
