@@ -211,9 +211,17 @@ const year = new Date().getFullYear()
           <span class="dead">AGB</span>
           <span class="dead">{{ isEn ? 'Right of Withdrawal' : 'Widerrufsbelehrung' }}</span>
         </nav>
-        <div class="wffoot__pay" aria-hidden="true">
-          <!-- keine Kartenzahlung – abgerechnet wird ausschließlich per Rechnung -->
-          <span class="pay pay--bill">{{ isEn ? 'Payment by invoice' : 'Zahlung per Rechnung' }}</span>
+        <div class="wffoot__end">
+          <div class="wffoot__pay" aria-hidden="true">
+            <!-- keine Kartenzahlung – abgerechnet wird ausschließlich per Rechnung -->
+            <span class="pay pay--bill">{{ isEn ? 'Payment by invoice' : 'Zahlung per Rechnung' }}</span>
+          </div>
+          <!-- Webdesign-Credit -->
+          <a class="wffoot__credit" href="https://www.point4studios.at" target="_blank" rel="noopener"
+             :title="isEn ? 'Website by Point4 Studios' : 'Website von Point4 Studios'">
+            <span>{{ isEn ? 'Website by' : 'Website von' }}</span>
+            <img src="/img/point4-studios.png" alt="Point4 Studios" width="95" height="30" loading="lazy">
+          </a>
         </div>
       </div>
     </div>
@@ -408,6 +416,10 @@ a.wffoot__link:hover { color: #2f5d40; }
   color: #8a8a82;
 }
 .wffoot__copy { margin: 0; line-height: 1.5; }
+.wffoot__end { display: flex; align-items: center; gap: 1em 1.4em; flex-wrap: wrap; }
+.wffoot__credit { display: inline-flex; align-items: center; gap: .55em; text-decoration: none; color: #8a8a82; font-size: .74em; letter-spacing: .02em; opacity: .85; transition: opacity .2s; }
+.wffoot__credit:hover { opacity: 1; color: #55554e; }
+.wffoot__credit img { height: 30px; width: auto; display: block; mix-blend-mode: multiply; }
 .wffoot__barlinks { display: flex; justify-content: flex-start; flex-wrap: wrap; gap: .4em 1.2em; }
 .wffoot__barlinks a,
 .wffoot__barlinks button {
