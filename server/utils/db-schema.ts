@@ -392,6 +392,54 @@ CREATE TABLE IF NOT EXISTS recurring_invoices (
   CONSTRAINT fk_recurring_source FOREIGN KEY (source_invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS properties (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  slug VARCHAR(190) NOT NULL,
+  ref_no VARCHAR(32) NULL,
+  status ENUM('entwurf','aktiv','reserviert','vergeben','archiviert') NOT NULL DEFAULT 'entwurf',
+  offer_type ENUM('miete','kauf') NOT NULL DEFAULT 'miete',
+  category VARCHAR(32) NOT NULL DEFAULT 'wohnung',
+  title VARCHAR(190) NOT NULL,
+  teaser VARCHAR(400) NULL,
+  description_html MEDIUMTEXT NULL,
+  street VARCHAR(190) NULL,
+  show_street TINYINT(1) NOT NULL DEFAULT 0,
+  zip VARCHAR(16) NULL,
+  city VARCHAR(128) NULL,
+  district VARCHAR(128) NULL,
+  rooms DECIMAL(4,1) NULL,
+  living_area DECIMAL(8,2) NULL,
+  usable_area DECIMAL(8,2) NULL,
+  floor VARCHAR(32) NULL,
+  year_built SMALLINT NULL,
+  price DECIMAL(12,2) NULL,
+  operating_costs DECIMAL(10,2) NULL,
+  deposit VARCHAR(64) NULL,
+  commission VARCHAR(190) NULL,
+  available_from VARCHAR(64) NULL,
+  min_rent_months SMALLINT NULL,
+  hwb DECIMAL(8,2) NULL,
+  hwb_class VARCHAR(4) NULL,
+  fgee DECIMAL(6,2) NULL,
+  fgee_class VARCHAR(4) NULL,
+  features TEXT NULL,
+  images MEDIUMTEXT NULL,
+  furnished_by_wohnfee TINYINT(1) NOT NULL DEFAULT 0,
+  partner_name VARCHAR(190) NULL,
+  contact_name VARCHAR(128) NULL,
+  contact_phone VARCHAR(64) NULL,
+  contact_email VARCHAR(190) NULL,
+  willhaben_status VARCHAR(16) NULL,
+  willhaben_url VARCHAR(255) NULL,
+  willhaben_exported_at DATETIME NULL,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_by VARCHAR(128) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  UNIQUE KEY uq_properties_slug (slug),
+  KEY idx_properties_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS blog_posts (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   section VARCHAR(32) NOT NULL DEFAULT 'trends-tipps',
@@ -590,6 +638,8 @@ export async function migrateSchema() {
     await db.query("ALTER TABLE inventory_items MODIFY status ENUM('lager','vermietet','pflege','verkauft','ausser_dienst') NOT NULL DEFAULT 'lager'")
     console.log('[db-init] Migration: inventory_items.status um PFLEGE erweitert')
   }
+  // Immobilien-Anfragen: Verknüpfung zur Immobilie
+  await addCol('contact_inquiries', 'property_id', 'ADD COLUMN property_id INT UNSIGNED NULL')
   // Jeder Abonnent braucht einen persönlichen Abmelde-Token (für den Link in jeder Mail)
   await db.query("UPDATE newsletter_subscribers SET unsub_token = LOWER(HEX(RANDOM_BYTES(16))) WHERE unsub_token IS NULL")
 }

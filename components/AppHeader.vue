@@ -80,6 +80,7 @@ const EN_TITLES: Record<string, string> = {
   '/home-staging/preise.html': 'Prices',
   '/faq.html': 'FAQ',
   '/redesign.html': 'Redesign',
+  '/immobilien.html': 'Properties',
   '/furniture-leasing.html': 'Furniture Leasing',
   '/aktuelles.html': 'Blog',
   '/projekte.html': 'Projects',
@@ -117,6 +118,8 @@ const dePath = (p: string) => p.startsWith('/en/') ? p.slice(3) : p
 const isActive = (item: any) => {
   if (!item.route) return false
   return item.route === dePath(route.path) || item.children?.some((c: any) => c.route === dePath(route.path))
+    // Immobilien-Detailseiten gehören zum Menüpunkt „Immobilien"
+    || (item.route === '/immobilien.html' && dePath(route.path).startsWith('/immobilien/'))
 }
 
 const liClass = (item: any, submenu = true) => [

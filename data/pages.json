@@ -2146,5 +2146,20 @@
   "columns": {
    "main": []
   }
+ },
+ "immobilien": {
+  "route": "/immobilien.html",
+  "title": "Immobilien",
+  "alias": "immobilien",
+  "pageTitle": "",
+  "description": "Wohnungen und Häuser zur Miete und zum Kauf – ausgewählt und eingerichtet von WOHNFEE.",
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "8",
+  "cssClass": "no-slider",
+  "alternate": "/en/immobilien.html",
+  "columns": {
+   "main": []
+  }
  }
 }

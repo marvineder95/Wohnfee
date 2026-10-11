@@ -85,6 +85,10 @@ export default defineNuxtConfig({
       '/blogartikel-events/**': { prerender: false },
       '/sitemap.xml': { prerender: false },
       // Online-Angebote (Link aus der Angebotsmail) – immer live, nie im Index
+      // Immobilien kommen aus dem Dashboard → immer live
+      '/immobilien.html': { prerender: false },
+      '/en/immobilien.html': { prerender: false },
+      '/immobilien/**': { prerender: false },
       '/angebot/**': { prerender: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
     },
     prerender: {
@@ -108,7 +112,7 @@ export default defineNuxtConfig({
         // Blog-Übersichten (Aktuell, Projekte, Trends & Tipps, Events), ihre Artikel und die
         // Sitemap werden live gerendert, damit Dashboard-Artikel sofort ohne Neu-Build erscheinen
         ...Object.keys(routesJson).filter(r =>
-          !['/trends-tipps.html', '/aktuelles.html', '/projekte.html', '/events.html'].includes(r)
+          !['/trends-tipps.html', '/aktuelles.html', '/projekte.html', '/events.html', '/immobilien.html', '/en/immobilien.html'].includes(r)
           && !r.startsWith('/projekte/category/')
           && !/^\/blogartikel-(trends-tipps|aktuelles|projekte|events)\//.test(r))
       ]

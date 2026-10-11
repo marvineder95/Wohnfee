@@ -1654,5 +1654,21 @@
   "columns": {
    "main": []
   }
+ },
+ "immobilien": {
+  "route": "/en/immobilien.html",
+  "title": "Properties",
+  "alias": "immobilien",
+  "pageTitle": "",
+  "description": "Apartments and houses for rent and sale – selected and furnished by WOHNFEE.",
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "8",
+  "cssClass": "no-slider",
+  "lang": "en",
+  "alternate": "/immobilien.html",
+  "columns": {
+   "main": []
+  }
  }
 }

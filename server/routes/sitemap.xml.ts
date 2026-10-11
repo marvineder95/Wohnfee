@@ -34,6 +34,12 @@ export default defineEventHandler(async (event) => {
     entries.push(`  <url>\n    <loc>${base}${articleRoute(p.section, p.slug)}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`)
   }
 
+  // Immobilien aus dem Dashboard (verfügbar/reserviert)
+  const props = await query<any>(`SELECT slug, updated_at FROM properties WHERE status IN ('aktiv','reserviert')`).catch(() => [])
+  for (const p of props) {
+    entries.push(`  <url>\n    <loc>${base}/immobilien/${p.slug}.html</loc>\n    <lastmod>${new Date(p.updated_at).toISOString().slice(0, 10)}</lastmod>\n  </url>`)
+  }
+
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
 ${entries.join('\n')}

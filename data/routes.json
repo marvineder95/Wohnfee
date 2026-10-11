@@ -1034,5 +1034,13 @@
  "/en/widerrufsbelehrung.html": {
   "type": "page",
   "id": "widerruf"
+ },
+ "/immobilien.html": {
+  "type": "page",
+  "id": "immobilien"
+ },
+ "/en/immobilien.html": {
+  "type": "page",
+  "id": "immobilien"
  }
 }

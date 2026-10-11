@@ -149,8 +149,17 @@ const backLink = computed(() => {
   return (pageLang.value === 'en' && resolveRoute(en)) ? en : `/${sec}.html`
 })
 
+// Immobilien-Detail (/immobilien/<slug>.html, auch /en/…) – Daten aus dem Dashboard
+let property: any = null
+const propMatch = !entry.value ? slug.value.match(/^(?:\/en)?\/immobilien\/([a-z0-9-]+)\.html$/) : null
+if (propMatch) {
+  const { data } = await useAsyncData(`property-${slug.value}`,
+    () => $fetch<any>(`/api/properties/${propMatch[1]}`).catch(() => null))
+  property = data.value?.slug ? data.value : null
+}
+
 // 404 for unknown routes
-if (!entry.value && !dbArticle) {
+if (!entry.value && !dbArticle && !property) {
   throw createError({ statusCode: 404, statusMessage: 'Seite nicht gefunden' })
 }
 
@@ -194,8 +203,12 @@ const regularMain = computed(() =>
 </script>
 
 <template>
+  <!-- Immobilie (Detail) -->
+  <div v-if="property" class="page-content" :data-route="slug">
+    <HsProperty :property="property" />
+  </div>
   <!-- Furniture-Leasing-Shop: Hero, Sortiment, Warenkorb und Checkout -->
-  <div v-if="pageData?.route === '/furniture-leasing.html'" class="page-content" :data-route="pageData.route">
+  <div v-else-if="pageData?.route === '/furniture-leasing.html'" class="page-content" :data-route="pageData.route">
     <RentalShop />
     <FlInfo />
     <div class="content-wrapper">
@@ -276,6 +289,11 @@ const regularMain = computed(() =>
   <!-- Impressum: Rechtstext-Karten -->
   <div v-else-if="pageRoute === '/impressum.html'" class="page-content" :data-route="pageData.route">
     <HsLegal :page="pageData" />
+  </div>
+
+  <!-- Immobilien-Übersicht -->
+  <div v-else-if="pageRoute === '/immobilien.html'" class="page-content" :data-route="pageData.route">
+    <HsProperties />
   </div>
 
   <!-- Widerrufsbelehrung: Text aus shared/withdrawal.ts -->
