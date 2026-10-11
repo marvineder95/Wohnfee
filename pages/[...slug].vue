@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { HS_AUDIENCE_ROUTES } from '~~/shared/home-staging-audiences'
+import { withdrawalHtml } from '~~/shared/withdrawal'
 const { pages, pagesEn, news, newsEn, site, categories } = useSiteData()
 const route = useRoute()
 
@@ -38,6 +39,14 @@ if (dbMatch) {
     () => $fetch<any>(`/api/blog/${dbMatch[1]}/${dbMatch[2]}`).catch(() => ({ notFound: true })))
   dbArticle = data.value?.route ? data.value : null
 }
+
+// Widerrufsbelehrung: Seite aus pages.json, Inhalt aus shared/withdrawal.ts
+const withdrawalPage = computed(() => ({
+  ...pageData.value,
+  columns: { main: [{ type: 'text', headline: pageData.value?.title, html:
+    `<p>${isEn.value ? 'Applies to consumers who conclude a rental contract with us online (distance contract). Companies have no right of withdrawal.' : 'Gilt für Verbraucher, die mit uns online einen Mietvertrag abschließen (Fernabsatzvertrag). Unternehmern steht kein Widerrufsrecht zu.'}</p>\n` +
+    withdrawalHtml(isEn.value ? 'en' : 'de') }] }
+}))
 
 const newsData = computed(() => entry.value?.type === 'news'
   ? ((isEn.value ? newsEn : news) as Record<string, any>)[entry.value!.id]
@@ -267,6 +276,11 @@ const regularMain = computed(() =>
   <!-- Impressum: Rechtstext-Karten -->
   <div v-else-if="pageRoute === '/impressum.html'" class="page-content" :data-route="pageData.route">
     <HsLegal :page="pageData" />
+  </div>
+
+  <!-- Widerrufsbelehrung: Text aus shared/withdrawal.ts -->
+  <div v-else-if="pageRoute === '/widerrufsbelehrung.html'" class="page-content" :data-route="pageData.route">
+    <HsLegal :page="withdrawalPage" :eyebrow="isEn ? 'Legal' : 'Rechtliches'" />
   </div>
 
   <!-- Datenschutz: gleiche Rechtstext-Karten -->

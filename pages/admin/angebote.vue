@@ -43,6 +43,7 @@ const saveError = ref('')
 const online = ref<{
   link: string
   respondedAt: string | null; responseBy: string | null; responseName: string | null; declineReason: string | null
+  customerType: string | null; earlyStart: boolean; withdrawnAt: string | null; withdrawalName: string | null; withdrawalEmail: string | null
   rental: { number: string; reservationStatus: string | null; reservedUntil: string | null; projectId: number | null } | null
 } | null>(null)
 const linkCopied = ref(false)
@@ -55,7 +56,7 @@ function fmtDateTime(v: string | null) {
 }
 const RES_LABELS: Record<string, string> = {
   aktiv: 'Möbel reserviert', angenommen: 'Möbel im Projekt', abgelehnt: 'Reservierung aufgehoben (abgelehnt)',
-  abgelaufen: 'Reservierung abgelaufen – Möbel wieder im Shop', freigegeben: 'Reservierung von Hand freigegeben'
+  abgelaufen: 'Reservierung abgelaufen – Möbel wieder im Shop', freigegeben: 'Reservierung von Hand freigegeben', widerrufen: 'Vertrag widerrufen'
 }
 
 const form = reactive({
@@ -96,7 +97,7 @@ function fmtDate(iso: string | null) {
   if (!iso) return '—'
   return String(iso).slice(0, 10).split('-').reverse().join('.')
 }
-const STATUS_LABELS: Record<string, string> = { entwurf: 'Entwurf', gesendet: 'Gesendet', angenommen: 'Angenommen', abgelehnt: 'Abgelehnt' }
+const STATUS_LABELS: Record<string, string> = { entwurf: 'Entwurf', gesendet: 'Gesendet', angenommen: 'Angenommen', abgelehnt: 'Abgelehnt', widerrufen: 'Widerrufen' }
 
 async function load() {
   loading.value = true
@@ -157,7 +158,8 @@ async function openEdit(off: OfferRow) {
     const i = res.offer
     online.value = {
       link: res.link, respondedAt: i.responded_at, responseBy: i.response_by, responseName: i.response_name,
-      declineReason: i.decline_reason, rental: res.rental || null
+      declineReason: i.decline_reason, rental: res.rental || null,
+      customerType: i.customer_type, earlyStart: !!i.early_start, withdrawnAt: i.withdrawn_at, withdrawalName: i.withdrawal_name, withdrawalEmail: i.withdrawal_email
     }
     Object.assign(form, {
       contact_id: i.contact_id,
@@ -419,7 +421,7 @@ onMounted(async () => {
           <td>{{ fmtDate(o.valid_until) }}</td>
           <td class="off__num">{{ o.netto !== null ? fmtEuro(Number(o.netto)) : '—' }}</td>
           <td>
-            <span class="wf-pill" :class="o.status === 'gesendet' ? 'wf-pill--amber' : o.status === 'angenommen' ? 'wf-pill--gray' : o.status === 'abgelehnt' ? 'wf-pill--red' : ''">{{ STATUS_LABELS[o.status] || o.status }}</span>
+            <span class="wf-pill" :class="o.status === 'gesendet' ? 'wf-pill--amber' : o.status === 'angenommen' ? 'wf-pill--gray' : o.status === 'abgelehnt' || o.status === 'widerrufen' ? 'wf-pill--red' : ''">{{ STATUS_LABELS[o.status] || o.status }}</span>
             <span v-if="o.invoice_id" class="wf-pill wf-pill--plain" style="margin-left:.3em">Bereits fakturiert</span>
           </td>
           <td class="off__actions">
@@ -468,6 +470,10 @@ onMounted(async () => {
             {{ form.status === 'abgelehnt' ? 'Abgelehnt' : 'Angenommen' }}
             {{ online.responseBy === 'kunde' ? 'vom Kunden online' : 'im Dashboard' }} am {{ fmtDateTime(online.respondedAt) }}<template v-if="online.responseName"> · {{ online.responseName }}</template>
             <template v-if="online.declineReason"><br>Grund: „{{ online.declineReason }}"</template>
+            <template v-if="online.customerType"><br>{{ online.customerType === 'privat' ? 'Privatkunde – 14 Tage Widerrufsrecht' : 'Unternehmen – kein Widerrufsrecht' }}<template v-if="online.earlyStart"> · hat Lieferung innerhalb der Frist verlangt</template></template>
+          </p>
+          <p v-if="online.withdrawnAt" class="off__onlineinfo is-no">
+            Vom Kunden WIDERRUFEN am {{ fmtDateTime(online.withdrawnAt) }} · {{ online.withdrawalName }} ({{ online.withdrawalEmail }}) – Abo gestoppt, Rechnungsentwürfe prüfen.
           </p>
           <p v-if="online.rental" class="off__onlineinfo">
             Mietanfrage {{ online.rental.number }}:
@@ -513,6 +519,7 @@ onMounted(async () => {
                     <option value="gesendet">Gesendet</option>
                     <option value="angenommen">Angenommen</option>
                     <option value="abgelehnt">Abgelehnt</option>
+                    <option v-if="form.status === 'widerrufen'" value="widerrufen">Widerrufen (vom Kunden)</option>
                   </select>
                 </label>
               </div>

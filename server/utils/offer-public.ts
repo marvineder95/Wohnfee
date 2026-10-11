@@ -1,5 +1,5 @@
 import { query, queryOne } from './db'
-import { isOfferToken } from './reservations'
+import { isOfferToken, withdrawalDeadline } from './reservations'
 import { todayVienna } from './site'
 
 // Angebot über den öffentlichen Link laden (ohne Login). Unbekannte/ungültige Token → 404.
@@ -25,7 +25,7 @@ export async function publicOfferView(offer: any) {
 
   const inq: any = await queryOne(
     `SELECT id, number, start_date, end_date, duration_months, street, zip, city, monthly_total,
-            reservation_status, reserved_until
+            reservation_status, reserved_until, company, email
      FROM rental_inquiries WHERE offer_id = :id ORDER BY id DESC LIMIT 1`, { id: offer.id })
   let rental: any = null
   if (inq) {
@@ -46,10 +46,24 @@ export async function publicOfferView(offer: any) {
       }))
     }
   }
+  // Fernabsatz: Widerrufsrecht nur für Privatkunden; vorzeitiger Beginn, wenn Mietbeginn in die 14-Tage-Frist fällt
+  const deadline = withdrawalDeadline(offer)
+  const contact: any = offer.contact_id ? await queryOne('SELECT email FROM contacts WHERE id = :id', { id: offer.contact_id }) : null
+  const fagg = {
+    customerType: offer.customer_type || null,
+    customerTypeDefault: inq?.company ? 'firma' : 'privat',
+    earlyStartNeeded: !!inq?.start_date && String(inq.start_date).slice(0, 10) <= todayVienna(14),
+    earlyStart: !!offer.early_start,
+    canWithdraw: !!deadline && deadline.getTime() > Date.now(),
+    withdrawDeadline: deadline?.toISOString() || null,
+    withdrawnAt: offer.withdrawn_at ? new Date(offer.withdrawn_at).toISOString() : null,
+    email: contact?.email || inq?.email || ''
+  }
   return {
+    fagg,
     number: offer.number, docDate: String(offer.doc_date).slice(0, 10), validUntil,
     subject: offer.subject, customerName: offer.customer_name, lang: offer.lang === 'en' ? 'en' : 'de',
-    status: offer.status, expired: !!validUntil && validUntil < todayVienna() && !['angenommen', 'abgelehnt'].includes(offer.status),
+    status: offer.status, expired: !!validUntil && validUntil < todayVienna() && !['angenommen', 'abgelehnt', 'widerrufen'].includes(offer.status),
     respondedAt: offer.responded_at, responseName: offer.response_name,
     vatFree: !!offer.vat_free, vatRate: Number(offer.vat_rate) || 20, vatNote: offer.vat_note, note: offer.note,
     lines, netto, vat, brutto: Math.round((netto + vat) * 100) / 100,

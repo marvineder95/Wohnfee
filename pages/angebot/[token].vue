@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { earlyStartTexts } from '~~/shared/withdrawal'
 // Online-Angebot für Kund:innen – Link aus der Angebotsmail (ohne Login).
 // Ansehen, PDF laden, annehmen (Name + Bestätigung) oder ablehnen (optional mit Grund).
 // Mietangebote: Hinweis, wie lange die Möbel reserviert sind.
@@ -22,7 +23,7 @@ const date = (v: string | null) => v ? new Date(String(v).slice(0, 10) + 'T12:00
 const dateTime = (v: string | null) => v ? new Date(v).toLocaleString(locale.value, { timeZone: 'Europe/Vienna', weekday: 'long', day: '2-digit', month: 'long', hour: '2-digit', minute: '2-digit' }) : ''
 const qty = (n: number) => Number(n.toFixed(2)).toLocaleString(locale.value)
 
-const answered = computed(() => ['angenommen', 'abgelehnt'].includes(data.value?.status))
+const answered = computed(() => ['angenommen', 'abgelehnt', 'widerrufen'].includes(data.value?.status))
 const canRespond = computed(() => data.value && !answered.value && !data.value.expired)
 const pdfUrl = computed(() => `/api/offer/${token}/pdf`)
 
@@ -35,6 +36,33 @@ const hoursLeft = computed(() => {
   const until = data.value?.rental?.reservedUntil
   return until ? Math.max(0, Math.round((new Date(until).getTime() - now.value) / 3600000)) : 0
 })
+
+// Fernabsatz (FAGG): Kundentyp, vorzeitiger Beginn, Widerruf
+const customerType = ref<'privat' | 'firma'>(data.value?.fagg?.customerTypeDefault || 'privat')
+const earlyRequest = ref(false)
+const earlyAck = ref(false)
+const early = computed(() => earlyStartTexts(en.value ? 'en' : 'de'))
+const needsEarly = computed(() => customerType.value === 'privat' && !!data.value?.fagg?.earlyStartNeeded)
+const withdrawUrl = computed(() => (en.value ? '/en' : '') + '/widerrufsbelehrung.html')
+const wOpen = ref(false)
+const wName = ref('')
+const wEmail = ref(data.value?.fagg?.email || '')
+const wConfirm = ref(false)
+async function withdraw() {
+  msg.value = ''
+  if (wName.value.trim().length < 2) { msg.value = t('Bitte geben Sie Ihren Namen an.', 'Please enter your name.'); return }
+  if (!wConfirm.value) { msg.value = t('Bitte bestätigen Sie die Angaben.', 'Please confirm the details.'); return }
+  busy.value = true
+  try {
+    data.value = await $fetch<any>(`/api/offer/${token}/withdraw`, { method: 'POST', body: { name: wName.value.trim(), email: wEmail.value.trim(), confirm: true } })
+    wOpen.value = false
+    if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
+  } catch (e: any) {
+    msg.value = e?.data?.statusMessage || t('Das hat leider nicht geklappt. Bitte schreiben Sie uns an office@wohnfee.at.', 'Something went wrong. Please write to office@wohnfee.at.')
+  } finally {
+    busy.value = false
+  }
+}
 
 // Antwort
 const mode = ref<'none' | 'accept' | 'decline'>('none')
@@ -52,12 +80,17 @@ async function respond(action: 'accept' | 'decline') {
   if (action === 'accept') {
     if (name.value.trim().length < 2) { msg.value = t('Bitte geben Sie Ihren Namen an.', 'Please enter your name.'); return }
     if (!confirmed.value) { msg.value = t('Bitte bestätigen Sie die Annahme.', 'Please confirm the acceptance.'); return }
+    if (needsEarly.value && (!earlyRequest.value || !earlyAck.value)) {
+      msg.value = t('Ihr Mietbeginn liegt innerhalb der Widerrufsfrist – bitte beide Erklärungen bestätigen.', 'Your rental starts within the withdrawal period – please confirm both statements.'); return
+    }
   }
   busy.value = true
   try {
     data.value = await $fetch<any>(`/api/offer/${token}/respond`, {
       method: 'POST',
-      body: action === 'accept' ? { action, name: name.value.trim(), confirm: true } : { action, reason: reason.value.trim() }
+      body: action === 'accept'
+        ? { action, name: name.value.trim(), confirm: true, customerType: customerType.value, earlyStartRequest: earlyRequest.value, earlyStartAck: earlyAck.value }
+        : { action, reason: reason.value.trim() }
     })
     mode.value = 'none'
     if (import.meta.client) window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -98,6 +131,13 @@ async function respond(action: 'accept' | 'decline') {
         <span>
           <strong>{{ t('Vielen Dank – Sie haben das Angebot angenommen!', 'Thank you – you have accepted the offer!') }}</strong>
           <small>{{ t('Wir melden uns in Kürze, um den genauen Liefertermin abzustimmen. Eine Bestätigung haben wir Ihnen per E-Mail geschickt.', 'We will be in touch shortly to arrange the exact delivery date. A confirmation has been sent to you by e-mail.') }}</small>
+        </span>
+      </div>
+      <div v-else-if="data.status === 'widerrufen'" class="ofr__banner is-old">
+        <span class="ofr__bicon">↩</span>
+        <span>
+          <strong>{{ t('Sie haben den Vertrag widerrufen.', 'You have withdrawn from the contract.') }}</strong>
+          <small>{{ t('Die Eingangsbestätigung mit Datum und Uhrzeit haben wir Ihnen per E-Mail geschickt. Wir melden uns bei Ihnen.', 'We have sent you an acknowledgement of receipt with date and time by e-mail. We will be in touch.') }}</small>
         </span>
       </div>
       <div v-else-if="data.status === 'abgelehnt'" class="ofr__banner is-no">
@@ -177,6 +217,20 @@ async function respond(action: 'accept' | 'decline') {
                   <span>{{ t('Ihr Name', 'Your name') }}</span>
                   <input v-model="name" type="text" autocomplete="name" :placeholder="t('Vor- und Nachname', 'First and last name')" @focus="mode = 'accept'">
                 </label>
+                <div class="ofr__type" role="radiogroup" :aria-label="t('Ich miete als', 'I am renting as')">
+                  <span>{{ t('Ich miete als', 'I am renting as') }}</span>
+                  <label :class="{ 'is-on': customerType === 'privat' }"><input v-model="customerType" type="radio" value="privat"> {{ t('Privatperson', 'Private person') }}</label>
+                  <label :class="{ 'is-on': customerType === 'firma' }"><input v-model="customerType" type="radio" value="firma"> {{ t('Unternehmen', 'Company') }}</label>
+                </div>
+                <p v-if="customerType === 'privat'" class="ofr__fine">
+                  {{ t('Als Privatperson haben Sie ein 14-tägiges Widerrufsrecht.', 'As a private person you have a 14-day right of withdrawal.') }}
+                  <a :href="withdrawUrl" target="_blank" rel="noopener">{{ t('Widerrufsbelehrung & Muster-Formular', 'Withdrawal information & model form') }}</a>
+                </p>
+                <template v-if="needsEarly">
+                  <p class="ofr__fine ofr__fine--strong">{{ t('Ihr Mietbeginn liegt innerhalb der 14-tägigen Widerrufsfrist. Damit wir pünktlich liefern dürfen, brauchen wir Ihre ausdrückliche Zustimmung:', 'Your rental starts within the 14-day withdrawal period. To deliver on time, we need your express consent:') }}</p>
+                  <label class="ofr__check ofr__check--sm"><input v-model="earlyRequest" type="checkbox"><span>{{ early.request }}</span></label>
+                  <label class="ofr__check ofr__check--sm"><input v-model="earlyAck" type="checkbox"><span>{{ early.ack }}</span></label>
+                </template>
                 <label class="ofr__check">
                   <input v-model="confirmed" type="checkbox" @change="mode = 'accept'">
                   <span>{{ t(`Ich nehme das Angebot ${data.number} verbindlich an.`, `I accept offer ${data.number} as binding.`) }}</span>
@@ -198,6 +252,21 @@ async function respond(action: 'accept' | 'decline') {
                 <button class="ofr__link" :disabled="busy" @click="mode = 'none'; msg = ''">{{ t('Zurück', 'Back') }}</button>
               </template>
               <p v-if="msg" class="ofr__msg" role="alert">{{ msg }}</p>
+            </template>
+
+            <!-- Online-Widerruf (§ 13a FAGG) – nur Privatkunden, 14 Tage ab Annahme -->
+            <template v-if="data.status === 'angenommen' && data.fagg?.canWithdraw">
+              <button v-if="!wOpen" class="ofr__btn ofr__btn--withdraw" @click="wOpen = true; msg = ''">{{ t('Vertrag widerrufen', 'Withdraw from contract') }}</button>
+              <div v-else class="ofr__withdraw">
+                <p class="ofr__small"><strong>{{ t('Vertrag widerrufen', 'Withdraw from contract') }}</strong> – {{ t('Vertrag', 'contract') }} {{ data.number }}<br>
+                  <small>{{ t('möglich bis', 'possible until') }} {{ dateTime(data.fagg.withdrawDeadline) }}</small></p>
+                <label class="ofr__field"><span>{{ t('Ihr Name', 'Your name') }}</span><input v-model="wName" type="text" autocomplete="name"></label>
+                <label class="ofr__field"><span>{{ t('E-Mail für die Eingangsbestätigung', 'E-mail for the acknowledgement') }}</span><input v-model="wEmail" type="email" autocomplete="email"></label>
+                <label class="ofr__check ofr__check--sm"><input v-model="wConfirm" type="checkbox"><span>{{ t(`Ich widerrufe den Vertrag ${data.number}.`, `I withdraw from contract ${data.number}.`) }}</span></label>
+                <button class="ofr__btn ofr__btn--no" :disabled="busy" @click="withdraw">{{ busy ? t('Wird gesendet …', 'Sending …') : t('Widerruf bestätigen', 'Confirm withdrawal') }}</button>
+                <button class="ofr__link" :disabled="busy" @click="wOpen = false; msg = ''">{{ t('Abbrechen', 'Cancel') }}</button>
+              </div>
+              <p v-if="msg && answered" class="ofr__msg" role="alert">{{ msg }}</p>
             </template>
 
             <a class="ofr__btn ofr__btn--ghost" :href="pdfUrl" target="_blank" rel="noopener">{{ t('PDF ansehen', 'View PDF') }}</a>
@@ -296,6 +365,17 @@ async function respond(action: 'accept' | 'decline') {
 .ofr__area { resize: vertical; }
 .ofr__msg { margin: 0; color: #a5524a; font-size: .88rem; }
 .ofr__help { font-size: .9rem; }
+.ofr__type { display: flex; flex-wrap: wrap; align-items: center; gap: .4em; font-size: .85rem; color: #6f6a5e; }
+.ofr__type > span { width: 100%; }
+.ofr__type label { display: inline-flex; align-items: center; gap: .35em; padding: .45em .85em; border: 1px solid #ddd5c5; border-radius: 999px; cursor: pointer; color: #3f3c35; background: #fff; }
+.ofr__type label.is-on { border-color: #2f5d40; background: #eef3ee; color: #26492f; font-weight: 600; }
+.ofr__type input { accent-color: #2f5d40; margin: 0; }
+.ofr__fine { margin: 0; font-size: .8rem; line-height: 1.45; color: #6f6a5e; }
+.ofr__fine a { color: #2f5d40; }
+.ofr__fine--strong { color: #3f3c35; font-weight: 600; }
+.ofr__check--sm { font-size: .8rem; }
+.ofr__btn--withdraw { background: #fff; color: #a5524a; border: 1px solid #e7d3cf; font-weight: 600; }
+.ofr__withdraw { display: grid; gap: .7em; padding: .9em; border: 1px solid #e7d3cf; border-radius: 14px; background: #fbf7f6; }
 .ofr__help p { margin: 0 0 .5em; }
 
 @media (max-width: 860px) {

@@ -13,7 +13,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => ({}))
   const en = offer.lang === 'en'
 
-  if (['angenommen', 'abgelehnt'].includes(offer.status)) {
+  if (['angenommen', 'abgelehnt', 'widerrufen'].includes(offer.status)) {
     throw createError({ statusCode: 409, statusMessage: en ? 'You have already replied to this offer.' : 'Sie haben auf dieses Angebot bereits geantwortet.' })
   }
 
@@ -21,7 +21,20 @@ export default defineEventHandler(async (event) => {
     const name = String(body?.name || '').trim().slice(0, 190)
     if (name.length < 2) throw createError({ statusCode: 400, statusMessage: en ? 'Please enter your name.' : 'Bitte geben Sie Ihren Namen an.' })
     if (body?.confirm !== true) throw createError({ statusCode: 400, statusMessage: en ? 'Please confirm the acceptance.' : 'Bitte bestätigen Sie die Annahme.' })
-    await acceptOffer(offer.id, { by: 'kunde', name })
+    const customerType = body?.customerType === 'firma' ? 'firma' : body?.customerType === 'privat' ? 'privat' : null
+    if (!customerType) throw createError({ statusCode: 400, statusMessage: en ? 'Please state whether you rent as a private person or a company.' : 'Bitte angeben, ob Sie als Privatperson oder Unternehmen mieten.' })
+    // Privatkunde + Mietbeginn innerhalb der Widerrufsfrist → beide Erklärungen nötig (§ 10, § 18 Abs 1 Z 1 FAGG)
+    const view = await publicOfferView(offer)
+    let earlyStart = false
+    if (customerType === 'privat' && view.fagg.earlyStartNeeded) {
+      if (body?.earlyStartRequest !== true || body?.earlyStartAck !== true) {
+        throw createError({ statusCode: 400, statusMessage: en
+          ? 'Your rental starts within the 14-day withdrawal period – please confirm both statements.'
+          : 'Ihr Mietbeginn liegt innerhalb der 14-tägigen Widerrufsfrist – bitte beide Erklärungen bestätigen.' })
+      }
+      earlyStart = true
+    }
+    await acceptOffer(offer.id, { by: 'kunde', name, customerType, earlyStart })
     notifyDecision(offer.id, true, { name }, publicOrigin(event)).catch(() => {})
   } else if (body?.action === 'decline') {
     const reason = String(body?.reason || '').trim().slice(0, 2000) || null

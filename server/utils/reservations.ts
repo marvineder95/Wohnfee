@@ -102,7 +102,7 @@ export async function prepareOfferSend(offerId: number): Promise<string | null> 
     const min = todayVienna(OFFER_VALID_DAYS)
     if (!validUntil || validUntil < min) validUntil = min
     await query('UPDATE offers SET valid_until = :v WHERE id = :id', { v: validUntil, id: offerId })
-    if (!['angenommen', 'abgelehnt'].includes(inquiry.reservation_status)) {
+    if (!['angenommen', 'abgelehnt', 'widerrufen'].includes(inquiry.reservation_status)) {
       // Reservierung schon abgelaufen/freigegeben? Nur neu reservieren, wenn alles noch frei ist.
       const active = inquiry.reservation_status === 'aktiv' && new Date(inquiry.reserved_until).getTime() > Date.now()
       if (!active) {
@@ -142,7 +142,11 @@ async function unavailableItems(inquiryId: number): Promise<string[]> {
   return missing
 }
 
-export type Decision = { by: 'kunde' | 'team'; name?: string | null; reason?: string | null }
+export type Decision = {
+  by: 'kunde' | 'team'; name?: string | null; reason?: string | null
+  /** Fernabsatz: Privat- oder Firmenkunde, Verlangen auf Beginn innerhalb der Widerrufsfrist */
+  customerType?: 'privat' | 'firma' | null; earlyStart?: boolean
+}
 
 /**
  * Angebot annehmen. Bei Mietangeboten: Projekt anlegen, Möbel zuweisen, Liefertermin im Kalender.
@@ -178,8 +182,9 @@ export async function acceptOffer(offerId: number, d: Decision): Promise<{ proje
 
   await query(
     `UPDATE offers SET status = 'angenommen', responded_at = UTC_TIMESTAMP(), response_by = :by,
-       response_name = :name, decline_reason = NULL WHERE id = :id`,
-    { by: d.by, name: d.name?.slice(0, 190) || null, id: offerId }
+       response_name = :name, decline_reason = NULL,
+       customer_type = COALESCE(:ct, customer_type), early_start = :early WHERE id = :id`,
+    { by: d.by, name: d.name?.slice(0, 190) || null, ct: d.customerType || null, early: d.earlyStart ? 1 : 0, id: offerId }
   )
   if (inquiry) {
     await query(
@@ -291,4 +296,53 @@ export async function releaseReservation(inquiryId: number) {
     `UPDATE rental_inquiries SET reservation_status = 'freigegeben' WHERE id = :id AND reservation_status = 'aktiv'`,
     { id: inquiryId }
   )
+}
+
+/** Ende der Widerrufsfrist (14 Tage ab Vertragsabschluss = Annahme) – nur Privatkunden */
+export function withdrawalDeadline(offer: any): Date | null {
+  if (offer?.status !== 'angenommen' || offer.customer_type !== 'privat' || !offer.responded_at) return null
+  return new Date(new Date(offer.responded_at).getTime() + 14 * 86400000)
+}
+
+/**
+ * Online-Widerruf durch den Kunden (§ 13a FAGG). Angebot → „widerrufen", Abo stoppen;
+ * noch nicht geliefert: Möbel sofort frei + Liefertermin weg; geliefert: Abholung in Touren.
+ */
+export async function withdrawOffer(offerId: number, w: { name: string, email: string }) {
+  const offer: any = await queryOne('SELECT * FROM offers WHERE id = :id', { id: offerId })
+  if (!offer) throw createError({ statusCode: 404, statusMessage: 'Angebot nicht gefunden' })
+  const deadline = withdrawalDeadline(offer)
+  if (!deadline || deadline.getTime() < Date.now()) {
+    throw createError({ statusCode: 409, statusMessage: offer.lang === 'en' ? 'A withdrawal is no longer possible for this contract.' : 'Für diesen Vertrag ist kein Widerruf (mehr) möglich.' })
+  }
+  await query(
+    `UPDATE offers SET status = 'widerrufen', withdrawn_at = UTC_TIMESTAMP(), withdrawal_name = :name, withdrawal_email = :email WHERE id = :id`,
+    { name: w.name.slice(0, 190), email: w.email.slice(0, 190), id: offerId })
+  // Abo-Rechnungen stoppen (Entwürfe bleiben zur Prüfung/Löschung im Dashboard)
+  await query(
+    `UPDATE recurring_invoices SET active = 0 WHERE source_invoice_id IN (SELECT id FROM invoices WHERE offer_id = :id)`, { id: offerId })
+  const inquiry = await inquiryForOffer(offerId)
+  if (!inquiry) return { delivered: false }
+  await query(`UPDATE rental_inquiries SET reservation_status = 'widerrufen' WHERE id = :id`, { id: inquiry.id })
+  const pid = inquiry.project_id
+  const delivered = !!inquiry.start_date && String(inquiry.start_date).slice(0, 10) <= todayVienna()
+  if (pid) {
+    const line = `WIDERRUF durch Kunden am ${new Date().toLocaleString('de-AT', { timeZone: 'Europe/Vienna' })} (${w.name}) – Rechnungsentwürfe prüfen/löschen, Abo gestoppt.`
+    if (!delivered) {
+      const items: any[] = await query('SELECT item_id FROM project_items WHERE project_id = :pid', { pid })
+      await query('DELETE FROM project_items WHERE project_id = :pid', { pid })
+      for (const it of items) await syncItemStatus(it.item_id)
+      await query(`DELETE FROM calendar_events WHERE project_id = :pid AND type = 'lieferung' AND created_by_name = 'Automatisch'`, { pid })
+      await query(
+        `UPDATE projects SET status_info = CONCAT_WS('\n', NULLIF(status_info, ''), :line), next_step = 'Widerrufen – nichts zu liefern' WHERE id = :pid`,
+        { line, pid })
+    } else {
+      // Möbel sind beim Kunden → Abholung fällig (erscheint in Touren), danach „Abholung erledigt"
+      await query(
+        `UPDATE projects SET status_info = CONCAT_WS('\n', NULLIF(status_info, ''), :line), next_step = 'Widerrufen – Möbel abholen',
+           deadline_date = :today, deadline_text = 'Widerruf' WHERE id = :pid`,
+        { line, today: todayVienna(), pid })
+    }
+  }
+  return { delivered }
 }

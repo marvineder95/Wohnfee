@@ -262,7 +262,7 @@ CREATE TABLE IF NOT EXISTS offers (
   vat_free TINYINT(1) NOT NULL DEFAULT 0,
   vat_note VARCHAR(190) NULL,
   note TEXT NULL,
-  status ENUM('entwurf','gesendet','angenommen','abgelehnt') NOT NULL DEFAULT 'entwurf',
+  status ENUM('entwurf','gesendet','angenommen','abgelehnt','widerrufen') NOT NULL DEFAULT 'entwurf',
   invoice_id INT UNSIGNED NULL,
   source VARCHAR(32) NOT NULL DEFAULT 'dashboard',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -565,6 +565,21 @@ export async function migrateSchema() {
   await addCol('offers', 'response_name', 'ADD COLUMN response_name VARCHAR(190) NULL')
   await addCol('offers', 'decline_reason', 'ADD COLUMN decline_reason TEXT NULL')
   await addCol('offers', 'project_id', 'ADD COLUMN project_id INT UNSIGNED NULL')
+  // Fernabsatz (FAGG): Kundentyp, Verlangen auf vorzeitigen Beginn, Online-Widerruf
+  await addCol('offers', 'customer_type', 'ADD COLUMN customer_type VARCHAR(16) NULL')
+  await addCol('offers', 'early_start', 'ADD COLUMN early_start TINYINT(1) NOT NULL DEFAULT 0')
+  await addCol('offers', 'withdrawn_at', 'ADD COLUMN withdrawn_at DATETIME NULL')
+  await addCol('offers', 'withdrawal_name', 'ADD COLUMN withdrawal_name VARCHAR(190) NULL')
+  await addCol('offers', 'withdrawal_email', 'ADD COLUMN withdrawal_email VARCHAR(190) NULL')
+  const os = await queryOne<{ t: string }>(
+    `SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = :db AND TABLE_NAME = 'offers' AND COLUMN_NAME = 'status'`,
+    { db: config.dbName }
+  )
+  if (os && !String(os.t).includes('widerrufen')) {
+    await db.query("ALTER TABLE offers MODIFY status ENUM('entwurf','gesendet','angenommen','abgelehnt','widerrufen') NOT NULL DEFAULT 'entwurf'")
+    console.log('[db-init] Migration: offers.status um WIDERRUFEN erweitert')
+  }
   // Lagerstatus „pflege" = zurück, aber in Reinigung/Reparatur (nicht im Shop)
   const is = await queryOne<{ t: string }>(
     `SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS

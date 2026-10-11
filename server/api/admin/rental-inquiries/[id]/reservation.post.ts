@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   const body = await readBody(event).catch(() => ({}))
   const inq: any = await queryOne('SELECT id, reservation_status FROM rental_inquiries WHERE id = :id', { id })
   if (!inq) throw createError({ statusCode: 404, statusMessage: 'Mietanfrage nicht gefunden.' })
-  if (['angenommen', 'abgelehnt'].includes(inq.reservation_status)) {
+  if (['angenommen', 'abgelehnt', 'widerrufen'].includes(inq.reservation_status)) {
     throw createError({ statusCode: 409, statusMessage: 'Das Angebot wurde bereits beantwortet – die Reservierung ist abgeschlossen.' })
   }
   if (body?.action === 'release') await releaseReservation(id)

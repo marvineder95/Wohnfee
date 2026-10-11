@@ -48,6 +48,7 @@ export default defineEventHandler(async (event) => {
   const lang = offer.lang === 'en' ? 'en' : 'de'
   const { subject, text, html } = offerMail({
     number: offer.number, subject: offer.subject, lang, url, rental,
+    withdrawalUrl: `${publicOrigin(event)}${lang === 'en' ? '/en' : ''}/widerrufsbelehrung.html`,
     dateStr: fmtDate(offer.doc_date, lang), validStr: fmtDate(offer.valid_until, lang)
   })
 

@@ -1638,5 +1638,21 @@
   "cssClass": "blog",
   "lang": "en",
   "alternate": "/start/blogartikel-startseite.html"
+ },
+ "widerruf": {
+  "route": "/en/widerrufsbelehrung.html",
+  "title": "Right of Withdrawal",
+  "alias": "widerrufsbelehrung",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": true,
+  "parent": "8",
+  "cssClass": "no-slider",
+  "lang": "en",
+  "alternate": "/widerrufsbelehrung.html",
+  "columns": {
+   "main": []
+  }
  }
 }

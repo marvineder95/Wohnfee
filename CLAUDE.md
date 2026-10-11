@@ -117,6 +117,10 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   im Warenkorb – vereinheitlichen?
 - Datenschutz (neu, Seite 11 in pages(-en).json, Layout HsLegal): gelb markierte Lücken ausfüllen
   (Hosting-Anbieter + Log-Löschfrist, SMTP-Anbieter, OSRM-Betreiber).
+- Fernabsatz/Widerruf (FAGG): Text nach gesetzlichem Muster in `shared/withdrawal.ts` (Seite
+  /widerrufsbelehrung.html, Angebotsseite, Mails). Annahme fragt Privat/Firma; Privat + Mietbeginn ≤ 14 Tage →
+  zwei Pflicht-Häkchen. „Vertrag widerrufen" (§ 13a) 14 Tage ab Annahme → `withdrawOffer()`.
+  ⚠ Vom WKO-Rechtsservice prüfen lassen. AGB/Mietbedingungen fehlen noch (Footer-Link „AGB" tot).
 - Kein Tracking, kein Cookie-Banner (Google Analytics + Cookiebar im Okt. 2026 entfernt). Videos (CeVideo)
   laden erst nach Klick. Neue externe Dienste nur nach Rücksprache – sonst braucht es wieder ein Banner.
 - Noch nicht im neuen Design: Furniture Leasing unterhalb des Heros, EN-Startseite

@@ -1026,5 +1026,13 @@
  "/en/presseartikel/die-no-go-s-werden-immer-weniger.html": {
   "type": "news",
   "id": "127"
+ },
+ "/widerrufsbelehrung.html": {
+  "type": "page",
+  "id": "widerruf"
+ },
+ "/en/widerrufsbelehrung.html": {
+  "type": "page",
+  "id": "widerruf"
  }
 }

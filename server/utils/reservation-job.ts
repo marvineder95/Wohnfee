@@ -4,7 +4,7 @@ import { notifyTeam } from './push'
 import { siteOrigin } from './site'
 import { fmtDate } from './invoice-pdf'
 import { REMINDER_AFTER_HOURS, ensureOfferToken } from './reservations'
-import { reminderMail, acceptedMail, declinedMail, teamDecisionMail } from './offer-mails'
+import { reminderMail, acceptedMail, declinedMail, teamDecisionMail, withdrawalReceiptMail } from './offer-mails'
 
 export const offerUrl = (origin: string, token: string) => `${origin}/angebot/${token}`
 
@@ -79,11 +79,32 @@ export async function notifyDecision(offerId: number, accepted: boolean, d: { na
       const url = offerUrl(origin, await ensureOfferToken(offerId))
       const period = inquiry?.start_date ? `${fmtDate(inquiry.start_date, lang)} – ${fmtDate(inquiry.end_date, lang)}` : null
       const mail = accepted
-        ? acceptedMail({ number: offer.number, name: d.name, period, url, lang })
+        ? acceptedMail({ number: offer.number, name: d.name, period, url, lang, privat: offer.customer_type === 'privat', earlyStart: !!offer.early_start })
         : declinedMail({ number: offer.number, lang })
       await sendMail(to, mail.subject, mail.text, mail.html)
     }
   } catch (e: any) {
     console.error('[angebot] Benachrichtigung fehlgeschlagen:', e?.message || e)
   }
+}
+
+/** Online-Widerruf: Eingangsbestätigung an den Kunden (Pflicht) + Push/Mail ans Team */
+export async function notifyWithdrawal(offerId: number, w: { name: string, email: string, delivered: boolean }, origin: string) {
+  const offer: any = await queryOne('SELECT number, lang, customer_name, withdrawn_at FROM offers WHERE id = :id', { id: offerId })
+  if (!offer) return
+  const lang = offer.lang === 'en' ? 'en' : 'de'
+  const receipt = withdrawalReceiptMail({ number: offer.number, name: w.name, email: w.email, at: new Date(offer.withdrawn_at || Date.now()), lang, delivered: w.delivered })
+  await sendMail(w.email, receipt.subject, receipt.text, receipt.html)
+  notifyTeam({
+    title: 'Vertrag widerrufen',
+    body: `${offer.customer_name} · ${offer.number}${w.delivered ? ' – Möbel abholen' : ' – Lieferung entfällt'}`,
+    url: `/admin/angebote?open=${offerId}`, tag: `offer-${offerId}`
+  }).catch(() => {})
+  const lines = [
+    `${offer.customer_name} hat den Vertrag ${offer.number} online WIDERRUFEN (${w.name}, ${w.email}).`,
+    w.delivered ? 'Die Möbel sind bereits geliefert – das Projekt steht in „Touren" als Abholung fällig.' : 'Noch nicht geliefert: Möbel sind wieder im Shop, der Liefertermin wurde entfernt.',
+    'Das Monats-Abo ist gestoppt. Bitte die Rechnungsentwürfe prüfen bzw. löschen; bei vorzeitigem Beginn ist ein anteiliger Betrag geschuldet.'
+  ]
+  await sendMail('office@wohnfee.at', `↩︎ Widerruf: Vertrag ${offer.number} – ${offer.customer_name}`, `${lines.join('\n')}\n\n${origin}/admin/angebote?open=${offerId}`,
+    lines.map(l => `<p>${l.replace(/</g, '&lt;')}</p>`).join('') + `<p><a href="${origin}/admin/angebote?open=${offerId}">Im Dashboard öffnen</a></p>`)
 }

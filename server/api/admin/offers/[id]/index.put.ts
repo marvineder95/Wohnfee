@@ -61,7 +61,7 @@ export default defineEventHandler(async (event) => {
         vatRate, vatFree,
         vatNote: invClean(body?.vat_note, 190),
         note: invClean(body?.note, 5000),
-        status: ['entwurf', 'gesendet', 'angenommen', 'abgelehnt'].includes(body?.status) ? body.status : 'entwurf'
+        status: ['entwurf', 'gesendet', 'angenommen', 'abgelehnt', 'widerrufen'].includes(body?.status) ? body.status : 'entwurf'
       }
     )
     await conn.query('DELETE FROM offer_items WHERE offer_id = ?', [id])

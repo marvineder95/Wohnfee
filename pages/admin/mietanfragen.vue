@@ -196,6 +196,7 @@ function reservation(i: Inquiry): { label: string; tone: string } | null {
   }
   if (i.reservationStatus === 'angenommen') return { label: 'Angenommen · im Projekt', tone: 'wf-pill--green' }
   if (i.reservationStatus === 'abgelehnt') return { label: 'Abgelehnt · freigegeben', tone: 'wf-pill--red' }
+  if (i.reservationStatus === 'widerrufen') return { label: 'Widerrufen', tone: 'wf-pill--red' }
   if (i.reservationStatus === 'aktiv' || i.reservationStatus === 'abgelaufen') return { label: 'Reservierung abgelaufen', tone: 'wf-pill--gray' }
   if (i.reservationStatus === 'freigegeben') return { label: 'Freigegeben', tone: 'wf-pill--gray' }
   return null
@@ -344,7 +345,7 @@ onMounted(load)
                 <small v-else-if="item.reservationStatus === 'angenommen'">Die Möbel sind dem Projekt zugewiesen, bis die Abholung in „Touren" erledigt ist.</small>
                 <small v-else-if="!['abgelehnt'].includes(item.reservationStatus || '')">Die Möbel sind wieder im Shop. Wird das Angebot trotzdem angenommen, prüfen wir vorher die Verfügbarkeit.</small>
               </span>
-              <span v-if="perms.canEdit('mietanfragen') && !['angenommen', 'abgelehnt'].includes(item.reservationStatus || '')" class="rental-inquiries__resacts">
+              <span v-if="perms.canEdit('mietanfragen') && !['angenommen', 'abgelehnt', 'widerrufen'].includes(item.reservationStatus || '')" class="rental-inquiries__resacts">
                 <button class="wf-btn wf-btn--sm" :disabled="resBusy" @click="changeReservation(item, 'extend')">+3 Tage</button>
                 <button v-if="item.reservationStatus === 'aktiv'" class="wf-btn wf-btn--sm" :disabled="resBusy" @click="changeReservation(item, 'release')">Freigeben</button>
               </span>

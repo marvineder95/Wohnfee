@@ -2131,5 +2131,20 @@
   },
   "cssClass": "blog",
   "alternate": "/en/start/blogartikel-startseite.html"
+ },
+ "widerruf": {
+  "route": "/widerrufsbelehrung.html",
+  "title": "Widerrufsbelehrung",
+  "alias": "widerrufsbelehrung",
+  "pageTitle": "",
+  "description": null,
+  "robots": "index,follow",
+  "hide": true,
+  "parent": "8",
+  "cssClass": "no-slider",
+  "alternate": "/en/widerrufsbelehrung.html",
+  "columns": {
+   "main": []
+  }
  }
 }
