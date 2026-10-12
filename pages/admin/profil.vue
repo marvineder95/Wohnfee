@@ -31,7 +31,7 @@ const TABS: Array<{ key: TabKey; label: string; icon: string }> = [
   { key: 'daten', label: 'Persönliche Daten', icon: 'users' },
   { key: 'sicherheit', label: 'Account & Sicherheit', icon: 'key' },
   { key: 'einstellungen', label: 'Einstellungen', icon: 'settings' },
-  { key: 'benachrichtigungen', label: 'Benachrichtigungen', icon: 'bell' },
+  { key: 'benachrichtigungen', label: 'App & Benachrichtigungen', icon: 'bell' },
   { key: 'rollen', label: 'Zugriffe & Rollen', icon: 'shield' }
 ]
 
@@ -134,6 +134,15 @@ const nowStr = new Date().toLocaleString('de-AT', { day: '2-digit', month: '2-di
 
 const push = usePush()
 onMounted(() => push.refresh())
+
+// ---------- App installieren ----------
+const app = useInstallApp()
+const installMsg = ref('')
+async function installNow() {
+  installMsg.value = (await app.install()) ? 'Installiert – du findest WOHNFEE jetzt auf dem Homebildschirm bzw. im Startmenü.' : ''
+}
+// ?tab=app → direkt diesen Bereich öffnen
+onMounted(() => { if (['app', 'benachrichtigungen'].includes(String(useRoute().query.tab))) tab.value = 'benachrichtigungen' })
 </script>
 
 <template>
@@ -250,8 +259,45 @@ onMounted(() => push.refresh())
           <h2 class="prof__cardtitle"><WfIcon name="settings" :size="15" /> Einstellungen</h2>
           <p class="prof__placeholder">Hier kommen künftig persönliche Einstellungen hin — z. B. Sprache und Startseite.</p>
         </section>
-        <section v-else-if="tab === 'benachrichtigungen'" class="prof__card">
-          <h2 class="prof__cardtitle"><WfIcon name="bell" :size="15" /> Benachrichtigungen</h2>
+        <section v-else-if="tab === 'benachrichtigungen'" class="prof__card prof__app">
+          <h2 class="prof__cardtitle"><WfIcon name="download" :size="15" /> Dashboard als App</h2>
+          <p class="prof__pushintro">Als App startet das Dashboard mit einem Tipp vom Homebildschirm, im eigenen Fenster ohne Browserleiste – und nur so funktionieren Push-Benachrichtigungen auf dem iPhone.</p>
+
+          <ClientOnly>
+          <div v-if="app.mode.value === 'installed'" class="prof__pushstate is-on"><WfIcon name="check" :size="16" /> Läuft auf diesem Gerät als App.</div>
+
+          <template v-else-if="app.mode.value === 'prompt'">
+            <button class="wf-btn wf-btn--primary" @click="installNow"><WfIcon name="download" :size="15" /> Jetzt als App installieren</button>
+            <p v-if="installMsg" class="prof__appok">{{ installMsg }}</p>
+          </template>
+
+          <ol v-else-if="app.mode.value === 'ios'" class="prof__steps">
+            <li><span class="prof__stepno">1</span><span>Unten in Safari auf <b>Teilen</b> tippen
+              <svg class="prof__share" viewBox="0 0 24 24" aria-label="Teilen-Symbol"><path d="M12 15V3m0 0 4 4m-4-4L8 7M6 11H5a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-1" /></svg>
+              <small>(am iPad oben rechts)</small></span></li>
+            <li><span class="prof__stepno">2</span><span>Etwas nach unten wischen und <b>„Zum Home-Bildschirm“</b> wählen</span></li>
+            <li><span class="prof__stepno">3</span><span>Oben rechts auf <b>„Hinzufügen“</b> tippen – fertig. Danach WOHNFEE über das neue Symbol öffnen und unten die Benachrichtigungen aktivieren.</span></li>
+          </ol>
+
+          <ol v-else-if="app.mode.value === 'android-manual'" class="prof__steps">
+            <li><span class="prof__stepno">1</span><span>Oben rechts im Browser auf das <b>⋮ Menü</b> tippen</span></li>
+            <li><span class="prof__stepno">2</span><span><b>„App installieren“</b> bzw. <b>„Zum Startbildschirm hinzufügen“</b> wählen und bestätigen</span></li>
+          </ol>
+
+          <ol v-else-if="app.mode.value === 'mac-safari'" class="prof__steps">
+            <li><span class="prof__stepno">1</span><span>In der Menüleiste <b>Ablage → „Zum Dock hinzufügen …“</b> wählen</span></li>
+            <li><span class="prof__stepno">2</span><span><b>„Hinzufügen“</b> klicken – WOHNFEE liegt dann im Dock</span></li>
+          </ol>
+
+          <ol v-else-if="app.mode.value === 'desktop-chromium'" class="prof__steps">
+            <li><span class="prof__stepno">1</span><span>Rechts in der Adressleiste auf das <b>Installieren-Symbol</b> (Bildschirm mit Pfeil) klicken – oder im <b>⋮ Menü</b> „Streamen, speichern und teilen“ → <b>„Seite als App installieren“</b></span></li>
+            <li><span class="prof__stepno">2</span><span><b>„Installieren“</b> bestätigen – WOHNFEE startet dann im eigenen Fenster und liegt im Dock bzw. Startmenü</span></li>
+          </ol>
+
+          <p v-else class="prof__pushstate">Dieser Browser kann das Dashboard nicht als App installieren. Am besten Chrome oder Edge verwenden – oder am iPhone Safari.</p>
+          </ClientOnly>
+
+          <h2 class="prof__cardtitle prof__cardtitle--sub"><WfIcon name="bell" :size="15" /> Benachrichtigungen</h2>
           <p class="prof__pushintro">
             Push-Benachrichtigungen bei <strong>neuen Kontakt- und Mietanfragen</strong> – auch wenn das Dashboard geschlossen ist.
             Die Einstellung gilt je Gerät (Handy, Laptop …).
@@ -326,6 +372,13 @@ onMounted(() => push.refresh())
 </template>
 
 <style scoped>
+.prof__cardtitle--sub { margin-top: 1.8em; padding-top: 1.4em; border-top: 1px solid var(--wf-line); }
+.prof__steps { list-style: none; margin: 0; padding: 0; display: grid; gap: .6em; }
+.prof__steps li { display: flex; gap: .8em; align-items: flex-start; padding: .8em 1em; border-radius: 12px; background: #f6f3ec; font-size: .9em; line-height: 1.5; }
+.prof__steps small { color: var(--wf-muted); }
+.prof__stepno { flex: none; width: 1.8em; height: 1.8em; border-radius: 50%; background: var(--wf-green); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: .85em; }
+.prof__share { width: 1.25em; height: 1.25em; vertical-align: -.25em; margin: 0 .15em; fill: none; stroke: #0a84ff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.prof__appok { color: var(--wf-green); font-size: .88em; margin: .7em 0 0; }
 .prof__pushintro { margin: 0 0 1em; color: var(--wf-muted); font-size: .9em; line-height: 1.6; }
 .prof__pushstate { display: flex; align-items: center; gap: .6em; padding: .8em 1em; border-radius: 12px; background: #f6f3ec; font-size: .9em; margin-bottom: 1em; }
 .prof__pushstate.is-on { background: var(--wf-green-soft); color: var(--wf-green); font-weight: 600; }

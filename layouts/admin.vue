@@ -46,22 +46,10 @@ function dismissPush() {
   try { localStorage.setItem('wf_push_dismissed', '1') } catch { /* privat */ }
 }
 
-// Install-Prompt (Chrome/Edge; iOS hat keins → dort manuell über "Zum Home-Bildschirm")
-const installEvt = ref<any>(null)
-const canInstall = computed(() => !!installEvt.value)
-if (import.meta.client) {
-  window.addEventListener('beforeinstallprompt', (e: any) => {
-    e.preventDefault()
-    installEvt.value = e
-  })
-  window.addEventListener('appinstalled', () => { installEvt.value = null })
-}
-async function installApp() {
-  if (!installEvt.value) return
-  installEvt.value.prompt()
-  await installEvt.value.userChoice
-  installEvt.value = null
-}
+// Install-Prompt (Chrome/Edge; iOS hat keins → Anleitung unter Profil → App & Benachrichtigungen)
+const installer = useInstallApp()
+const canInstall = installer.canPrompt
+const installApp = () => installer.install()
 
 onMounted(async () => {
   const sessionUser = await fetchSession()
