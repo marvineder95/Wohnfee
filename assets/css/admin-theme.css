@@ -215,3 +215,18 @@ textarea.wf-input { resize: vertical; }
   .wf-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; max-width: 100%; }
   .wf-table th, .wf-table td { padding: .7em .8em; }
 }
+
+/* Dropdowns im ganzen Dashboard: eigener grüner Pfeil statt System-Pfeile, einheitliche Optik.
+   !important nur für den Pfeil, weil viele Seiten „background: #fff" setzen (würde das Bild löschen). */
+.wf-admin select:not([multiple]):not([size]) {
+  -webkit-appearance: none; appearance: none; cursor: pointer;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%232f5d40' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right .75em center !important;
+  background-size: .95em !important;
+  padding-right: 2.3em !important;
+  transition: border-color .15s, box-shadow .15s, background-color .15s;
+}
+.wf-admin select:not([multiple]):not([size]):hover:not(:disabled) { border-color: #cfc6b4; background-color: #fdfcf9; }
+.wf-admin select:not([multiple]):not([size]):focus { border-color: var(--wf-green); box-shadow: 0 0 0 3px rgba(47, 93, 64, .12); outline: none; }
+.wf-admin select:disabled { cursor: default; opacity: .7; }
