@@ -172,6 +172,11 @@ onBeforeUnmount(() => {
   if (badgeTimer) clearInterval(badgeTimer)
   document.removeEventListener('visibilitychange', onVisible)
 })
+// Handy: Menü als ausklappbare Leiste (Hamburger in der Kopfzeile)
+const navOpen = ref(false)
+watch(() => route.fullPath, () => { navOpen.value = false })
+watch(navOpen, (v) => { if (import.meta.client) document.documentElement.classList.toggle('wf-nav-open', v) })
+
 watch(() => route.path, (p, prev) => {
   if ((prev === '/admin/anfragen' || prev === '/admin/mietanfragen') && p !== prev) loadBadges()
 })
@@ -205,14 +210,16 @@ const initials = computed(() => {
 </script>
 
 <template>
-  <div class="wf-admin admin-shell">
-    <aside class="admin-shell__side">
+  <div class="wf-admin admin-shell" :class="{ 'is-navopen': navOpen }">
+    <div class="admin-shell__scrim" aria-hidden="true" @click="navOpen = false" />
+    <aside class="admin-shell__side" :aria-hidden="undefined">
       <NuxtLink to="/admin/dashboard" class="admin-shell__brand">
         <svg class="admin-shell__leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
           <path d="M5 19c0-8 5-13 14-14-1 9-6 14-14 14Zm0 0c3-6 7-9 11-11" />
         </svg>
         <span class="admin-shell__wordmark">Wohnfee</span>
       </NuxtLink>
+      <button type="button" class="admin-shell__navclose" aria-label="Menü schließen" @click="navOpen = false">×</button>
 
       <nav class="admin-shell__nav">
         <div v-for="(g, gi) in navGroups" :key="g.label || gi" class="admin-shell__group">
@@ -242,6 +249,10 @@ const initials = computed(() => {
 
     <div class="admin-shell__main">
       <header class="admin-shell__top">
+        <button type="button" class="admin-shell__burger" aria-label="Menü öffnen" :aria-expanded="navOpen" @click="navOpen = true">
+          <WfIcon name="menu" :size="20" />
+          <span v-if="newInquiries + newRentalInquiries > 0" class="admin-shell__burgerdot" />
+        </button>
         <form class="admin-shell__search" role="search" @submit.prevent="submitSearch">
           <WfIcon name="search" :size="16" />
           <input v-model="globalSearch" type="search" placeholder="Kunden, Adressen oder Stichwörter suchen …" aria-label="Suchen">
@@ -511,6 +522,36 @@ const initials = computed(() => {
   .admin-shell__top { padding: .7em 1em; }
   .admin-shell__userchip { display: none; }
 }
+
+/* ---------- Handy: Menü als Schublade statt fester Icon-Leiste ---------- */
+.admin-shell__burger, .admin-shell__navclose, .admin-shell__scrim { display: none; }
+@media (max-width: 640px) {
+  .admin-shell__burger {
+    display: inline-flex; position: relative; flex: none; align-items: center; justify-content: center;
+    width: 2.5em; height: 2.5em; border: 1px solid var(--wf-line); border-radius: 12px; background: #fff; color: var(--wf-ink); cursor: pointer;
+  }
+  .admin-shell__burgerdot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--wf-red); }
+  .admin-shell__side {
+    position: fixed; z-index: 60; top: 0; left: 0; bottom: 0; height: auto; width: min(82vw, 18em);
+    padding: 1.2em .9em 1em; transform: translateX(-105%); transition: transform .25s ease; box-shadow: none; overflow-y: auto;
+  }
+  .admin-shell.is-navopen .admin-shell__side { transform: none; box-shadow: 0 0 40px rgba(30, 25, 15, .25); }
+  .admin-shell__scrim { display: block; position: fixed; inset: 0; z-index: 55; background: rgba(30, 25, 15, .35); opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .admin-shell.is-navopen .admin-shell__scrim { opacity: 1; pointer-events: auto; }
+  .admin-shell__navclose { display: block; position: absolute; top: .7em; right: .7em; width: 2em; height: 2em; border: 0; background: none; font-size: 1.6em; line-height: 1; color: var(--wf-muted); cursor: pointer; }
+  /* in der Schublade wieder mit Beschriftung */
+  .admin-shell__brand { justify-content: flex-start; padding: .2em .3em 1em; }
+  .admin-shell__wordmark, .admin-shell__navlabel { display: inline; }
+  .admin-shell__grouplabel { display: block; }
+  .admin-shell__sideuserinfo { display: flex; }
+  .admin-shell__group + .admin-shell__group { border-top: 0; }
+  .admin-shell__navlink { justify-content: flex-start; padding: .65em .8em; }
+  .admin-shell__badge { position: static; transform: none; margin-left: auto; }
+  .admin-shell__sideuser { justify-content: flex-start; }
+  .admin-shell__content { padding: 1em .8em 2.5em; }
+  .admin-shell__top { padding: .6em .8em; gap: .6em; }
+}
+:global(html.wf-nav-open) { overflow: hidden; }
 
 @media (max-width: 520px) {
   .admin-shell__search { max-width: none; }

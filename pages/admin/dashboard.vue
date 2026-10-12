@@ -325,7 +325,7 @@ const quickActions = [
 /* Stats */
 .dash-stats {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 1em;
   margin-bottom: 1.4em;
 }
@@ -367,7 +367,7 @@ const quickActions = [
 /* Spalten */
 .dash-cols {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1em;
   margin-bottom: 1.4em;
 }
@@ -393,9 +393,13 @@ const quickActions = [
   text-decoration: none;
 }
 .dash-card__all:hover { color: var(--wf-green); }
+.dash-card__head h2 { text-align: left; margin: 0; }
+.dash-card__all { white-space: nowrap; flex-shrink: 0; }
 .dash-empty { color: var(--wf-muted); font-size: .88em; }
 
-.dash-list { list-style: none; margin: 0; padding: 0; }
+.dash-list { list-style: none; margin: 0; padding: 0; min-width: 0; max-width: 100%; }
+.dash-card { min-width: 0; }
+.dash-card > * { min-width: 0; }
 .dash-list li + li { border-top: 1px solid #f4efe6; }
 .dash-row {
   display: flex;
@@ -417,7 +421,7 @@ const quickActions = [
 .dash-quick { padding: 1.2em 1.3em; }
 .dash-quick__grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: .8em;
   margin-top: .9em;
 }
@@ -438,15 +442,16 @@ const quickActions = [
 .dash-quick__chev { margin-left: auto; color: #c9c2b2; }
 
 @media (max-width: 1020px) {
-  .dash-stats { grid-template-columns: repeat(2, 1fr); }
-  .dash-cols { grid-template-columns: 1fr; }
-  .dash-quick__grid { grid-template-columns: repeat(2, 1fr); }
+  .dash-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .dash-cols { grid-template-columns: minmax(0, 1fr); }
+  .dash-quick__grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
   .dash-hero { flex-direction: column; }
   .dash-hero__text { padding: 1.4em 1.2em .4em; }
   .dash-hero__img { flex-basis: auto; height: 150px; }
-  .dash-stats { grid-template-columns: 1fr 1fr; }
-  .dash-quick__grid { grid-template-columns: 1fr; }
+  .dash-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .6em; }
+  .dash-quick__grid { grid-template-columns: minmax(0, 1fr); }
+  .dash-card, .dash-quick { padding: 1em; }
 }
 </style>

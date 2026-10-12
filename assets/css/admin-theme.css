@@ -209,3 +209,9 @@ textarea.wf-input { resize: vertical; }
   .wf-hero-text { padding: 1.4em 1.4em 0; }
   .wf-hero-img { flex: 0 0 auto; height: 150px; margin-top: 1em; }
 }
+
+/* Handy: breite Tabellen (Angebote, Rechnungen, Kontakte …) seitlich wischbar statt Seite zu sprengen */
+@media (max-width: 760px) {
+  .wf-table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; white-space: nowrap; max-width: 100%; }
+  .wf-table th, .wf-table td { padding: .7em .8em; }
+}

@@ -729,6 +729,8 @@ onMounted(async () => {
   .proj__hero-text { padding: 1.3em 1.2em .3em; }
   .proj__hero-img { flex-basis: auto; height: 130px; }
   .proj__row { flex-wrap: wrap; }
-  .proj__side { align-items: flex-start; max-width: none; }
+  .proj__side { align-items: flex-start; max-width: none; flex: 1 1 100%; min-width: 0; }
+  .proj__side > * { max-width: 100%; overflow-wrap: anywhere; white-space: normal; }
+  .proj__actions { flex: 1 1 100%; justify-content: flex-start; }
 }
 </style>
