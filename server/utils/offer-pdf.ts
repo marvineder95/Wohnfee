@@ -92,6 +92,7 @@ export async function buildOfferPdf(offer: any, items: any[], logoPng: Buffer | 
   doc.font(font()).fontSize(10).fillColor(DARK)
   const addrLines = [offer.customer_street, [offer.customer_zip, offer.customer_city].filter(Boolean).join(' '),
     offer.customer_country, offer.customer_uid].filter(Boolean)
+    .flatMap((l: any) => String(l).split(/\r?\n/)).filter((l: string) => l.trim()) // z. B. „z. H. …“ als eigene Zeile
   for (const l of addrLines) {
     doc.text(String(l), M, cy, { width: custW })
     cy += 14.5
