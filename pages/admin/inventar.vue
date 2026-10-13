@@ -40,7 +40,26 @@ const pageLen = 50
 const loading = ref(true)
 const error = ref('')
 const search = ref('')
-const statusFilter = ref('')
+const statusFilter = ref<string[]>([]) // Mehrfachauswahl über die Status-Kacheln
+const flagFilter = ref<string[]>([])
+const sortBy = ref('title')
+// Zusatzfilter (alle gewählten müssen zutreffen)
+const FLAGS: Array<{ key: string; label: string }> = [
+  { key: 'nophoto', label: 'Ohne Foto' },
+  { key: 'noprice', label: 'Ohne Mietpreis' },
+  { key: 'nodesc', label: 'Ohne Beschreibung' },
+  { key: 'note', label: 'Mit interner Notiz' },
+  { key: 'overdue', label: 'Rückgabe überfällig' }
+]
+const SORTS: Array<{ key: string; label: string }> = [
+  { key: 'title', label: 'Bezeichnung A–Z' },
+  { key: 'newest', label: 'Zuletzt angelegt' },
+  { key: 'price_desc', label: 'Originalpreis absteigend' },
+  { key: 'price_asc', label: 'Originalpreis aufsteigend' },
+  { key: 'rent_desc', label: 'Mietpreis absteigend' }
+]
+const hasFilters = computed(() => !!(statusFilter.value.length || flagFilter.value.length || warehouseFilter.value ||
+  supplierFilter.value || categoryFilter.value || rentableOnly.value || search.value || sortBy.value !== 'title'))
 const warehouseFilter = ref('')
 const supplierFilter = ref('')
 const categoryFilter = ref('')
@@ -186,7 +205,9 @@ async function load() {
   error.value = ''
   try {
     const params = new URLSearchParams({ q: search.value, page: String(page.value), pagelen: String(pageLen) })
-    if (statusFilter.value) params.set('status', statusFilter.value)
+    if (statusFilter.value.length) params.set('status', statusFilter.value.join(','))
+    if (flagFilter.value.length) params.set('flags', flagFilter.value.join(','))
+    if (sortBy.value !== 'title') params.set('sort', sortBy.value)
     if (warehouseFilter.value) params.set('warehouse', warehouseFilter.value)
     if (supplierFilter.value) params.set('supplier', supplierFilter.value)
     if (categoryFilter.value) params.set('category', categoryFilter.value)
@@ -212,8 +233,21 @@ function onSearch() {
   clearTimeout(searchTimer.value)
   searchTimer.value = setTimeout(() => { page.value = 0; load() }, 300)
 }
-function setFilter(kind: 'status' | 'warehouse' | 'supplier' | 'category', value: string) {
-  if (kind === 'status') statusFilter.value = statusFilter.value === value ? '' : value
+// Im Template werden Refs ausgepackt – daher Auswahl über den Namen statt den Ref selbst
+function toggleIn(kind: 'status' | 'flag', value: string) {
+  const list = kind === 'status' ? statusFilter : flagFilter
+  list.value = list.value.includes(value) ? list.value.filter((v) => v !== value) : [...list.value, value]
+  page.value = 0
+  load()
+}
+function resetFilters() {
+  statusFilter.value = []; flagFilter.value = []; sortBy.value = 'title'
+  warehouseFilter.value = ''; supplierFilter.value = ''; categoryFilter.value = ''
+  rentableOnly.value = false; search.value = ''
+  page.value = 0
+  load()
+}
+function setFilter(kind: 'warehouse' | 'supplier' | 'category', value: string) {
   if (kind === 'warehouse') warehouseFilter.value = warehouseFilter.value === value ? '' : value
   if (kind === 'supplier') supplierFilter.value = supplierFilter.value === value ? '' : value
   if (kind === 'category') categoryFilter.value = categoryFilter.value === value ? '' : value
@@ -351,7 +385,8 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
 
     <div class="inv__stats">
       <button v-for="(label, key) in STATUS_LABELS" :key="key" class="inv__stat"
-              :class="{ 'is-active': statusFilter === key }" @click="setFilter('status', key)">
+              :class="{ 'is-active': statusFilter.includes(key) }" :aria-pressed="statusFilter.includes(key)"
+              @click="toggleIn('status', key)">
         <span class="inv__statn">{{ stats[key] || 0 }}</span>
         <span class="inv__statlabel">{{ label }}</span>
       </button>
@@ -384,6 +419,24 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
         <span class="inv__rentfiltertext">Nur vermietbare Objekte</span>
       </label>
     </div>
+
+    <div class="inv__more">
+      <span class="inv__morelabel">Nur:</span>
+      <button v-for="f in FLAGS" :key="f.key" type="button" class="inv__chip"
+              :class="{ 'is-active': flagFilter.includes(f.key) }" :aria-pressed="flagFilter.includes(f.key)"
+              @click="toggleIn('flag', f.key)">
+        <WfIcon v-if="flagFilter.includes(f.key)" name="check" :size="11" /> {{ f.label }}
+      </button>
+      <span class="inv__morespacer" />
+      <select v-model="sortBy" class="inv__select inv__select--sort" aria-label="Sortierung" @change="page = 0; load()">
+        <option v-for="s in SORTS" :key="s.key" :value="s.key">{{ s.label }}</option>
+      </select>
+    </div>
+    <p class="inv__resultline">
+      <strong>{{ total.toLocaleString('de-AT') }}</strong> {{ total === 1 ? 'Objekt' : 'Objekte' }}
+      <template v-if="statusFilter.length"> · Status: {{ statusFilter.map((k) => STATUS_LABELS[k]).join(', ') }}</template>
+      <button v-if="hasFilters" type="button" class="inv__reset" @click="resetFilters">Filter zurücksetzen</button>
+    </p>
 
     <p v-if="error" class="inv__error" role="alert">{{ error }}</p>
     <p v-if="loading" class="inv__loading">Inventar wird geladen …</p>
@@ -672,6 +725,21 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
 .inv__statlabel { font-size: .74em; color: var(--wf-muted); }
 .inv__sum { margin-left: auto; font-size: .85em; color: var(--wf-muted); }
 .inv__filters { display: flex; gap: .8em; margin-bottom: .9em; flex-wrap: wrap; }
+.inv__more { display: flex; flex-wrap: wrap; align-items: center; gap: .45em; margin-bottom: .7em; }
+.inv__morelabel { font-size: .82em; color: var(--wf-muted); margin-right: .1em; }
+.inv__morespacer { flex: 1 1 auto; }
+.inv__chip {
+  display: inline-flex; align-items: center; gap: .35em; padding: .42em .9em; border-radius: 999px;
+  border: 1px solid var(--wf-line, #e7e1d6); background: #fff; color: var(--wf-text, #2b2b2b);
+  font: inherit; font-size: .84em; cursor: pointer; transition: border-color .15s, background .15s, color .15s;
+}
+.inv__chip:hover { border-color: var(--wf-green); }
+.inv__chip.is-active { border-color: var(--wf-green); background: var(--wf-green-soft); color: var(--wf-green); font-weight: 600; }
+.inv__select--sort { min-width: 0; }
+.inv__resultline { display: flex; flex-wrap: wrap; align-items: baseline; gap: .3em .6em; margin: 0 0 .8em; font-size: .88em; color: var(--wf-muted); }
+.inv__resultline strong { color: var(--wf-text, #2b2b2b); }
+.inv__reset { border: 0; background: none; padding: 0; font: inherit; color: var(--wf-green); text-decoration: underline; cursor: pointer; }
+@media (max-width: 640px) { .inv__morespacer { display: none; } .inv__select--sort { width: 100%; } }
 .inv__search {
   flex: 1; min-width: 14em; max-width: 26em; padding: .6em .9em; font-size: .92em; font-family: inherit;
   color: var(--wf-ink); border: 1px solid var(--wf-line); border-radius: 999px; outline: none; background: #fff;

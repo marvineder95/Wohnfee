@@ -2,12 +2,32 @@ import { requireAdmin } from '../../../utils/admin-auth'
 import { query } from '../../../utils/db'
 import { INVENTORY_CATEGORY_KEYS } from '../../../../shared/inventory-categories'
 
-// GET /api/admin/inventory?q=&status=&warehouse=&supplier=&category=&rentable=&page=
+// GET /api/admin/inventory?q=&status=lager,pflege&warehouse=&supplier=&category=&rentable=&flags=&sort=&page=
+// status: mehrere durch Komma (ODER). flags: Zusatzfilter (UND), siehe FLAG_SQL. sort: siehe SORT_SQL.
+const STATUSES = ['lager', 'vermietet', 'pflege', 'verkauft', 'ausser_dienst']
+const FLAG_SQL: Record<string, string> = {
+  nophoto: 'image_path IS NULL',
+  photo: 'image_path IS NOT NULL',
+  noprice: '(rent_price_1m IS NULL AND rent_price_3m IS NULL)',
+  nodesc: "(description IS NULL OR description = '')",
+  note: "(internal_note IS NOT NULL AND internal_note <> '')",
+  overdue: `EXISTS (SELECT 1 FROM project_items pi WHERE pi.item_id = inventory_items.id
+             AND pi.return_date IS NOT NULL AND pi.return_date < CURDATE())`
+}
+const SORT_SQL: Record<string, string> = {
+  title: 'title, id',
+  newest: 'id DESC',
+  price_desc: 'original_price IS NULL, original_price DESC, title',
+  price_asc: 'original_price IS NULL, original_price ASC, title',
+  rent_desc: 'COALESCE(rent_price_3m, rent_price_1m) IS NULL, COALESCE(rent_price_3m, rent_price_1m) DESC, title'
+}
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const qs = getQuery(event)
   const q = String(qs.q || '').trim()
-  const status = String(qs.status || '').trim()
+  const statuses = String(qs.status || '').split(',').map((s) => s.trim()).filter((s) => STATUSES.includes(s))
+  const flags = String(qs.flags || '').split(',').map((s) => s.trim()).filter((s) => FLAG_SQL[s])
+  const orderBy = SORT_SQL[String(qs.sort || '')] || SORT_SQL.title
   const warehouse = String(qs.warehouse || '').trim()
   const supplier = String(qs.supplier || '').trim()
   const category = String(qs.category || '').trim()
@@ -17,10 +37,11 @@ export default defineEventHandler(async (event) => {
 
   const where: string[] = []
   const params: any = {}
-  if (['lager', 'vermietet', 'pflege', 'verkauft', 'ausser_dienst'].includes(status)) {
-    where.push('status = :status')
-    params.status = status
+  if (statuses.length && statuses.length < STATUSES.length) {
+    where.push('status IN (:statuses)')
+    params.statuses = statuses
   }
+  for (const f of flags) where.push(FLAG_SQL[f])
   if (warehouse) {
     where.push('warehouse = :warehouse')
     params.warehouse = warehouse
@@ -37,7 +58,7 @@ export default defineEventHandler(async (event) => {
     where.push('rentable = 1')
   }
   if (q) {
-    where.push(`(title LIKE :q OR description LIKE :q OR supplier LIKE :q OR ean LIKE :q OR customer_location LIKE :q OR CAST(id AS CHAR) LIKE :q OR CAST(asol_id AS CHAR) LIKE :q)`)
+    where.push(`(title LIKE :q OR description LIKE :q OR internal_note LIKE :q OR supplier LIKE :q OR ean LIKE :q OR customer_location LIKE :q OR CAST(id AS CHAR) LIKE :q OR CAST(asol_id AS CHAR) LIKE :q)`)
     params.q = `%${q}%`
   }
   const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : ''
@@ -50,7 +71,7 @@ export default defineEventHandler(async (event) => {
             (SELECT MIN(pi.return_date) FROM project_items pi
               WHERE pi.item_id = inventory_items.id AND pi.return_date IS NOT NULL) AS returnDate
      FROM inventory_items ${whereSql}
-     ORDER BY title
+     ORDER BY ${orderBy}
      LIMIT :limit OFFSET :offset`,
     { ...params, limit: pageLen, offset: page * pageLen }
   )
