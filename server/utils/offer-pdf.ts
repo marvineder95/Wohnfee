@@ -57,7 +57,7 @@ export async function buildOfferPdf(offer: any, items: any[], logoPng: Buffer | 
     const y = H - 56
     doc.moveTo(M, y - 10).lineTo(W - M, y - 10).lineWidth(0.6).strokeColor(RULE).stroke()
     doc.font(font()).fontSize(7.3).fillColor(GRAY)
-    doc.text('Eder & Steiner GmbH · Obersdorferstraße 5, 2201 Seyring, Österreich · +43 660 977 81 57 · office@es-gmbh.at · www.es-gmbh.at', M, y, { width: CW, align: 'center' })
+    doc.text('Eder & Steiner GmbH · Obersdorferstraße 5, 2201 Seyring, Österreich · +43 676 9202236 · office@wohnfee.at · www.wohnfee.at', M, y, { width: CW, align: 'center' })
     doc.text('UID-Nr: ATU82726169 · Steuer-Nr.: 03 797/5380 · FN 665860G · Firmenbuchgericht: Landesgericht Korneuburg', M, y + 11, { width: CW, align: 'center' })
     doc.text('Bank: Raiffeisenbank Mödling · IBAN: AT62 3225 0000 0165 1082 · BIC: RLNWATWWGTD', M, y + 22, { width: CW, align: 'center' })
     doc.fillColor(DARK)
