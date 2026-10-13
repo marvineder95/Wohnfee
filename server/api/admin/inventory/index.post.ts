@@ -25,7 +25,7 @@ export default defineEventHandler(async (event) => {
   // damit es niemals zu Überschneidungen mit dem Altsystem kommen kann
   const result: any = await query(
     `INSERT INTO inventory_items
-       (id, title, title_en, category, description, description_en, supplier, artnr, ean, quantity, original_price,
+       (id, title, title_en, category, description, description_en, internal_note, supplier, artnr, ean, quantity, original_price,
         rent_price_1m, rent_price_3m, rentable, status, warehouse, customer_location, purchased_at, purchased_year, source)
      SELECT
        GREATEST(
@@ -33,13 +33,14 @@ export default defineEventHandler(async (event) => {
          (SELECT COALESCE(MAX(asol_id), 0) FROM inventory_items),
          31999
        ) + 1,
-       :title, :titleEn, :category, :desc, :descEn, :supplier, :artnr, :ean, :qty, :orig, :r1, :r3, :rentable, :status,
+       :title, :titleEn, :category, :desc, :descEn, :inote, :supplier, :artnr, :ean, :qty, :orig, :r1, :r3, :rentable, :status,
        :wh, :cloc, :purch, :pyear, 'manual'`,
     {
       title, category,
       titleEn: clean(body?.titleEn, 190),
       desc: clean(body?.description, 5000),
       descEn: clean(body?.descriptionEn, 5000),
+      inote: clean(body?.internalNote, 5000),
       supplier: clean(body?.supplier, 128),
       artnr: clean(body?.artnr, 64),
       ean: clean(body?.ean, 32),

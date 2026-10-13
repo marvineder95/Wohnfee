@@ -638,6 +638,8 @@ export async function migrateSchema() {
     await db.query("ALTER TABLE inventory_items MODIFY status ENUM('lager','vermietet','pflege','verkauft','ausser_dienst') NOT NULL DEFAULT 'lager'")
     console.log('[db-init] Migration: inventory_items.status um PFLEGE erweitert')
   }
+  // Inventar: interne Notiz (Zustand, Schäden, Lagerort-Details) – nie im Shop
+  await addCol('inventory_items', 'internal_note', 'ADD COLUMN internal_note TEXT NULL AFTER description_en')
   // Immobilien-Anfragen: Verknüpfung zur Immobilie
   await addCol('contact_inquiries', 'property_id', 'ADD COLUMN property_id INT UNSIGNED NULL')
   // Jeder Abonnent braucht einen persönlichen Abmelde-Token (für den Link in jeder Mail)

@@ -48,6 +48,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Datum „heute": Server `todayVienna()` (`server/utils/site.ts`), Browser `localToday()`.
 - Rechnungen: nur Entwürfe lösch-/editierbar; ausgestellte nur Status gesendet↔bezahlt,
   Korrektur über Storno (serverseitig erzwungen).
+- Inventar: `description` (+ `description_en`) = Text im Mietshop; `internal_note` = interne Notiz, nur Dashboard (nie in Katalog-API/Angeboten).
 - Möbel ↔ Projekte: `server/utils/inventory-sync.ts` verhindert Doppelbelegung und setzt
   Lagerstatus (lager/vermietet); Shop zeigt nur freien Bestand.
 - Anfrage → Angebot: `server/utils/offer-create.ts` (Miet- und Kontaktanfragen), Angebote

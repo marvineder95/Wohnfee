@@ -9,7 +9,7 @@ export default defineEventHandler(async (event) => {
   }
   const item = await queryOne(
     `SELECT id, asol_id AS asolId, title, title_en AS titleEn, category, image_path AS imagePath,
-            description, description_en AS descriptionEn, supplier, artnr, ean, quantity,
+            description, description_en AS descriptionEn, internal_note AS internalNote, supplier, artnr, ean, quantity,
             original_price AS originalPrice, rent_price_1m AS rentPrice1m, rent_price_3m AS rentPrice3m, rentable,
             status, warehouse, customer_location AS customerLocation,
             purchased_at AS purchasedAt, purchased_year AS purchasedYear, source

@@ -30,7 +30,7 @@ export default defineEventHandler(async (event) => {
 
   await query(
     `UPDATE inventory_items SET
-       title = :title, title_en = :titleEn, category = :category, description = :desc, description_en = :descEn,
+       title = :title, title_en = :titleEn, category = :category, description = :desc, description_en = :descEn, internal_note = :inote,
        supplier = :supplier, artnr = :artnr, ean = :ean,
        quantity = :qty, original_price = :orig, rent_price_1m = :r1, rent_price_3m = :r3,
        rentable = :rentable, status = :status, warehouse = :wh, customer_location = :cloc,
@@ -41,6 +41,7 @@ export default defineEventHandler(async (event) => {
       titleEn: clean(body?.titleEn, 190),
       desc: clean(body?.description, 5000),
       descEn: clean(body?.descriptionEn, 5000),
+      inote: clean(body?.internalNote, 5000),
       supplier: clean(body?.supplier, 128),
       artnr: clean(body?.artnr, 64),
       ean: clean(body?.ean, 32),

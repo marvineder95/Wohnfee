@@ -85,7 +85,7 @@ const form = reactive({
   title: '', titleEn: '', category: '', supplier: '', ean: '', quantity: 1,
   originalPrice: '', rentPrice1m: '', rentPrice3m: '', rentable: false,
   status: 'lager', warehouse: '', customerLocation: '',
-  purchasedAt: '', purchasedYear: '', description: '', descriptionEn: ''
+  purchasedAt: '', purchasedYear: '', description: '', descriptionEn: '', internalNote: ''
 })
 const saving = ref(false)
 const saveError = ref('')
@@ -230,7 +230,7 @@ async function openNew() {
     title: '', titleEn: '', category: '', supplier: '', ean: '', quantity: 1,
     originalPrice: '', rentPrice1m: '', rentPrice3m: '', rentable: false,
     status: 'lager', warehouse: '', customerLocation: '',
-    purchasedAt: '', purchasedYear: '', description: '', descriptionEn: ''
+    purchasedAt: '', purchasedYear: '', description: '', descriptionEn: '', internalNote: ''
   })
   tagsArr.value = []
   matches.value = []
@@ -258,7 +258,7 @@ async function openEdit(item: Item) {
       status: res.item.status, warehouse: res.item.warehouse || '',
       customerLocation: res.item.customerLocation || '',
       purchasedAt: res.item.purchasedAt || '', purchasedYear: res.item.purchasedYear || '',
-      description: res.item.description || '', descriptionEn: res.item.descriptionEn || ''
+      description: res.item.description || '', descriptionEn: res.item.descriptionEn || '', internalNote: res.item.internalNote || ''
     })
     tagsArr.value = res.tags
     matches.value = (res as any).matches || []
@@ -542,9 +542,15 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
             <section class="inv__sec">
               <h3 class="inv__sech"><WfIcon name="file" :size="15" /> Beschreibung</h3>
               <label class="inv__field">
-                <span class="inv__labelrow">Beschreibung (optional)<em class="inv__charcount">{{ form.description.length }}/500</em></span>
+                <span class="inv__labelrow">Beschreibung für den Mietshop (optional)<em class="inv__charcount">{{ form.description.length }}/500</em></span>
                 <textarea v-model="form.description" rows="3" maxlength="500" placeholder="z. B. Farbe, Maße, Besonderheiten …" />
               </label>
+              <p class="inv__hint">Sichtbar für Kunden im Furniture Leasing.</p>
+              <label class="inv__field inv__field--internal">
+                <span class="inv__labelrow"><span><WfIcon name="lock" :size="13" /> Interne Notiz (nur im Dashboard)</span><em class="inv__charcount">{{ form.internalNote.length }}/1000</em></span>
+                <textarea v-model="form.internalNote" rows="3" maxlength="1000" placeholder="z. B. Kratzer links hinten, Bezug in Reinigung, gehört zu Set …" />
+              </label>
+              <p class="inv__hint">Wird nie auf der Website oder in Angeboten angezeigt.</p>
             </section>
 
             <section class="inv__sec">
