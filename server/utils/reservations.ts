@@ -226,9 +226,9 @@ async function createRentalProject(inquiry: any, offer: any): Promise<number> {
   try {
     await conn.beginTransaction()
     const [res]: any = await conn.query(
-      `INSERT INTO projects (category, customer, title, status_info, deadline_text, deadline_date, next_step, date_info, source)
-       VALUES ('leasing', ?, ?, ?, 'Mietende', ?, 'Lieferung planen', ?, 'shop')`,
-      [customer, `Möbelmiete ${inquiry.number}`.slice(0, 190),
+      `INSERT INTO projects (category, customer, contact_id, title, status_info, deadline_text, deadline_date, next_step, date_info, source)
+       VALUES ('leasing', ?, ?, ?, ?, 'Mietende', ?, 'Lieferung planen', ?, 'shop')`,
+      [customer, offer.contact_id || null, `Möbelmiete ${inquiry.number}`.slice(0, 190),
        [`Angebot ${offer.number} angenommen`, `${inquiry.street || ''}, ${inquiry.zip || ''} ${inquiry.city || ''}`.trim(),
         inquiry.phone ? `Tel. ${inquiry.phone}` : '', inquiry.email].filter(Boolean).join('\n'),
        inquiry.end_date || null, `${fmt(inquiry.start_date)} – ${fmt(inquiry.end_date)}`.slice(0, 64)]

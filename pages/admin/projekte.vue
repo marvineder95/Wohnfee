@@ -11,6 +11,8 @@ interface Project {
   category: 'staging' | 'leasing' | 'showroom'
   section: string | null
   customer: string | null
+  contactId: number | null
+  contactName: string | null
   title: string | null
   art: string | null
   team: string | null
@@ -52,8 +54,36 @@ const editing = ref<Project | null>(null)
 const form = reactive({
   category: 'staging', section: '', customer: '', title: '', art: '', team: '',
   statusInfo: '', deadlineText: '', deadlineDate: '', note: '',
-  nextStep: '', who: '', dateInfo: ''
+  nextStep: '', who: '', dateInfo: '', contactId: null as number | null, contactName: ''
 })
+
+// Kontakt verknüpfen → Rechnungsadresse für Angebote/Rechnungen aus dem Projekt
+const contactSearch = ref('')
+const contactResults = ref<Array<{ id: number; label: string; name: string }>>([])
+let contactTimer: any = null
+function onContactSearch() {
+  clearTimeout(contactTimer)
+  contactTimer = setTimeout(async () => {
+    const q = contactSearch.value.trim()
+    contactResults.value = []
+    if (q.length < 2) return
+    try {
+      const res = await $fetch<{ contacts: any[] }>(`/api/admin/contacts?q=${encodeURIComponent(q)}&pagelen=8`)
+      contactResults.value = res.contacts.map((c) => {
+        const name = [c.name1, c.name2].filter(Boolean).join(' ')
+        return { id: c.id, name, label: name + (c.city ? ` (${c.city})` : '') }
+      })
+    } catch { /* ignorieren */ }
+  }, 300)
+}
+function pickContact(c: { id: number; name: string }) {
+  form.contactId = c.id
+  form.contactName = c.name
+  if (!form.customer) form.customer = c.name
+  contactSearch.value = ''
+  contactResults.value = []
+}
+function clearContact() { form.contactId = null; form.contactName = '' }
 const saving = ref(false)
 const saveError = ref('')
 
@@ -242,8 +272,10 @@ function openNew() {
   Object.assign(form, {
     category: tab.value, section: '', customer: '', title: '', art: tab.value === 'staging' ? 'HS' : '',
     team: '', statusInfo: '', deadlineText: '', deadlineDate: '', note: '',
-    nextStep: '', who: '', dateInfo: ''
+    nextStep: '', who: '', dateInfo: '', contactId: null, contactName: ''
   })
+  contactSearch.value = ''
+  contactResults.value = []
   saveError.value = ''
   itemListFilter.value = ''
   itemSort.value = 'name'
@@ -258,8 +290,11 @@ function openEdit(p: Project) {
     title: p.title || '', art: p.art || '', team: p.team || '',
     statusInfo: p.statusInfo || '', deadlineText: p.deadlineText || '',
     deadlineDate: p.deadlineDate ? String(p.deadlineDate).slice(0, 10) : '', note: p.note || '',
-    nextStep: p.nextStep || '', who: p.who || '', dateInfo: p.dateInfo || ''
+    nextStep: p.nextStep || '', who: p.who || '', dateInfo: p.dateInfo || '',
+    contactId: p.contactId || null, contactName: p.contactName || ''
   })
+  contactSearch.value = ''
+  contactResults.value = []
   itemError.value = ''
   saveError.value = ''
   itemListFilter.value = ''
@@ -431,6 +466,20 @@ onMounted(async () => {
                   <span>Projekt / Wo</span>
                   <input v-model="form.title" type="text" placeholder="z. B. 9., Rossauer Lände 17 Top 7">
                 </label>
+              </div>
+              <div class="proj__field proj__contact">
+                <span>Rechnungskontakt <em class="proj__opt">(Adresse für Angebote &amp; Rechnungen)</em></span>
+                <div v-if="form.contactId" class="proj__contactcard">
+                  <WfIcon name="contacts" :size="14" />
+                  <span class="proj__contactname">{{ form.contactName || 'Kontakt #' + form.contactId }}</span>
+                  <button type="button" class="proj__contactx" aria-label="Kontakt entfernen" @click="clearContact">×</button>
+                </div>
+                <div v-else class="proj__contactsearch">
+                  <input v-model="contactSearch" type="search" placeholder="Kontakt suchen und verknüpfen …" @input="onContactSearch">
+                  <ul v-if="contactResults.length" class="proj__contactlist">
+                    <li v-for="c in contactResults" :key="c.id"><button type="button" @click="pickContact(c)">{{ c.label }}</button></li>
+                  </ul>
+                </div>
               </div>
               <div v-if="form.category === 'staging'" class="proj__edrow">
                 <label class="proj__field">
@@ -663,6 +712,16 @@ onMounted(async () => {
 }
 .proj__field input:focus, .proj__field select:focus, .proj__field textarea:focus { border-color: var(--wf-green); box-shadow: 0 0 0 3px rgba(47, 93, 64, .12); }
 .proj__clearwrap { position: relative; display: block; font-size: 1rem; }
+.proj__contact { margin-bottom: .9em; }
+.proj__opt { font-style: normal; color: var(--wf-muted); font-weight: 400; }
+.proj__contactcard { display: flex; align-items: center; gap: .5em; padding: .55em .8em; border-radius: 10px; background: var(--wf-green-soft); color: var(--wf-green); }
+.proj__contactname { font-weight: 600; color: inherit; text-decoration: none; flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.proj__contactx { border: 0; background: none; color: inherit; font-size: 1.2em; line-height: 1; cursor: pointer; padding: 0 .2em; }
+.proj__contactsearch { position: relative; }
+.proj__contactlist { position: absolute; z-index: 5; left: 0; right: 0; top: calc(100% + 4px); margin: 0; padding: .3em; list-style: none;
+  background: #fff; border: 1px solid #e7e1d6; border-radius: 10px; box-shadow: 0 10px 30px rgba(0,0,0,.08); }
+.proj__contactlist button { display: block; width: 100%; text-align: left; border: 0; background: none; padding: .5em .6em; border-radius: 7px; font: inherit; cursor: pointer; }
+.proj__contactlist button:hover { background: var(--wf-green-soft); }
 .proj__clearwrap input { padding-right: 2em; }
 .proj__clear {
   position: absolute; right: .35em; top: 50%; transform: translateY(-50%);

@@ -26,7 +26,9 @@ export default defineEventHandler(async (event) => {
   const whereSql = where.length ? 'WHERE ' + where.join(' AND ') : ''
 
   const projects = await query(
-    `SELECT id, category, section, customer, title, art, team, status_info AS statusInfo,
+    `SELECT id, category, section, customer, contact_id AS contactId,
+            (SELECT CONCAT_WS(' ', c.name1, c.name2) FROM contacts c WHERE c.id = projects.contact_id) AS contactName,
+            title, art, team, status_info AS statusInfo,
             deadline_text AS deadlineText, deadline_date AS deadlineDate, note,
             next_step AS nextStep, who, date_info AS dateInfo, sort_order AS sortOrder
      FROM projects ${whereSql}

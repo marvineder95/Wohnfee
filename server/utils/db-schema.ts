@@ -638,6 +638,8 @@ export async function migrateSchema() {
     await db.query("ALTER TABLE inventory_items MODIFY status ENUM('lager','vermietet','pflege','verkauft','ausser_dienst') NOT NULL DEFAULT 'lager'")
     console.log('[db-init] Migration: inventory_items.status um PFLEGE erweitert')
   }
+  // Projekte: verknüpfter Kontakt (Rechnungsadresse für Angebote/Rechnungen aus dem Projekt)
+  await addCol('projects', 'contact_id', 'ADD COLUMN contact_id INT UNSIGNED NULL AFTER customer')
   // Inventar: interne Notiz (Zustand, Schäden, Lagerort-Details) – nie im Shop
   await addCol('inventory_items', 'internal_note', 'ADD COLUMN internal_note TEXT NULL AFTER description_en')
   // Immobilien-Anfragen: Verknüpfung zur Immobilie

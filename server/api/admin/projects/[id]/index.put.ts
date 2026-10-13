@@ -24,7 +24,7 @@ export default defineEventHandler(async (event) => {
   }
   await query(
     `UPDATE projects SET
-       category = :category, section = :section, customer = :customer, title = :title,
+       category = :category, section = :section, customer = :customer, contact_id = :contact_id, title = :title,
        art = :art, team = :team, status_info = :status_info, deadline_text = :deadline_text,
        deadline_date = :deadline_date, note = :note, next_step = :next_step,
        who = :who, date_info = :date_info
@@ -33,6 +33,7 @@ export default defineEventHandler(async (event) => {
       id, category,
       section: clean(body?.section, 64),
       customer: clean(body?.customer),
+      contact_id: Number(body?.contactId) > 0 ? Number(body.contactId) : null,
       title: clean(body?.title),
       art: clean(body?.art, 16),
       team: clean(body?.team, 16),
