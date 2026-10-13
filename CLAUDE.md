@@ -51,7 +51,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Möbel ↔ Projekte: `server/utils/inventory-sync.ts` verhindert Doppelbelegung und setzt
   Lagerstatus (lager/vermietet); Shop zeigt nur freien Bestand.
 - Anfrage → Angebot: `server/utils/offer-create.ts` (Miet- und Kontaktanfragen), Angebote
-  öffnen per `/admin/angebote?open=ID`. Projekt → „Mietverlängerung" (`extension-offer.post.ts`).
+  öffnen per `/admin/angebote?open=ID`. Projekt → „Mietverlängerung" (`extension-offer.post.ts`): eine Pauschal-Position „Verlängerung …“ mit Preis 0 zum Selbst-Eintragen (Preis richtet sich nicht nach den Möbeln).
 - Transportkosten (`server/utils/transport.ts`, Seite `/admin/konditionen`, Setting
   `transport_settings`): Team × Stundensatz × (2 × Fahrzeit + Zeit vor Ort) für Lieferung UND
   Abholung + Kilometergeld nur für km über der Freigrenze × 4 Strecken; Vorteile (Wien gratis /

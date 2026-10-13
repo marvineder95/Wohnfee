@@ -167,11 +167,11 @@ async function removeItem(itemId: number) {
   }
 }
 
-// Angebot „Mietverlängerung" aus den Möbeln des geöffneten Projekts
+// Angebot „Mietverlängerung" (eine Pauschal-Position, Preis frei eintragen)
 const extBusy = ref(false)
 async function offerExtension() {
   if (!editing.value) return
-  if (!confirm(`Angebot „Mietverlängerung" für ${editing.value.customer || editing.value.title} erstellen?\n\nAlle Möbel des Projekts werden mit ihrem Monatspreis übernommen.`)) return
+  if (!confirm(`Angebot „Mietverlängerung" für ${editing.value.customer || editing.value.title} erstellen?\n\nEs wird eine Position „Verlängerung …“ angelegt – Preis und Text trägst du danach selbst ein.`)) return
   extBusy.value = true
   try {
     const res = await $fetch<{ offerId: number }>(`/api/admin/projects/${editing.value.id}/extension-offer`, { method: 'POST' })
@@ -510,7 +510,7 @@ onMounted(async () => {
                   <NuxtLink v-if="projectItems.length" :to="`/admin/packliste/${editing.id}`" class="wf-btn wf-btn--sm" title="Druckbare Packliste">
                     <WfIcon name="list" :size="14" /> Packliste
                   </NuxtLink>
-                  <button v-if="projectItems.length && perms.canEdit('angebote')" class="wf-btn wf-btn--sm" :disabled="extBusy" title="Angebot für die Verlängerung der Leihdauer" @click="offerExtension">
+                  <button v-if="perms.canEdit('angebote')" class="wf-btn wf-btn--sm" :disabled="extBusy" title="Angebot für die Verlängerung der Leihdauer" @click="offerExtension">
                     <WfIcon name="file" :size="14" /> Verlängerung
                   </button>
                   <button v-if="canEditP" class="wf-btn wf-btn--sm wf-btn--primary" @click="showAddItem = !showAddItem">

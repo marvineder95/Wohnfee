@@ -111,11 +111,11 @@ function timeLabel(e: Entry) {
   return e.startTime ? e.startTime + (e.endTime ? '–' + e.endTime : '') : ''
 }
 
-// Verlängerung anbieten → Angebotsentwurf aus den Möbeln des Projekts
+// Verlängerung anbieten → Angebotsentwurf mit einer Pauschal-Position (Preis frei eintragen)
 const extBusy = ref<number | null>(null)
 async function offerExtension(e: Entry) {
   if (!e.projectId) return
-  if (!confirm(`Angebot „Mietverlängerung" für ${projectLabel(e)} erstellen?\n\nAlle ${e.itemCount} Möbel des Projekts werden mit ihrem Monatspreis übernommen – du kannst es danach anpassen.`)) return
+  if (!confirm(`Angebot „Mietverlängerung" für ${projectLabel(e)} erstellen?\n\nEs wird eine Position „Verlängerung …“ angelegt – Preis und Text trägst du danach selbst ein.`)) return
   extBusy.value = e.projectId
   try {
     const res = await $fetch<{ offerId: number }>(`/api/admin/projects/${e.projectId}/extension-offer`, { method: 'POST' })
