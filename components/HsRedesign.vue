@@ -124,7 +124,7 @@ function scrollToId(id: string, e: Event) {
   <div ref="root" class="hsr">
     <!-- ── Hero ─────────────────────────────────────── -->
     <section class="hsr__hero">
-      <NuxtImg class="hsr__bg" :src="IMG + 'Ferienapartment-0008.jpg'" :alt="t('Neu gestalteter Wohn- und Essbereich nach einem WOHNFEE Redesign', 'Redesigned living and dining area after a WOHNFEE redesign')"
+      <NuxtImg class="hsr__bg" :src="IMG + 'REDESIGN2_Wintergarten.jpg'" :alt="t('Heller Wintergarten mit Rattan-Möbeln und Pflanzen nach einem WOHNFEE Redesign', 'Bright conservatory with rattan furniture and plants after a WOHNFEE redesign')"
                sizes="xs:100vw sm:100vw md:100vw lg:100vw xl:100vw xxl:1600px 2xl:1920px"
                loading="eager" fetchpriority="high" />
       <div class="hsr__inside">
@@ -307,7 +307,7 @@ function scrollToId(id: string, e: Event) {
   min-height: max(560px, calc(100vh - var(--hs-head, 108px)));
   min-height: max(560px, calc(100svh - var(--hs-head, 108px)));
 }
-.hsr__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 65% 55%; }
+.hsr__bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 60%; }
 .hsr__hero::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
   background:
