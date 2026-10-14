@@ -55,7 +55,7 @@ export function areaForPath(path: string): Area | null {
     dashboard: 'dashboard', anfragen: 'anfragen', mietanfragen: 'mietanfragen', projekte: 'projekte',
     touren: 'touren', packliste: 'touren', kalender: 'kalender', inventar: 'inventar', kontakte: 'kontakte',
     angebote: 'angebote', rechnungen: 'rechnungen', artikel: 'artikel', newsletter: 'newsletter',
-    konditionen: 'konditionen', users: 'users', immobilien: 'immobilien', partner: 'partner'
+    konditionen: 'konditionen', users: 'users', immobilien: 'immobilien', partner: 'partner', pakete: 'inventar', inhalte: 'partner'
   }
   return map[p] || null // profil, passwort, einladung … sind für alle offen
 }
@@ -84,7 +84,8 @@ export function requirementForApi(path: string, method: string): { area: Area; n
     dashboard: 'dashboard', inquiries: 'anfragen', 'rental-inquiries': 'mietanfragen', projects: 'projekte',
     logistics: 'touren', calendar: 'kalender', inventory: 'inventar', contacts: 'kontakte', offers: 'angebote',
     invoices: 'rechnungen', recurring: 'rechnungen', blog: 'artikel', newsletter: 'newsletter',
-    transport: 'konditionen', users: 'users', properties: 'immobilien', partners: 'partner'
+    transport: 'konditionen', users: 'users', properties: 'immobilien', partners: 'partner',
+    'rental-pricing': 'konditionen', packages: 'inventar', testimonials: 'partner', 'site-content': 'partner'
   }
   const area = map[seg[0]]
   return area ? { area, need } : null

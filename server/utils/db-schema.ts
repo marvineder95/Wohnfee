@@ -392,6 +392,45 @@ CREATE TABLE IF NOT EXISTS recurring_invoices (
   CONSTRAINT fk_recurring_source FOREIGN KEY (source_invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS rental_packages (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(190) NOT NULL,
+  title_en VARCHAR(190) NULL,
+  description TEXT NULL,
+  description_en TEXT NULL,
+  image_path VARCHAR(255) NULL,
+  discount_pct DECIMAL(5,2) NOT NULL DEFAULT 10,
+  price_override DECIMAL(10,2) NULL,
+  visible TINYINT(1) NOT NULL DEFAULT 0,
+  sort_order INT NOT NULL DEFAULT 0,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS rental_package_items (
+  package_id INT UNSIGNED NOT NULL,
+  item_id INT UNSIGNED NOT NULL,
+  quantity INT UNSIGNED NOT NULL DEFAULT 1,
+  position INT NOT NULL DEFAULT 0,
+  PRIMARY KEY (package_id, item_id),
+  KEY idx_rpi_item (item_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS testimonials (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  quote TEXT NOT NULL,
+  quote_en TEXT NULL,
+  name VARCHAR(128) NOT NULL,
+  role VARCHAR(190) NULL,
+  audience ENUM('alle','bautraeger','makler','privat') NOT NULL DEFAULT 'alle',
+  rating TINYINT NULL,
+  visible TINYINT(1) NOT NULL DEFAULT 0,
+  sort_order INT NOT NULL DEFAULT 0,
+  note TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS partners (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   kind ENUM('partner','referenz') NOT NULL DEFAULT 'partner',
@@ -657,6 +696,9 @@ export async function migrateSchema() {
   }
   // Projekte: verknüpfter Kontakt (Rechnungsadresse für Angebote/Rechnungen aus dem Projekt)
   await addCol('projects', 'contact_id', 'ADD COLUMN contact_id INT UNSIGNED NULL AFTER customer')
+  // Mietanfragen: Rabatt nach Mietdauer + Paket-Herkunft der Positionen
+  await addCol('rental_inquiries', 'discount_pct', 'ADD COLUMN discount_pct DECIMAL(5,2) NOT NULL DEFAULT 0')
+  await addCol('rental_inquiry_items', 'package_title', 'ADD COLUMN package_title VARCHAR(190) NULL')
   // Inventar: interne Notiz (Zustand, Schäden, Lagerort-Details) – nie im Shop
   await addCol('inventory_items', 'internal_note', 'ADD COLUMN internal_note TEXT NULL AFTER description_en')
   // Immobilien-Anfragen: Verknüpfung zur Immobilie

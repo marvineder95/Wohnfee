@@ -446,7 +446,7 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
       <thead>
         <tr>
           <th class="inv__thimg" /><th class="inv__thid">ID</th><th>Bezeichnung</th><th>Anbieter</th><th>Menge</th><th>Originalpreis</th>
-          <th>Miete 3 Mon.</th><th>Status / Standort</th><th />
+          <th>Miete / Monat</th><th>Status / Standort</th><th />
         </tr>
       </thead>
       <tbody>
@@ -467,7 +467,7 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
           <td>{{ i.supplier || '—' }}</td>
           <td>{{ i.quantity }}</td>
           <td>{{ eur(i.originalPrice) }}</td>
-          <td>{{ eur(i.rentPrice3m) }}</td>
+          <td>{{ eur(i.rentPrice1m) }}</td>
           <td>
             <span class="wf-pill" :class="i.status === 'vermietet' ? 'wf-pill--blue' : i.status === 'verkauft' ? 'wf-pill--gray' : i.status === 'ausser_dienst' ? 'wf-pill--red' : i.status === 'pflege' ? 'wf-pill--amber' : ''">{{ STATUS_LABELS[i.status] }}</span>
             <span class="inv__loc">{{ i.status === 'vermietet' ? (i.customerLocation || '—') : (i.warehouse || '—') }}</span>
@@ -546,13 +546,9 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
                   <span>Originalpreis €</span>
                   <input v-model="form.originalPrice" type="text" placeholder="0,00">
                 </label>
-                <label class="inv__field inv__field--small">
-                  <span>Miete 1 Mon. €</span>
+                <label class="inv__field inv__field--small" title="Grundpreis bei 1 Monat – längere Mietdauer bekommt automatisch Rabatt (Konditionen)">
+                  <span>Miete / Monat €</span>
                   <input v-model="form.rentPrice1m" type="text" placeholder="0,00">
-                </label>
-                <label class="inv__field inv__field--small">
-                  <span>Miete 3 Mon. €</span>
-                  <input v-model="form.rentPrice3m" type="text" placeholder="0,00">
                 </label>
               </div>
               <label class="inv__check">

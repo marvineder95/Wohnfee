@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DEFAULT_TIERS, tierLabel, normalizeTiers, type DiscountTier } from '~~/shared/rental-pricing'
 definePageMeta({ layout: 'admin' })
 useHead({ title: 'Konditionen - WOHNFEE Dashboard', meta: [{ name: 'robots', content: 'noindex,nofollow' }] })
 
@@ -26,11 +27,22 @@ const saving = ref(false)
 const msg = ref('')
 const error = ref('')
 
+// Rabatt nach Mietdauer (Furniture Leasing) – shared/rental-pricing.ts
+const tiers = ref<DiscountTier[]>(DEFAULT_TIERS.map(t => ({ ...t })))
+const sortedTiers = computed(() => normalizeTiers(tiers.value))
+function addTier() {
+  const last = tiers.value[tiers.value.length - 1]
+  tiers.value.push({ from: Math.min(48, (last?.from || 1) + 6), pct: Math.min(90, (last?.pct || 0) + 5) })
+}
+function removeTier(i: number) { if (tiers.value[i].from !== 1) tiers.value.splice(i, 1) }
+const examplePrice = 100
+
 async function load() {
   loading.value = true
   try {
     const res = await $fetch<{ settings: Settings }>('/api/admin/transport/settings')
     Object.assign(form, res.settings)
+    try { tiers.value = (await $fetch<{ tiers: DiscountTier[] }>('/api/admin/rental-pricing')).tiers } catch { /* Standard */ }
   } catch (e: any) {
     error.value = e?.data?.statusMessage || 'Konditionen konnten nicht geladen werden.'
   } finally {
@@ -44,6 +56,7 @@ async function save() {
   try {
     const res = await $fetch<{ settings: Settings }>('/api/admin/transport/settings', { method: 'PUT', body: form })
     Object.assign(form, res.settings)
+    tiers.value = (await $fetch<{ tiers: DiscountTier[] }>('/api/admin/rental-pricing', { method: 'PUT', body: { tiers: tiers.value } })).tiers
     msg.value = 'Gespeichert – neue Angebote werden ab jetzt mit diesen Konditionen berechnet.'
     if (test.zip || test.city) runTest()
   } catch (e: any) {
@@ -162,6 +175,26 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
         <p v-if="error" class="kond__error" role="alert">{{ error }}</p>
         <p v-if="msg" class="kond__ok">{{ msg }}</p>
           <section class="kond__card wf-card">
+            <h2 class="kond__h2"><WfIcon name="calendar" :size="16" /> Rabatt nach Mietdauer (Furniture Leasing)</h2>
+            <p class="kond__hint kond__hint--gap">Grundpreis ist die Monatsmiete bei 1 Monat (Inventar). Je länger gemietet wird, desto mehr Rabatt – gilt im Shop, im Checkout, bei Paketen und in den automatischen Angeboten.</p>
+            <table class="kond__tiers">
+              <thead><tr><th>Ab Mietdauer</th><th>Rabatt</th><th>Beispiel {{ eur(examplePrice) }}</th><th /></tr></thead>
+              <tbody>
+                <tr v-for="(t, i) in tiers" :key="i">
+                  <td><span class="kond__unit"><input v-model.number="t.from" type="number" min="1" max="48" :disabled="t.from === 1 && i === 0" :aria-label="`Stufe ${i + 1}: ab Monaten`"><em>Mon.</em></span></td>
+                  <td><span class="kond__unit"><input v-model.number="t.pct" type="number" min="0" max="90" step="0.5" :aria-label="`Stufe ${i + 1}: Rabatt`"><em>%</em></span></td>
+                  <td class="kond__tierex">{{ eur(examplePrice * (1 - (Number(t.pct) || 0) / 100)) }} / Mon.</td>
+                  <td><button v-if="i > 0" type="button" class="kond__tierx" :aria-label="`Stufe ${i + 1} entfernen`" @click="removeTier(i)">×</button></td>
+                </tr>
+              </tbody>
+            </table>
+            <button type="button" class="wf-btn wf-btn--sm" @click="addTier"><WfIcon name="plus" :size="13" /> Stufe hinzufügen</button>
+            <p class="kond__hint kond__tiersum">
+              <template v-for="(t, i) in sortedTiers" :key="t.from">{{ tierLabel(sortedTiers, i) }}: <strong>{{ t.pct ? `−${t.pct.toLocaleString('de-AT')} %` : 'kein Rabatt' }}</strong><template v-if="i < sortedTiers.length - 1"> · </template></template>
+            </p>
+          </section>
+
+          <section class="kond__card wf-card">
             <h2 class="kond__h2"><WfIcon name="diamond" :size="16" /> Deko-Paket im Checkout</h2>
             <label class="kond__switch">
               <input v-model="form.decoEnabled" type="checkbox">
@@ -260,6 +293,15 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
 .kond__switch { display: flex; align-items: flex-start; gap: .6em; margin-bottom: 1em; font-size: .88em; cursor: pointer; }
 .kond__switch input { margin-top: .2em; accent-color: var(--wf-green); width: 16px; height: 16px; }
 .kond__actions { display: flex; justify-content: flex-end; }
+.kond__tiers { width: 100%; border-collapse: collapse; margin-bottom: .8em; font-size: .9em; }
+.kond__tiers th { text-align: left; font-size: .78em; font-weight: 600; color: #6e6858; padding: 0 .5em .4em 0; }
+.kond__tiers td { padding: 0 .5em .5em 0; vertical-align: middle; }
+.kond__tiers .kond__unit input { width: 100%; box-sizing: border-box; padding: .55em 3em .55em .7em; font: inherit; border: 1px solid var(--wf-line); border-radius: 10px; background: #fff; }
+.kond__tiers .kond__unit input:disabled { background: #f6f3ec; }
+.kond__tierex { color: var(--wf-muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.kond__tierx { border: 0; background: none; font-size: 1.3em; line-height: 1; color: var(--wf-muted); cursor: pointer; }
+.kond__tierx:hover { color: var(--wf-red); }
+.kond__tiersum { margin-top: .9em; line-height: 1.7; }
 .kond__testbtn { width: 100%; justify-content: center; }
 .kond__result { margin-top: 1.1em; padding-top: 1em; border-top: 1px solid var(--wf-line); }
 .kond__route { margin: 0 0 .8em; font-size: .92em; }

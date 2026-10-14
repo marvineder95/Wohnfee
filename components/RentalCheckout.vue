@@ -1,17 +1,10 @@
 <script setup lang="ts">
-import { rentalPerks, transportPerk, MIN_MONTHLY, OTHER_STATES_DISCOUNT } from '~~/shared/rental-perks'
+import { rentalPerks, transportPerk, MIN_MONTHLY, OTHER_STATES_DISCOUNT, FREE_MIN_MONTHS } from '~~/shared/rental-perks'
+import { discountFor, priceForMonths, MAX_MONTHS } from '~~/shared/rental-pricing'
 // WOHNFEE Furniture Leasing — eigene Checkout-Seite (Amazon-inspiriert):
 // links Kundendaten in klar getrennten Abschnitten, rechts fixierte
 // Bestellübersicht mit Absende-Button. Schritt 3 zeigt die Bestätigung.
 // SEO: Checkout ist noindex (verhindert Duplicate-Content/Dünne-Seiten).
-interface CartLine {
-  id: number
-  title: string
-  imagePath: string | null
-  durationMonths: number
-  quantity: number
-  price: number | null
-}
 
 const props = withDefaults(defineProps<{ lang?: string }>(), { lang: 'de' })
 const isEn = computed(() => props.lang === 'en')
@@ -114,15 +107,17 @@ useHead(() => ({
   meta: [{ name: 'robots', content: 'noindex, follow' }]
 }))
 
-// ---------- Warenkorb ----------
-const cart = ref<CartLine[]>([])
+// ---------- Warenkorb (gemeinsam mit Shop & Drawer: useRentalCart) ----------
+const store = useRentalCart()
+const cart = computed(() => store.lines.value)
 const step = ref<'form' | 'success'>('form')
 const loading = ref(false)
 const error = ref('')
 const inquiryResult = ref<{ number: string; monthlyTotal: number } | null>(null)
 
 function loadCart() {
-  try { cart.value = JSON.parse(localStorage.getItem('wf_rental_cart') || '[]') } catch { cart.value = [] }
+  store.load()
+  form.durationMonths = store.months.value
 }
 // ---------- Optionales Deko-Paket (im Dashboard unter „Konditionen" aktivierbar) ----------
 const deco = ref<{ title: string; text: string; price: number } | null>(null)
@@ -133,71 +128,38 @@ onMounted(async () => {
 
 // ---------- Sanfte Hinweise (höchstens einer, nur wenn er etwas bringt) ----------
 const catalog = useRentalCatalog()
-onMounted(catalog.load)
-function persistCart() {
-  localStorage.setItem('wf_rental_cart', JSON.stringify(cart.value))
-  window.dispatchEvent(new CustomEvent('wf:cart-changed'))
-}
-// Ersparnis, wenn Artikel mit 1-Monats-Tarif auf den 3-Monats-Tarif umgestellt werden
-const tariffSaving = computed(() => {
-  if (form.durationMonths < 3) return 0
-  return Math.round(cart.value.reduce((sum, l) => {
-    const c = catalog.items.value.find((i) => i.id === l.id)
-    return l.durationMonths < 3 && c?.rentPrice3m != null && l.price !== null && c.rentPrice3m < l.price
-      ? sum + (l.price - c.rentPrice3m) * l.quantity : sum
-  }, 0) * 100) / 100
-})
-function switchToThreeMonthTariff() {
-  const merged: CartLine[] = []
-  for (const l of cart.value) {
-    const c = catalog.items.value.find((i) => i.id === l.id)
-    const next = l.durationMonths < 3 && c?.rentPrice3m != null ? { ...l, durationMonths: 3, price: c.rentPrice3m } : l
-    const same = merged.find((m) => m.id === next.id && m.durationMonths === next.durationMonths)
-    if (same) same.quantity += next.quantity
-    else merged.push({ ...next })
+// Mietdauer im Formular = Mietdauer des Warenkorbs (Preise rechnen sich danach)
+onMounted(async () => { if (await catalog.load()) store.refresh() })
+
+// Hinweis: Wird ab 3 Monaten der Gratis-Transport erreicht, darauf aufmerksam machen
+const hint = computed<null | { kind: 'perk'; text: string; action: string }>(() => {
+  if (!cart.value.length || form.durationMonths >= FREE_MIN_MONTHS) return null
+  const at3 = store.lines.value.map(l => ({ price: priceForMonths(l.base, FREE_MIN_MONTHS, catalog.tiers.value), quantity: l.quantity, durationMonths: FREE_MIN_MONTHS }))
+  const pct = discountFor(FREE_MIN_MONTHS, catalog.tiers.value)
+  if (!rentalPerks(at3, FREE_MIN_MONTHS).transportUnlocked && !pct) return null
+  const transport = rentalPerks(at3, FREE_MIN_MONTHS).transportUnlocked
+  return {
+    kind: 'perk',
+    text: isEn.value
+      ? `From ${FREE_MIN_MONTHS} months: ${[pct ? `−${pct}% on the rent` : '', transport ? 'free transport in Vienna (−50% elsewhere)' : ''].filter(Boolean).join(' and ')}.`
+      : `Ab ${FREE_MIN_MONTHS} Monaten: ${[pct ? `−${pct} % auf die Miete` : '', transport ? 'Gratis-Transport in Wien (sonst −50 %)' : ''].filter(Boolean).join(' und ')}.`,
+    action: isEn.value ? `Switch to ${FREE_MIN_MONTHS} months` : `Auf ${FREE_MIN_MONTHS} Monate ändern`
   }
-  cart.value = merged
-  persistCart()
-}
-const hint = computed<null | { kind: 'perk' | 'tariff'; text: string; action: string }>(() => {
-  if (!cart.value.length) return null
-  if (form.durationMonths < 3 && rentalPerks(cart.value, 3).transportUnlocked) {
-    return {
-      kind: 'perk',
-      text: isEn.value ? 'From 3 months: free transport in Vienna (−50% elsewhere).' : 'Ab 3 Monaten: Gratis-Transport in Wien (sonst −50 %).',
-      action: isEn.value ? 'Switch to 3 months' : 'Auf 3 Monate ändern'
-    }
-  }
-  if (tariffSaving.value > 0) {
-    return {
-      kind: 'tariff',
-      text: isEn.value
-        ? `Some items use the 1-month rate – the 3-month rate saves ${eur(tariffSaving.value)}/month.`
-        : `Einige Artikel laufen zum 1-Monats-Tarif – der 3-Monats-Tarif spart ${eur(tariffSaving.value)}/Monat.`,
-      action: isEn.value ? 'Use 3-month rate' : 'Tarif umstellen'
-    }
-  }
-  return null
 })
 function applyHint() {
-  if (hint.value?.kind === 'perk') form.durationMonths = 3
-  else if (hint.value?.kind === 'tariff') switchToThreeMonthTariff()
+  if (hint.value) form.durationMonths = FREE_MIN_MONTHS
 }
 
 function clearCart() {
-  cart.value = []
-  localStorage.setItem('wf_rental_cart', '[]')
-  window.dispatchEvent(new CustomEvent('wf:cart-changed'))
+  store.clear()
 }
 
-const cartMonthly = computed(() =>
-  Math.round(cart.value.reduce((s, l) => s + (l.price ?? 0) * l.quantity, 0) * 100) / 100
-)
+const cartMonthly = computed(() => store.monthly.value)
 // Mindestmietwert & Transport-Vorteil (abhängig von PLZ und Abwicklung)
-const perks = computed(() => rentalPerks(cart.value, form.durationMonths))
+const perks = computed(() => store.perks.value)
 const transport = computed(() => {
   if (form.deliveryOption === 'self') return 'self'
-  const tp = transportPerk(cart.value, form.zip, form.durationMonths)
+  const tp = transportPerk(store.perkLines.value, form.zip, form.durationMonths)
   // ohne PLZ ist der Ort noch offen: freigeschaltet, aber Wien/Bundesland unklar
   return tp !== 'none' && !form.zip.trim() ? 'unlocked' : tp
 })
@@ -295,7 +257,8 @@ const startLabel = computed(() => {
   return new Date(form.startDate + 'T12:00:00').toLocaleDateString(isEn.value ? 'en-GB' : 'de-AT', { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' })
 })
 
-const DURATIONS = Array.from({ length: 48 }, (_, i) => i + 1)
+const DURATIONS = Array.from({ length: MAX_MONTHS }, (_, i) => i + 1)
+const durPct = (m: number) => discountFor(m, catalog.tiers.value)
 const durOpen = ref(false)
 const durWrap = ref<HTMLElement | null>(null)
 const durList = ref<HTMLElement | null>(null)
@@ -316,7 +279,7 @@ function pickDur(m: number) {
 function durKey(e: KeyboardEvent) {
   if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
     e.preventDefault()
-    form.durationMonths = Math.min(48, Math.max(1, form.durationMonths + (e.key === 'ArrowDown' ? 1 : -1)))
+    form.durationMonths = Math.min(MAX_MONTHS, Math.max(1, form.durationMonths + (e.key === 'ArrowDown' ? 1 : -1)))
     nextTick(() => durList.value?.querySelector<HTMLElement>('.is-sel')?.scrollIntoView({ block: 'nearest' }))
   } else if (e.key === 'Escape' || e.key === 'Enter') {
     if (durOpen.value) { e.preventDefault(); durOpen.value = false }
@@ -341,6 +304,10 @@ const form = reactive({
   deliveryOption: 'full',
   deliveryNotes: ''
 })
+
+// Mietdauer im Formular = Mietdauer des Warenkorbs (Preise rechnen sich danach)
+watch(() => form.durationMonths, (m) => { if (m !== store.months.value) store.setMonths(m) })
+watch(() => store.months.value, (m) => { form.durationMonths = m })
 
 const endDateStr = computed(() => {
   if (!form.startDate) return ''
@@ -378,7 +345,7 @@ async function submit() {
         deliveryOption: form.deliveryOption === 'self' ? 'Selbstabholung' : 'Lieferung & Abholung durch WOHNFEE',
         deliveryNotes: form.deliveryNotes,
         decoPackage: !!(deco.value && wantDeco.value),
-        items: cart.value.map((l) => ({ id: l.id, quantity: l.quantity, durationMonths: l.durationMonths }))
+        items: cart.value.map((l) => ({ kind: l.kind, id: l.id, quantity: l.quantity }))
       }
     })
     inquiryResult.value = res
@@ -526,6 +493,7 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
                         :class="{ 'is-sel': form.durationMonths === m, 'is-year': m % 12 === 0 }" @click="pickDur(m)">
                       <span>{{ m }} {{ m > 1 ? t.months : t.month1 }}</span>
                       <em v-if="m % 12 === 0">{{ m / 12 }} {{ m === 12 ? t.year : t.years }}</em>
+                      <b v-if="durPct(m)" class="co__durpct">−{{ durPct(m) }} %</b>
                       <WfIcon v-if="form.durationMonths === m" name="check" :size="14" />
                     </li>
                   </ul>
@@ -581,7 +549,7 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
               <NuxtLink :to="shopUrl" class="co__edit">{{ t.edit }}</NuxtLink>
             </div>
             <ul class="co__lines">
-              <li v-for="l in cart" :key="l.id + '-' + l.durationMonths" class="co__line">
+              <li v-for="l in cart" :key="l.kind + '-' + l.id" class="co__line">
                 <span class="co__limg">
                   <img v-if="l.imagePath" :src="l.imagePath" alt="">
                   <WfIcon v-else name="bag" :size="18" />
@@ -589,13 +557,13 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
                 </span>
                 <span class="co__lmain">
                   <strong>{{ l.title }}</strong>
-                  <small>{{ durLabel(l.durationMonths) }}</small>
+                  <small>{{ l.kind === 'package' ? `${isEn ? 'Package' : 'Paket'} · ${l.pieces} ${isEn ? 'pieces' : 'Teile'} · ` : '' }}{{ durLabel(form.durationMonths) }}</small>
                 </span>
-                <span class="co__lprice">{{ l.price !== null ? eur(l.price * l.quantity) : t.onRequest }}<small v-if="l.price !== null">/{{ isEn ? 'mo.' : 'Mon.' }}</small></span>
+                <span class="co__lprice">{{ store.unit(l) !== null ? eur((store.unit(l) as number) * l.quantity) : t.onRequest }}<small v-if="store.unit(l) !== null">/{{ isEn ? 'mo.' : 'Mon.' }}</small></span>
               </li>
             </ul>
 
-            <RentalPerks :lines="cart" :months="form.durationMonths" />
+            <RentalPerks :lines="store.perkLines.value" :months="form.durationMonths" />
 
             <div class="co__sums">
               <p class="co__transport" :class="{ 'is-free': transport === 'free' || transport === 'discount' || transport === 'unlocked' }">
@@ -603,6 +571,9 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
               </p>
               <p v-if="deco && wantDeco" class="co__transport is-free">
                 <span>{{ deco.title }}</span><strong>{{ eur(deco.price) }} {{ isEn ? 'one-off' : 'einmalig' }}</strong>
+              </p>
+              <p v-if="store.saving.value > 0" class="co__transport is-free">
+                <span>{{ isEn ? `Long-term discount (−${store.discount.value}%)` : `Rabatt Mietdauer (−${store.discount.value} %)` }}</span><strong>−{{ eur(store.saving.value) }}</strong>
               </p>
               <p class="co__total"><span>{{ t.totalMonthly }}</span><strong>{{ eur(cartMonthly) }}</strong></p>
               <p v-if="transport === 'none'" class="co__note">{{ t.feeNote }}</p>
@@ -876,6 +847,7 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
 .co__lmain strong { font-size: .86em; font-weight: 600; line-height: 1.3; }
 .co__lmain small { font-size: .76em; color: var(--muted); }
 .co__lprice { font-size: .88em; font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; text-align: right; }
+.co__durpct { margin-left: auto; font-size: .78em; font-weight: 700; color: #a8741f; }
 .co__lprice small { font-weight: 400; color: var(--muted); font-size: .82em; }
 
 .co__sums { border-top: 1px solid var(--line); padding-top: .9em; margin: 1em 0 1.1em; }

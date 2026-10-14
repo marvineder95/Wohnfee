@@ -8,7 +8,7 @@ const STATUSES = ['lager', 'vermietet', 'pflege', 'verkauft', 'ausser_dienst']
 const FLAG_SQL: Record<string, string> = {
   nophoto: 'image_path IS NULL',
   photo: 'image_path IS NOT NULL',
-  noprice: '(rent_price_1m IS NULL AND rent_price_3m IS NULL)',
+  noprice: '(rent_price_1m IS NULL OR rent_price_1m <= 0)',
   nodesc: "(description IS NULL OR description = '')",
   note: "(internal_note IS NOT NULL AND internal_note <> '')",
   overdue: `EXISTS (SELECT 1 FROM project_items pi WHERE pi.item_id = inventory_items.id
@@ -19,7 +19,7 @@ const SORT_SQL: Record<string, string> = {
   newest: 'id DESC',
   price_desc: 'original_price IS NULL, original_price DESC, title',
   price_asc: 'original_price IS NULL, original_price ASC, title',
-  rent_desc: 'COALESCE(rent_price_3m, rent_price_1m) IS NULL, COALESCE(rent_price_3m, rent_price_1m) DESC, title'
+  rent_desc: 'rent_price_1m IS NULL, rent_price_1m DESC, title'
 }
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)

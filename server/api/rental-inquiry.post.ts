@@ -3,6 +3,9 @@ import { clientIp, assertNotLimited, countAttempt } from '../utils/rate-limit'
 import { assignedQuantity } from '../utils/inventory-sync'
 import { reservedQuantity, startReservation } from '../utils/reservations'
 import { rentalPerks, transportPerk, MIN_MONTHLY, OTHER_STATES_DISCOUNT } from '../../shared/rental-perks'
+import { basePrice, discountFor, MAX_MONTHS } from '../../shared/rental-pricing'
+import { getTiers } from '../utils/rental-pricing'
+import { loadPackages } from '../utils/rental-packages'
 
 function clean(v: any, max = 190): string | null {
   return String(v ?? '').trim().slice(0, max) || null
@@ -35,48 +38,84 @@ export default defineEventHandler(async (event) => {
   if (!street || !zip || !city) {
     throw createError({ statusCode: 400, statusMessage: 'Bitte die Lieferadresse vervollständigen.' })
   }
-  if (!dateOk(startDate) || !Number.isInteger(duration) || duration < 1 || duration > 48) {
+  if (!dateOk(startDate) || !Number.isInteger(duration) || duration < 1 || duration > MAX_MONTHS) {
     throw createError({ statusCode: 400, statusMessage: 'Bitte Mietbeginn und Mietdauer wählen.' })
   }
 
-  // Positionen serverseitig auflösen und bepreisen
+  // Positionen serverseitig auflösen und bepreisen.
+  // Monatspreis = Grundpreis (1 Monat) × (1 − Staffel-Rabatt der Mietdauer); Pakete werden in
+  // ihre Stücke aufgelöst (Grundpreis je Stück anteilig nach Paketrabatt bzw. festem Paketpreis).
   const rawItems: any[] = Array.isArray(body?.items) ? body.items.slice(0, 50) : []
   if (!rawItems.length) {
     throw createError({ statusCode: 400, statusMessage: 'Der Warenkorb ist leer.' })
   }
-  const items: Array<{ item_id: number; title: string; quantity: number; duration_months: number; monthly_price: number | null }> = []
+  const tiers = await getTiers()
+  const pct = discountFor(duration, tiers)
+  const factor = 1 - pct / 100
+  const round2 = (v: number) => Math.round(v * 100) / 100
+  type Line = { item_id: number; title: string; quantity: number; duration_months: number; monthly_price: number | null; package_title: string | null }
+  const items: Line[] = []
   let monthlyTotal = 0
+  // bereits verplante Mengen innerhalb DIESER Anfrage (Paket + Einzelstück desselben Artikels)
+  const used = new Map<number, number>()
+  const freeOf = async (itemId: number, stock: number) =>
+    Math.max(0, stock - await assignedQuantity(itemId) - await reservedQuantity(itemId) - (used.get(itemId) || 0))
+  const push = (l: Line) => {
+    items.push(l)
+    used.set(l.item_id, (used.get(l.item_id) || 0) + l.quantity)
+    if (l.monthly_price !== null) monthlyTotal += l.monthly_price * l.quantity
+  }
+
+  // 1) Pakete: nur, wenn ALLE Stücke in voller Menge frei sind
+  const pkgIds = rawItems.filter(r => r?.kind === 'package').map(r => Number(r.id)).filter(n => Number.isInteger(n) && n > 0)
+  const pkgs = pkgIds.length ? (await loadPackages({ visibleOnly: true, ids: pkgIds })).filter(p => p.base !== null && p.items.length) : []
+  for (const p of pkgs) {
+    let ok = true
+    for (const it of p.items) {
+      const row: any = await queryOne('SELECT quantity AS stock, rentable, status FROM inventory_items WHERE id = :id', { id: it.id })
+      if (!row || !row.rentable || row.status !== 'lager' || await freeOf(it.id, Number(row.stock) || 0) < it.quantity) { ok = false; break }
+    }
+    if (!ok) continue
+    // Paket-Grundpreis anteilig auf die Stücke verteilen (Summe = Paketpreis)
+    const share = p.sum && p.sum > 0 ? (p.base as number) / p.sum : 0
+    for (const it of p.items) {
+      push({
+        item_id: it.id, title: String(it.title).slice(0, 190), quantity: it.quantity, duration_months: duration,
+        monthly_price: it.price !== null && share ? round2(it.price * share * factor) : null,
+        package_title: p.title.slice(0, 190)
+      })
+    }
+  }
+
+  // 2) Einzelne Möbel
   for (const raw of rawItems) {
+    if (raw?.kind === 'package') continue
     const itemId = Number(raw?.id)
     const qty = Math.min(99, Math.max(1, Number(raw?.quantity) || 1))
-    const dur = Number(raw?.durationMonths)
-    if (!Number.isInteger(itemId) || itemId < 1 || ![1, 3].includes(dur)) continue
+    if (!Number.isInteger(itemId) || itemId < 1) continue
     const item: any = await queryOne(
-      `SELECT id, title, quantity AS stock, rentable, status,
-              rent_price_1m AS p1, rent_price_3m AS p3
+      `SELECT id, title, quantity AS stock, rentable, status, rent_price_1m AS p1
        FROM inventory_items WHERE id = :id`, { id: itemId }
     )
     // nur vermietbare, lagernde Objekte, Menge begrenzt auf realen Bestand
     if (!item || !item.rentable || item.status !== 'lager') continue
-    // frei = Bestand − in Projekten − von offenen Anfragen reserviert
-    const stock = Math.max(0, (Number(item.stock) || 0) - await assignedQuantity(itemId) - await reservedQuantity(itemId))
+    // frei = Bestand − in Projekten − von offenen Anfragen reserviert − schon in dieser Anfrage
+    const stock = await freeOf(itemId, Number(item.stock) || 0)
     if (stock < 1) continue
-    const price = dur === 1 ? (item.p1 !== null ? Number(item.p1) : null)
-      : (item.p3 !== null ? Number(item.p3) : null)
-    const finalQty = Math.min(qty, stock)
-    items.push({
-      item_id: item.id, title: String(item.title).slice(0, 190), quantity: finalQty,
-      duration_months: dur, monthly_price: price
+    const base = basePrice(item.p1)
+    push({
+      item_id: item.id, title: String(item.title).slice(0, 190), quantity: Math.min(qty, stock),
+      duration_months: duration, monthly_price: base !== null ? round2(base * factor) : null, package_title: null
     })
-    if (price !== null) monthlyTotal += price * finalQty
   }
   if (!items.length) {
     throw createError({ statusCode: 400, statusMessage: 'Keine der gewählten Positionen ist derzeit mietbar.' })
   }
+  monthlyTotal = round2(monthlyTotal)
 
   // Mindestmietwert & Transport-Vorteil – serverseitig mit DB-Preisen geprüft
   const perkLines = items.map((i) => ({ price: i.monthly_price, quantity: i.quantity, durationMonths: i.duration_months }))
-  if (!rentalPerks(perkLines).minReached) {
+  if (!rentalPerks(perkLines, duration).minReached) {
     throw createError({ statusCode: 400, statusMessage: `Der Mindestmietwert beträgt € ${MIN_MONTHLY} pro Monat.` })
   }
   const selfPickup = /selbst/i.test(String(body?.deliveryOption ?? ''))
@@ -91,7 +130,8 @@ export default defineEventHandler(async (event) => {
   const ts = await getTransportSettings()
   const deco = !!body?.decoPackage && ts.decoEnabled && ts.decoPrice > 0
   const decoNote = deco ? `${ts.decoTitle} gewünscht (einmalig € ${ts.decoPrice.toLocaleString('de-AT', { minimumFractionDigits: 2 })} netto)` : null
-  const notes = [perkNote, decoNote, clean(body?.notes, 2000)].filter(Boolean).join('\n') || null
+  const discountNote = pct ? `Rabatt Mietdauer: −${pct.toLocaleString('de-AT')} % (${duration} Monate) – in den Monatspreisen enthalten` : null
+  const notes = [discountNote, perkNote, decoNote, clean(body?.notes, 2000)].filter(Boolean).join('\n') || null
 
   // Enddatum aus Start + Dauer
   const start = new Date(String(startDate) + 'T00:00:00Z')
@@ -102,10 +142,10 @@ export default defineEventHandler(async (event) => {
   const result: any = await query(
     `INSERT INTO rental_inquiries
        (number, first_name, last_name, company, email, phone, street, zip, city, country,
-        start_date, end_date, duration_months, delivery_option, delivery_notes, monthly_total, notes, deco_package)
+        start_date, end_date, duration_months, delivery_option, delivery_notes, monthly_total, notes, deco_package, discount_pct)
      VALUES
        ('PENDING', :fn, :ln, :company, :email, :phone, :street, :zip, :city, :country,
-        :start, :end, :dur, :dopt, :dnotes, :total, :notes, :deco)`,
+        :start, :end, :dur, :dopt, :dnotes, :total, :notes, :deco, :pct)`,
     {
       fn: clean(body?.firstName, 64), ln: lastName,
       company: clean(body?.company, 128), email,
@@ -117,7 +157,8 @@ export default defineEventHandler(async (event) => {
       dnotes: clean(body?.deliveryNotes, 1000),
       total: Math.round(monthlyTotal * 100) / 100,
       notes,
-      deco: deco ? 1 : 0
+      deco: deco ? 1 : 0,
+      pct
     }
   )
   countAttempt(limitKey, 60 * 60 * 1000)
@@ -128,9 +169,9 @@ export default defineEventHandler(async (event) => {
 
   for (const it of items) {
     await query(
-      `INSERT INTO rental_inquiry_items (inquiry_id, item_id, title, quantity, duration_months, monthly_price)
-       VALUES (:iid, :item, :title, :qty, :dur, :price)`,
-      { iid: inquiryId, item: it.item_id, title: it.title, qty: it.quantity, dur: it.duration_months, price: it.monthly_price }
+      `INSERT INTO rental_inquiry_items (inquiry_id, item_id, title, quantity, duration_months, monthly_price, package_title)
+       VALUES (:iid, :item, :title, :qty, :dur, :price, :pkg)`,
+      { iid: inquiryId, item: it.item_id, title: it.title, qty: it.quantity, dur: it.duration_months, price: it.monthly_price, pkg: it.package_title }
     )
   }
 
@@ -152,7 +193,7 @@ export default defineEventHandler(async (event) => {
       deliveryOption: clean(body?.deliveryOption, 64) || 'Lieferung & Abholung durch WOHNFEE',
       deliveryNotes: clean(body?.deliveryNotes, 1000),
       notes,
-      items: items.map(i => ({ title: i.title, quantity: i.quantity, durationMonths: i.duration_months, monthlyPrice: i.monthly_price })),
+      items: items.map(i => ({ title: i.package_title ? `Paket „${i.package_title}“: ${i.title}` : i.title, quantity: i.quantity, durationMonths: i.duration_months, monthlyPrice: i.monthly_price })),
       monthlyTotal: Math.round(monthlyTotal * 100) / 100
     })
     await sendMail('office@wohnfee.at', mail.subject, mail.text, mail.html)

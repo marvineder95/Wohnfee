@@ -4,7 +4,8 @@
 // SEO-Hinweis: H1, Titel und Texte werden serverseitig gerendert; nur die
 // Produktdaten laden clientseitig nach (bestehende SEO-Struktur bleibt).
 import { INVENTORY_CATEGORIES } from '~~/shared/inventory-categories'
-import { rentalPerks } from '~~/shared/rental-perks'
+import { priceForMonths } from '~~/shared/rental-pricing'
+import type { CatalogPackage } from '~/composables/useRentalCatalog'
 
 interface RentalItem {
   id: number
@@ -14,19 +15,10 @@ interface RentalItem {
   imagePath: string | null
   description: string | null
   descriptionEn?: string | null
-  rentPrice1m: number | null
-  rentPrice3m: number | null
-  quantity: number
-  matches?: number[]
-}
-
-interface CartLine {
-  id: number
-  title: string
-  imagePath: string | null
-  durationMonths: number
-  quantity: number
+  /** Grundpreis (1 Monat); Monatspreis je Mietdauer über die Rabattstaffel */
   price: number | null
+  quantity: number
+  matches: number[]
 }
 
 // ---------- Sprache (DE/EN) ----------
@@ -133,7 +125,10 @@ const CAT_EN: Record<string, string> = {
 }
 
 
-const items = ref<RentalItem[]>([])
+// Katalog & Warenkorb werden seitenweit geteilt (useRentalCatalog / useRentalCart)
+const catalog = useRentalCatalog()
+const cartStore = useRentalCart()
+const items = computed<RentalItem[]>(() => catalog.items.value as RentalItem[])
 const loading = ref(true)
 const loadError = ref('')
 
@@ -153,12 +148,11 @@ const sortBy = ref('relevanz')
 // ---------- Filterzustand (Sidebar / Toolbar) ----------
 const activeCats = ref<string[]>([])
 const activeAvail = ref<string[]>([]) // 'ok' | 'low' | 'none'
-const activeDurs = ref<number[]>([])  // 1 | 3
 const priceMin = ref(0)
 const priceMax = ref(0)
 const priceTouched = ref(false)
 const sideOpen = ref(false)
-const openGroups = ref<string[]>(['kat', 'avail', 'dur', 'price'])
+const openGroups = ref<string[]>(['kat', 'avail', 'price'])
 
 // ---------- Daten ----------
 const openCartOverlay = () => { cartOpen.value = true }
@@ -170,15 +164,14 @@ onMounted(async () => {
     history.replaceState(null, '', window.location.pathname)
     openCartOverlay()
   }
-  try {
-    const res = await $fetch<{ items: RentalItem[] }>('/api/rental-catalog')
-    items.value = res.items
+  // immer frisch laden – Bestand und Reservierungen ändern sich laufend
+  if (await catalog.load(true)) {
     syncPriceBounds()
-  } catch {
+    cartStore.refresh()
+  } else {
     loadError.value = t.value.loadError
-  } finally {
-    loading.value = false
   }
+  loading.value = false
   // Link mit #fl-produkte (z. B. „Zum Mietshop" auf der Startseite): erst nach dem Laden
   // der Produkte springen, sonst verschiebt sich die Seite noch
   // (kurz verzögert: der Router scrollt beim Seitenwechsel selbst noch nach oben)
@@ -201,12 +194,18 @@ const presentCats = computed(() => {
 })
 
 // ---------- Preise & Verfügbarkeit ----------
-function priceFor(i: RentalItem, dur: number): number | null {
-  return dur === 1 ? i.rentPrice1m : i.rentPrice3m
+// Monatspreis für die gewählte Mietdauer (Grundpreis − Staffel-Rabatt)
+const months = computed(() => cartStore.months.value)
+const discount = computed(() => cartStore.discount.value)
+function priceFor(i: { price: number | null }): number | null {
+  return priceForMonths(i.price, months.value, catalog.tiers.value)
 }
-function priceFrom(i: RentalItem): number | null {
-  const ps = [i.rentPrice1m, i.rentPrice3m].filter((p): p is number => p !== null && p > 0)
-  return ps.length ? Math.min(...ps) : null
+const priceFrom = priceFor
+function pkgPrice(p: CatalogPackage): number | null {
+  return priceForMonths(p.base, months.value, catalog.tiers.value)
+}
+function pkgWas(p: CatalogPackage): number | null {
+  return p.sum !== null && p.sum > p.base ? priceForMonths(p.sum, months.value, catalog.tiers.value) : null
 }
 function eur(v: number | null | undefined): string | null {
   return v === null || v === undefined ? null
@@ -238,7 +237,6 @@ function toggleRef(arr: Ref<unknown[]>, v: unknown) {
 }
 const toggleCat = (v: string) => toggleRef(activeCats, v)
 const toggleAvail = (v: string) => toggleRef(activeAvail, v)
-const toggleDur = (v: number) => toggleRef(activeDurs, v)
 function toggleGroup(g: string) {
   openGroups.value = openGroups.value.includes(g)
     ? openGroups.value.filter((x) => x !== g)
@@ -246,7 +244,7 @@ function toggleGroup(g: string) {
 }
 
 const maxPrice = computed(() =>
-  Math.ceil(Math.max(1, ...items.value.map((i) => priceFrom(i) ?? 0))))
+  Math.ceil(Math.max(1, ...items.value.map((i) => i.price ?? 0))))
 function syncPriceBounds() {
   priceMin.value = 0
   priceMax.value = maxPrice.value
@@ -272,25 +270,16 @@ const availCounts = computed(() => {
   for (const i of items.value) m[avail(i)]++
   return m
 })
-const durCounts = computed(() => ({
-  1: items.value.filter((i) => i.rentPrice1m !== null).length,
-  3: items.value.filter((i) => i.rentPrice3m !== null).length
-}))
 const AVAIL_OPTS = computed(() => [
   { v: 'ok', l: t.value.availNow },
   { v: 'low', l: t.value.availLow },
   { v: 'none', l: t.value.onRequest }
-])
-const DUR_OPTS = computed(() => [
-  { v: 1, l: `1 ${t.value.month1}` },
-  { v: 3, l: `3 ${t.value.months}` }
 ])
 
 // Aktive Filter als Chips (Sidebar + Toolbar)
 const chips = computed(() => [
   ...activeCats.value.map((k) => ({ key: 'cat:' + k, label: catLabel(k) })),
   ...activeAvail.value.map((a) => ({ key: 'av:' + a, label: AVAIL_OPTS.value.find((o) => o.v === a)?.l || a })),
-  ...activeDurs.value.map((d) => ({ key: 'dur:' + d, label: `${d} ${t.value.months}` })),
   ...(priceTouched.value
     ? [{ key: 'price', label: `${eur(priceMin.value)} – ${eur(priceMax.value)}` }]
     : [])
@@ -299,13 +288,11 @@ function removeChip(key: string) {
   const [kind, val] = key.split(':')
   if (kind === 'cat') activeCats.value = activeCats.value.filter((x) => x !== val)
   else if (kind === 'av') activeAvail.value = activeAvail.value.filter((x) => x !== val)
-  else if (kind === 'dur') activeDurs.value = activeDurs.value.filter((x) => String(x) !== val)
   else if (kind === 'price') syncPriceBounds()
 }
 function resetFilters() {
   activeCats.value = []
   activeAvail.value = []
-  activeDurs.value = []
   search.value = ''
   syncPriceBounds()
 }
@@ -316,9 +303,6 @@ const filtered = computed(() => {
     list = list.filter((i) => i.category !== null && activeCats.value.includes(i.category))
   }
   if (activeAvail.value.length) list = list.filter((i) => activeAvail.value.includes(avail(i)))
-  if (activeDurs.value.length) {
-    list = list.filter((i) => activeDurs.value.some((d) => priceFor(i, d) !== null))
-  }
   if (priceTouched.value) {
     list = list.filter((i) => {
       const p = priceFrom(i)
@@ -351,53 +335,40 @@ function toggleFav(id: number) {
   localStorage.setItem('wf_rental_favs', JSON.stringify(favs.value))
 }
 
-// ---------- Warenkorb ----------
-const cart = ref<CartLine[]>([])
+// ---------- Warenkorb (gemeinsam mit Drawer & Checkout: useRentalCart) ----------
 const cartOpen = ref(false)
-
-function loadCart() {
-  try { cart.value = JSON.parse(localStorage.getItem('wf_rental_cart') || '[]') } catch { cart.value = [] }
-}
-function persistCart() {
-  localStorage.setItem('wf_rental_cart', JSON.stringify(cart.value))
-  window.dispatchEvent(new CustomEvent('wf:cart-changed'))
-}
-const cartCount = computed(() => cart.value.reduce((s, l) => s + l.quantity, 0))
-const perks = computed(() => rentalPerks(cart.value))
-const cartMonthly = computed(() =>
-  Math.round(cart.value.reduce((s, l) => s + (l.price ?? 0) * l.quantity, 0) * 100) / 100
-)
-
-function addToCart(i: RentalItem, dur: number, qty: number) {
-  const price = priceFor(i, dur)
-  const existing = cart.value.find((l) => l.id === i.id && l.durationMonths === dur)
-  const stock = Number(i.quantity) || 0
-  if (existing) {
-    existing.quantity = Math.min(stock > 0 ? stock : 99, existing.quantity + qty)
-  } else {
-    cart.value.push({ id: i.id, title: i.title, imagePath: i.imagePath, durationMonths: dur, quantity: qty, price })
-  }
-  persistCart()
+const cart = computed(() => cartStore.lines.value)
+const cartCount = computed(() => cartStore.count.value)
+const perks = computed(() => cartStore.perks.value)
+const cartMonthly = computed(() => cartStore.monthly.value)
+function loadCart() { cartStore.load() }
+function addToCart(i: RentalItem, qty: number) {
+  cartStore.addItem(i as any, qty)
   cartOpen.value = true
 }
 // Vorschlag aus dem Warenkorb übernehmen (Drawer bleibt offen)
-function addSuggested(s: { id: number }, dur: number) {
+function addSuggested(s: { id: number }) {
   const i = litems.value.find((x) => x.id === s.id)
-  if (i) addToCart(i, dur, 1)
+  if (i) cartStore.addItem(i as any, 1)
 }
-function setQty(line: CartLine, qty: number) {
-  if (qty < 1) cart.value = cart.value.filter((l) => l !== line)
-  else line.quantity = Math.min(99, qty)
-  persistCart()
-}
-function removeLine(line: CartLine) {
-  cart.value = cart.value.filter((l) => l !== line)
-  persistCart()
+const setQty = (line: any, qty: number) => cartStore.setQty(line, qty)
+const removeLine = (line: any) => cartStore.remove(line)
+
+// ---------- Möbelpakete ----------
+const packages = computed(() => catalog.packages.value)
+const pkgTitle = (p: CatalogPackage) => (isEn.value && p.titleEn) || p.title
+const pkgDesc = (p: CatalogPackage) => (isEn.value && p.descriptionEn) || p.description || ''
+const pkgPieces = (p: CatalogPackage) => p.items.reduce((s, i) => s + i.quantity, 0)
+const inCartPkg = (p: CatalogPackage) => cart.value.some((l) => l.kind === 'package' && l.id === p.id)
+const pkgOpen = ref<number | null>(null)
+function addPackage(p: CatalogPackage) {
+  if (!p.available) return
+  cartStore.addPackage(p, pkgTitle(p))
+  cartOpen.value = true
 }
 
 // ---------- Produktdetail ----------
 const detail = ref<RentalItem | null>(null)
-const detailDur = ref(3)
 const detailQty = ref(1)
 // „Passt dazu" des geöffneten Artikels (nur verfügbare)
 const detailMatches = computed(() => {
@@ -406,7 +377,6 @@ const detailMatches = computed(() => {
 })
 function openDetail(i: RentalItem) {
   detail.value = i
-  detailDur.value = i.rentPrice3m !== null ? 3 : 1
   detailQty.value = 1
 }
 
@@ -558,20 +528,6 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
           </div>
 
           <div class="fl__group">
-            <button type="button" class="fl__ghead" :aria-expanded="openGroups.includes('dur')" @click="toggleGroup('dur')">
-              {{ t.duration }}
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'is-flip': !openGroups.includes('dur') }"><path d="M6 9l6 6 6-6" /></svg>
-            </button>
-            <div v-show="openGroups.includes('dur')" class="fl__gbody">
-              <label v-for="o in DUR_OPTS" :key="o.v" class="fl__opt">
-                <input type="checkbox" :checked="activeDurs.includes(o.v)" @change="toggleDur(o.v)">
-                <span>{{ o.l }}</span>
-                <em>{{ durCounts[o.v as 1 | 3] }}</em>
-              </label>
-            </div>
-          </div>
-
-          <div class="fl__group">
             <button type="button" class="fl__ghead" :aria-expanded="openGroups.includes('price')" @click="toggleGroup('price')">
               {{ t.priceMonth }}
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" :class="{ 'is-flip': !openGroups.includes('price') }"><path d="M6 9l6 6 6-6" /></svg>
@@ -602,6 +558,50 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 
         <!-- Inhaltsspalte -->
         <div class="fl__main">
+          <!-- Mietdauer für den ganzen Warenkorb – alle Preise rechnen sich danach -->
+          <div class="fl__durbar">
+            <RentalDurationPicker />
+            <p v-if="discount" class="fl__durnote">
+              <WfIcon name="check" :size="13" />
+              {{ isEn ? `All prices incl. −${discount}% for ${months} months` : `Alle Preise inkl. −${discount} % für ${months} Monate` }}
+            </p>
+          </div>
+
+          <!-- Möbelpakete (Dashboard → Mietpakete), nur wenn welche sichtbar sind -->
+          <section v-if="packages.length" class="fl__pkgs" :aria-label="isEn ? 'Furniture packages' : 'Möbelpakete'">
+            <div class="fl__pkghead">
+              <h2 class="fl__pkgtitle">{{ isEn ? 'Complete packages' : 'Komplett-Pakete' }}</h2>
+              <p>{{ isEn ? 'Put together by our designers – one price, everything matches.' : 'Von unseren Designerinnen zusammengestellt – ein Preis, alles passt zusammen.' }}</p>
+            </div>
+            <div class="fl__pkggrid">
+              <article v-for="p in packages" :key="p.id" class="fl__pkg" :class="{ 'is-out': !p.available }">
+                <div class="fl__pkgmedia">
+                  <img v-if="p.imagePath" :src="p.imagePath" :alt="pkgTitle(p)" loading="lazy">
+                  <span v-else class="fl__ph" aria-hidden="true"><WfIcon name="bag" :size="30" /></span>
+                  <span class="fl__pkgbadge">{{ pkgPieces(p) }} {{ isEn ? 'pieces' : 'Teile' }}</span>
+                </div>
+                <div class="fl__pkgbody">
+                  <h3>{{ pkgTitle(p) }}</h3>
+                  <p v-if="pkgDesc(p)" class="fl__pkgdesc">{{ pkgDesc(p) }}</p>
+                  <button type="button" class="fl__pkgtoggle" :aria-expanded="pkgOpen === p.id" @click="pkgOpen = pkgOpen === p.id ? null : p.id">
+                    {{ pkgOpen === p.id ? (isEn ? 'Hide contents' : 'Inhalt ausblenden') : (isEn ? 'Show contents' : 'Was ist enthalten?') }}
+                  </button>
+                  <ul v-if="pkgOpen === p.id" class="fl__pkgitems">
+                    <li v-for="it in p.items" :key="it.id"><span>{{ it.quantity }}×</span> {{ (isEn && it.titleEn) || it.title }}</li>
+                  </ul>
+                  <p class="fl__pkgprice">
+                    <strong>{{ eur(pkgPrice(p)) }}</strong><span class="fl__per"> / {{ t.month }}</span>
+                    <s v-if="pkgWas(p)">{{ eur(pkgWas(p)) }}</s>
+                  </p>
+                  <button class="fl__add" :disabled="!p.available || inCartPkg(p)" @click="addPackage(p)">
+                    <WfIcon :name="inCartPkg(p) ? 'check' : 'bag'" :size="14" />
+                    {{ !p.available ? (isEn ? 'Currently rented out' : 'Derzeit vermietet') : inCartPkg(p) ? (isEn ? 'In your cart' : 'Im Warenkorb') : t.addToCart }}
+                  </button>
+                </div>
+              </article>
+            </div>
+          </section>
+
           <h2 class="fl__shoptitle">{{ t.allProducts }} <span class="fl__count">({{ filtered.length }})</span></h2>
           <div class="fl__shophead">
             <div class="fl__toolbar">
@@ -662,11 +662,11 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
                 <h3 class="fl__name" @click="openDetail(i)">{{ i.title }}</h3>
                 <p class="fl__meta">{{ catLabel(i.category) }}</p>
                 <p class="fl__price">
-                  <template v-if="priceFrom(i)"><span v-if="priceFrom(i) !== (priceFor(i, 1) ?? priceFor(i, 3))" class="fl__from">{{ t.fromPrefix }}</span><strong>{{ eur(priceFrom(i)) }}</strong><span class="fl__per"> / {{ t.month }}</span></template>
+                  <template v-if="priceFor(i)"><strong>{{ eur(priceFor(i)) }}</strong><span class="fl__per"> / {{ t.month }}</span><s v-if="discount" class="fl__was">{{ eur(i.price) }}</s></template>
                   <template v-else>{{ t.onRequest }}</template>
                 </p>
-                <p class="fl__mindur">{{ t.minDur }}: {{ i.rentPrice3m !== null ? '3' : '1' }} {{ t.months }}</p>
-                <button class="fl__add" :disabled="avail(i) === 'none'" @click="addToCart(i, i.rentPrice3m !== null ? 3 : 1, 1)">
+                <p class="fl__mindur">{{ isEn ? `at ${months} month${months > 1 ? 's' : ''} rental` : `bei ${months} ${months > 1 ? 'Monaten' : 'Monat'} Mietdauer` }}</p>
+                <button class="fl__add" :disabled="avail(i) === 'none'" @click="addToCart(i, 1)">
                   <WfIcon name="bag" :size="14" /> {{ t.addToCart }}
                 </button>
               </div>
@@ -693,34 +693,16 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
           <div class="fl__dinfo">
             <h3 class="fl__dname">{{ detail.title }}</h3>
             <p class="fl__dprice">
-              <strong>{{ eur(priceFor(detail, detailDur)) || t.onRequest }}</strong>
-              <span v-if="priceFor(detail, detailDur)"> / {{ t.month }}</span>
+              <strong>{{ eur(priceFor(detail)) || t.onRequest }}</strong>
+              <span v-if="priceFor(detail)"> / {{ t.month }}</span>
+              <s v-if="discount && detail.price" class="fl__was">{{ eur(detail.price) }}</s>
             </p>
             <p class="fl__avail" :class="'is-' + avail(detail)">
               <span class="fl__dot" />{{ avail(detail) === 'low' ? onlyLeft(detail.quantity) : availLabel(avail(detail)) }}
             </p>
             <p v-if="teaser(detail.description)" class="fl__ddesc">{{ teaser(detail.description) }}</p>
 
-            <div class="fl__durgroup" role="group" :aria-label="t.duration">
-              <span class="fl__flabel">{{ t.duration }}</span>
-              <button class="fl__dur" :class="{ 'is-active': detailDur === 3 }"
-                      :disabled="detail.rentPrice3m === null"
-                      @click="detailDur = 3">
-                <strong>{{ t.m3 }}</strong>
-                <span v-if="detail.rentPrice3m !== null">{{ eur(detail.rentPrice3m) }} / {{ t.month }}</span>
-                <span v-else>{{ t.onRequest }}</span>
-              </button>
-              <button class="fl__dur" :class="{ 'is-active': detailDur === 1 }"
-                      :disabled="detail.rentPrice1m === null"
-                      @click="detailDur = 1">
-                <strong>{{ t.m1 }}</strong>
-                <span v-if="detail.rentPrice1m !== null">{{ eur(detail.rentPrice1m) }} / {{ t.month }}</span>
-                <span v-else>{{ t.onRequest }}</span>
-              </button>
-              <button class="fl__dur" disabled>
-                <strong>{{ t.m612 }}</strong><span>{{ t.onRequest }}</span>
-              </button>
-            </div>
+            <RentalDurationPicker compact />
 
             <div class="fl__qtyrow">
               <span class="fl__flabel">{{ t.qty }}</span>
@@ -732,7 +714,7 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
             </div>
 
             <button class="fl__add fl__add--lg" :disabled="avail(detail) === 'none'"
-                    @click="addToCart(detail, detailDur, detailQty); detail = null">
+                    @click="addToCart(detail, detailQty); detail = null">
               <WfIcon name="bag" :size="15" /> {{ t.addToCart }}
             </button>
 
@@ -763,11 +745,11 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
               </button>
               <button type="button" class="fl__matchname" @click="openDetail(m)">{{ m.title }}</button>
               <span class="fl__matchprice">
-                <template v-if="priceFrom(m)">{{ t.fromPrefix }}{{ eur(priceFrom(m)) }} / {{ t.month }}</template>
+                <template v-if="priceFor(m)">{{ eur(priceFor(m)) }} / {{ t.month }}</template>
                 <template v-else>{{ t.onRequest }}</template>
               </span>
               <button type="button" class="fl__matchadd" :aria-label="t.addToCart + ': ' + m.title"
-                      @click="addToCart(m, m.rentPrice3m !== null ? 3 : 1, 1)">
+                      @click="addToCart(m, 1)">
                 <WfIcon name="plus" :size="13" />
               </button>
             </li>
@@ -787,16 +769,16 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
         </header>
         <p v-if="!cart.length" class="fl__hint">{{ t.cartEmpty }}</p>
         <ul v-else class="fl__lines">
-          <li v-for="l in cart" :key="l.id + '-' + l.durationMonths" class="fl__line">
+          <li v-for="l in cart" :key="l.kind + '-' + l.id" class="fl__line">
             <span class="fl__lthumb">
               <img v-if="l.imagePath" :src="l.imagePath" alt="">
               <WfIcon v-else name="bag" :size="18" />
             </span>
             <div class="fl__lmain">
               <strong class="fl__lname">{{ l.title }}</strong>
-              <span class="fl__lmeta">{{ l.durationMonths }} {{ l.durationMonths > 1 ? t.months : t.month1 }}</span>
-              <span class="fl__lprice">{{ l.price !== null ? eur(l.price) + ' / ' + t.month : t.onRequest }}</span>
-              <div class="fl__stepper fl__stepper--sm">
+              <span v-if="l.kind === 'package'" class="fl__lmeta">{{ isEn ? 'Package' : 'Paket' }} · {{ l.pieces }} {{ isEn ? 'pieces' : 'Teile' }}</span>
+              <span class="fl__lprice">{{ cartStore.unit(l) !== null ? eur(cartStore.unit(l)) + ' / ' + t.month : t.onRequest }}</span>
+              <div v-if="l.kind !== 'package'" class="fl__stepper fl__stepper--sm">
                 <button :title="t.less" @click="setQty(l, l.quantity - 1)"><WfIcon name="minus" :size="11" /></button>
                 <span>{{ l.quantity }}</span>
                 <button :title="t.more" @click="setQty(l, l.quantity + 1)"><WfIcon name="plus" :size="11" /></button>
@@ -806,8 +788,13 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
           </li>
         </ul>
         <footer v-if="cart.length" class="fl__drfoot">
-          <RentalPerks :lines="cart" />
-          <CartSuggestions :lines="cart" @add="addSuggested" />
+          <RentalDurationPicker compact />
+          <RentalPerks :lines="cartStore.perkLines.value" :months="months" />
+          <CartSuggestions @add="addSuggested" />
+          <p v-if="cartStore.saving.value > 0" class="fl__saving">
+            <span>{{ isEn ? `Long-term discount (−${discount}%)` : `Rabatt Mietdauer (−${discount} %)` }}</span>
+            <strong>−{{ eur(cartStore.saving.value) }}</strong>
+          </p>
           <p class="fl__total"><span>{{ t.totalMonthly }}</span><strong>{{ eur(cartMonthly) }}</strong></p>
           <p class="fl__note">{{ t.feeNoteLong }}</p>
           <button class="fl__add fl__add--lg" :disabled="!perks.minReached" @click="goCheckout">{{ t.checkout }}</button>
@@ -1153,6 +1140,32 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 .fl__dtabs h4 { margin: 0 0 .4em; font-size: .85em; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); }
 .fl__tabtext { font-size: .9em; line-height: 1.65; color: var(--ink); margin: 0; }
 .fl__tabhint { font-size: .78em; color: var(--muted); margin: .6em 0 0; }
+
+/* Mietdauer-Leiste über dem Sortiment */
+.fl__durbar { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: .6em 1.2em; margin: 0 0 1.6em; padding: 1em 1.2em; background: #fff; border: 1px solid var(--line); border-radius: 18px; }
+.fl__durnote { display: inline-flex; align-items: center; gap: .4em; margin: 0; font-size: .82em; font-weight: 600; color: var(--green); }
+.fl__was { margin-left: .45em; font-size: .8em; color: var(--muted); font-weight: 400; }
+.fl__saving { display: flex; justify-content: space-between; margin: .2em 0 .3em; font-size: .85em; color: var(--green); }
+
+/* Möbelpakete */
+.fl__pkgs { margin: 0 0 2.4em; }
+.fl__pkghead { margin: 0 0 1em; }
+.fl__pkgtitle { font-family: var(--font-family-02, Gelasio, Georgia, serif) !important; font-weight: 500 !important; font-size: 1.6em !important; margin: 0 0 .2em !important; text-align: left !important; border: 0 !important; padding: 0 !important; color: var(--ink) !important; text-transform: none !important; }
+.fl__pkghead p { margin: 0; color: var(--muted); font-size: .92em; }
+.fl__pkggrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); gap: 1.2em; }
+.fl__pkg { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: 20px; overflow: hidden; }
+.fl__pkg.is-out { opacity: .7; }
+.fl__pkgmedia { position: relative; aspect-ratio: 16 / 10; background: var(--cream); display: grid; place-items: center; }
+.fl__pkgmedia img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.fl__pkgbadge { position: absolute; top: .8em; left: .8em; padding: .25em .7em; border-radius: 999px; background: rgba(255, 255, 255, .92); font-size: .74em; font-weight: 700; color: var(--green); }
+.fl__pkgbody { display: flex; flex-direction: column; gap: .5em; padding: 1.1em 1.2em 1.2em; flex: 1; }
+.fl__pkgbody h3 { margin: 0; font-family: var(--font-family-02, Gelasio, Georgia, serif); font-weight: 500; font-size: 1.2em; color: var(--ink); text-align: left; text-transform: none; border: 0; padding: 0; }
+.fl__pkgdesc { margin: 0; font-size: .86em; color: var(--muted); line-height: 1.55; }
+.fl__pkgtoggle { align-self: flex-start; border: 0; background: none; padding: 0; font: inherit; font-size: .82em; color: var(--green); text-decoration: underline; cursor: pointer; }
+.fl__pkgitems { list-style: none; margin: 0; padding: .6em .8em; background: var(--cream); border-radius: 12px; font-size: .82em; display: grid; gap: .25em; }
+.fl__pkgitems span { display: inline-block; min-width: 1.8em; font-weight: 700; color: var(--green); }
+.fl__pkgprice { margin: auto 0 0; padding-top: .3em; font-size: 1.05em; }
+.fl__pkgprice s { margin-left: .5em; font-size: .78em; color: var(--muted); }
 
 /* Warenkorb-Drawer */
 .fl__cartbtn {

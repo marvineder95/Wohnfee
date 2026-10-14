@@ -37,6 +37,14 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   serverseitig), Gratis-Transport in Wien ab € 350/Monat (nur Positionen ≥ 3 Monate),
   sonst −50 % auf Liefer-/Abholgebühr. Anzeige: `RentalPerks.vue` in Warenkorb und Checkout;
   der Vorteil landet als Notiz in der Mietanfrage (Dashboard + Mail).
+- Mietpreise (`shared/rental-pricing.ts`): Grundpreis = `rent_price_1m` (Monatsmiete bei 1 Monat; `rent_price_3m` ist Altbestand
+  aus dem Import und wird nicht mehr verwendet). Rabattstaffel nach Mietdauer im Dashboard unter Konditionen (Setting
+  `rental_discount_tiers`, Standard 1–2 Mon. 0 %, 3–5 Mon. 5 %, 6–23 Mon. 10 %, ab 24 Mon. 20 %, ab 36 Mon. 25 %).
+  EINE Mietdauer für den ganzen Warenkorb (`composables/useRentalCart.ts`, Auswahl `RentalDurationPicker.vue`);
+  Mindestwert/Gratis-Transport auf den Preis nach Rabatt. Server rechnet in `rental-inquiry.post.ts` nach.
+- Mietpakete (`/admin/pakete`, Tabellen `rental_packages` + `rental_package_items`, `server/utils/rental-packages.ts`):
+  Preis = Summe der Grundpreise − Paketrabatt % (oder fester Preis), Staffel obendrauf; im Shop nur sichtbar + buchbar,
+  wenn alle Stücke frei sind. In der Anfrage werden Pakete in ihre Stücke aufgelöst (`package_title`).
 - Warenkorb: runder Button unten rechts (`AppCartFab.vue`, nicht im Checkout/auf /angebot), öffnet seitenweit ohne Weiterleitung (`AppCartDrawer.vue` bzw. Shop-Drawer, Event `wf:open-cart`). Sprache im Header als Dropdown (AppHeader `.langdrop`).
 
 ## Dashboard (/admin)

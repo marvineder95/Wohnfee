@@ -21,7 +21,7 @@ export async function createOfferForInquiry(inquiryId: number, markInProgress = 
   }
 
   const items: any[] = await query(
-    'SELECT title, quantity, duration_months, monthly_price FROM rental_inquiry_items WHERE inquiry_id = :id ORDER BY id',
+    'SELECT title, quantity, duration_months, monthly_price, package_title FROM rental_inquiry_items WHERE inquiry_id = :id ORDER BY id',
     { id: inquiryId }
   )
   if (!items.length) throw new Error('Die Anfrage enthält keine Positionen.')
@@ -62,7 +62,9 @@ export async function createOfferForInquiry(inquiryId: number, markInProgress = 
     months
   )
   const eur = (v: number) => v.toLocaleString('de-AT', { style: 'currency', currency: 'EUR' })
-  note += `${note ? '\n\n' : ''}Monatliche Miete: ${eur(monthly)} · Mietdauer: ${months} ${months === 1 ? 'Monat' : 'Monate'}.`
+  const pct = Number(inquiry.discount_pct) || 0
+  note += `${note ? '\n\n' : ''}Monatliche Miete: ${eur(monthly)} · Mietdauer: ${months} ${months === 1 ? 'Monat' : 'Monate'}`
+    + (pct ? ` · inkl. −${pct.toLocaleString('de-AT')} % Rabatt für die Mietdauer.` : '.')
   if (quote.ok) {
     note += `\nLieferung & Abholung durch unsere eigene Spedition.`
   } else {
@@ -101,6 +103,7 @@ export async function createOfferForInquiry(inquiryId: number, markInProgress = 
     for (const it of items) {
       const price = it.monthly_price !== null ? Number(it.monthly_price) * it.quantity : 0
       await addPos(
+        (it.package_title ? `Paket „${it.package_title}“: ` : '') +
         `${it.quantity}× ${it.title} – Monatsmiete` + (it.monthly_price === null ? ' (Preis auf Anfrage)' : ''),
         months, 'Mon.', price
       )

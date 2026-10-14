@@ -1,37 +1,39 @@
 <script setup lang="ts">
 // Sanfter Upsell im Warenkorb: Fehlt noch etwas bis zum Mindestmietwert oder zum
-// Gratis-Transport, schlagen wir bis zu 3 Artikel vor, die die Lücke möglichst genau
+// Gratis-Transport, schlagen wir bis zu 2 Artikel vor, die die Lücke möglichst genau
 // füllen – bevorzugt „Passt dazu"-Artikel der Möbel im Warenkorb. Kein Popup, ein Klick.
-import { rentalPerks, FREE_MIN_MONTHS, type PerkLine } from '~~/shared/rental-perks'
+// Preise = Monatspreis für die gewählte Mietdauer (useRentalCart).
+import { priceForMonths } from '~~/shared/rental-pricing'
 import type { CatalogItem } from '~/composables/useRentalCatalog'
 
-const props = defineProps<{ lines: Array<PerkLine & { id: number }> }>()
-const emit = defineEmits<{ add: [item: CatalogItem, durationMonths: number] }>()
+const emit = defineEmits<{ add: [item: CatalogItem] }>()
 const { isEn, t } = useLang()
-const { items, load } = useRentalCatalog()
+const { items, packages, tiers, load } = useRentalCatalog()
+const cart = useRentalCart()
 onMounted(load)
 
-const perks = computed(() => rentalPerks(props.lines))
-// Ziel: erst Mindestwert, dann Gratis-Transport (zählt nur der 3-Monats-Tarif)
+const perks = computed(() => cart.perks.value)
+// Ziel: erst Mindestwert, dann Gratis-Transport
 const goal = computed<'min' | 'transport' | null>(() => {
-  if (!props.lines.length) return null
+  if (!cart.lines.value.length) return null
   if (!perks.value.minReached) return 'min'
-  if (!perks.value.transportUnlocked) return 'transport'
+  if (!perks.value.transportUnlocked && !perks.value.tooShort) return 'transport'
   return null
 })
 const gap = computed(() => goal.value === 'min' ? perks.value.missingMin : perks.value.missingTransport)
 
 const suggestions = computed(() => {
   if (!goal.value || !items.value.length) return []
-  const inCart = new Set(props.lines.map(l => l.id))
+  // Einzelstücke UND Stücke aus Paketen im Warenkorb nicht nochmals vorschlagen
+  const inCart = new Set([
+    ...cart.lines.value.filter(l => l.kind === 'item').map(l => l.id),
+    ...cart.lines.value.filter(l => l.kind === 'package')
+      .flatMap(l => packages.value.find(p => p.id === l.id)?.items.map(i => i.id) || [])
+  ])
   const matchSet = new Set(items.value.filter(i => inCart.has(i.id)).flatMap(i => i.matches || []))
   return items.value
     .filter(i => !inCart.has(i.id) && i.quantity > 0)
-    .map(i => {
-      const dur = goal.value === 'transport' ? FREE_MIN_MONTHS : (i.rentPrice3m !== null ? FREE_MIN_MONTHS : 1)
-      const price = dur === FREE_MIN_MONTHS ? i.rentPrice3m : i.rentPrice1m
-      return { item: i, dur, price }
-    })
+    .map(i => ({ item: i, price: priceForMonths(i.price, cart.months.value, tiers.value) }))
     .filter(c => c.price !== null && c.price > 0)
     .map(c => {
       const p = c.price as number
@@ -63,7 +65,7 @@ const title = (i: CatalogItem) => (isEn.value && i.titleEn) || i.title
           <strong :title="title(s.item)">{{ title(s.item) }}</strong>
           <small>{{ eur(s.price as number) }}/{{ t('Mon.', 'mo.') }}<template v-if="s.isMatch"> · {{ t('passt dazu', 'matches') }}</template></small>
         </span>
-        <button type="button" class="cs__add" :aria-label="t('Hinzufügen: ', 'Add: ') + title(s.item)" @click="emit('add', s.item, s.dur)">
+        <button type="button" class="cs__add" :aria-label="t('Hinzufügen: ', 'Add: ') + title(s.item)" @click="emit('add', s.item)">
           <WfIcon name="plus" :size="14" />
         </button>
       </li>

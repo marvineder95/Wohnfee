@@ -1,55 +1,25 @@
 <script setup lang="ts">
-import { rentalPerks } from '~~/shared/rental-perks'
 import type { CatalogItem } from '~/composables/useRentalCatalog'
-// Seitenweiter Warenkorb-Drawer: Das Header-Icon feuert 'wf:open-cart'; auf allen
+// Seitenweiter Warenkorb-Drawer: Der Warenkorb-Button unten rechts feuert 'wf:open-cart'; auf allen
 // Seiten außer dem Shop selbst öffnet sich dieser Drawer an Ort und Stelle (keine
 // Weiterleitung). Auf der Furniture-Leasing-Seite übernimmt der Drawer von RentalShop.
-// Daten: localStorage 'wf_rental_cart' (gleiches Format wie RentalShop).
-interface CartLine {
-  id: number
-  title: string
-  imagePath: string | null
-  durationMonths: number
-  quantity: number
-  price: number | null
-}
-
+// Daten: gemeinsamer Warenkorb (useRentalCart) – eine Mietdauer, Preise nach Rabattstaffel.
 const route = useRoute()
 const { isEn, t } = useLang()
 const SHOP_ROUTES = ['/furniture-leasing.html', '/en/furniture-leasing.html']
 
 const open = ref(false)
-const cart = ref<CartLine[]>([])
-
-function loadCart() {
-  try { cart.value = JSON.parse(localStorage.getItem('wf_rental_cart') || '[]') } catch { cart.value = [] }
+const store = useRentalCart()
+const catalog = useRentalCatalog()
+const cart = computed(() => store.lines.value)
+const perks = computed(() => store.perks.value)
+const count = computed(() => store.count.value)
+const monthly = computed(() => store.monthly.value)
+function addSuggested(i: CatalogItem) {
+  store.addItem(i, 1, (isEn.value && i.titleEn) || i.title)
 }
-function persistCart() {
-  localStorage.setItem('wf_rental_cart', JSON.stringify(cart.value))
-  window.dispatchEvent(new CustomEvent('wf:cart-changed'))
-}
-const perks = computed(() => rentalPerks(cart.value))
-const count = computed(() => cart.value.reduce((s, l) => s + l.quantity, 0))
-const monthly = computed(() =>
-  Math.round(cart.value.reduce((s, l) => s + (l.price ?? 0) * l.quantity, 0) * 100) / 100
-)
-// Vorschlag übernehmen (gleiches Zeilenformat wie im Shop)
-function addSuggested(i: CatalogItem, dur: number) {
-  const price = dur === 1 ? i.rentPrice1m : i.rentPrice3m
-  const existing = cart.value.find((l) => l.id === i.id && l.durationMonths === dur)
-  if (existing) existing.quantity = Math.min(99, existing.quantity + 1)
-  else cart.value.push({ id: i.id, title: (isEn.value && i.titleEn) || i.title, imagePath: i.imagePath, durationMonths: dur, quantity: 1, price })
-  persistCart()
-}
-function setQty(line: CartLine, qty: number) {
-  if (qty < 1) cart.value = cart.value.filter((l) => l !== line)
-  else line.quantity = qty
-  persistCart()
-}
-function removeLine(line: CartLine) {
-  cart.value = cart.value.filter((l) => l !== line)
-  persistCart()
-}
+const setQty = (line: any, qty: number) => store.setQty(line, qty)
+const removeLine = (line: any) => store.remove(line)
 function eur(v: number | null | undefined) {
   return v === null || v === undefined ? ''
     : Number(v).toLocaleString(isEn.value ? 'en-IE' : 'de-AT', { style: 'currency', currency: 'EUR' })
@@ -65,10 +35,11 @@ function goShop() {
   navigateTo(isEn.value ? '/en/furniture-leasing.html' : '/furniture-leasing.html')
 }
 
-const onOpen = () => {
+const onOpen = async () => {
   if (SHOP_ROUTES.includes(route.path)) return
-  loadCart()
+  store.load()
   open.value = true
+  if (await catalog.load()) store.refresh()
 }
 const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') open.value = false }
 watch(() => route.path, () => { open.value = false })
@@ -96,16 +67,16 @@ onBeforeUnmount(() => {
         <button class="wcd__btn" @click="goShop">{{ t('Produkte entdecken →', 'Discover products →') }}</button>
       </div>
       <ul v-else class="wcd__lines">
-        <li v-for="l in cart" :key="l.id + '-' + l.durationMonths" class="wcd__line">
+        <li v-for="l in cart" :key="l.kind + '-' + l.id" class="wcd__line">
           <span class="wcd__thumb">
             <img v-if="l.imagePath" :src="l.imagePath" alt="">
             <WfIcon v-else name="bag" :size="18" />
           </span>
           <div class="wcd__main">
             <strong class="wcd__name">{{ l.title }}</strong>
-            <span class="wcd__meta">{{ l.durationMonths }} {{ l.durationMonths > 1 ? t('Monate', 'months') : t('Monat', 'month') }}</span>
-            <span class="wcd__meta">{{ l.price !== null ? eur(l.price) + ' / ' + t('Monat', 'month') : t('Auf Anfrage', 'On request') }}</span>
-            <div class="wcd__stepper">
+            <span v-if="l.kind === 'package'" class="wcd__meta">{{ t('Paket', 'Package') }} · {{ l.pieces }} {{ t('Teile', 'pieces') }}</span>
+            <span class="wcd__meta">{{ store.unit(l) !== null ? eur(store.unit(l)) + ' / ' + t('Monat', 'month') : t('Auf Anfrage', 'On request') }}</span>
+            <div v-if="l.kind !== 'package'" class="wcd__stepper">
               <button :title="t('Weniger', 'Less')" @click="setQty(l, l.quantity - 1)"><WfIcon name="minus" :size="11" /></button>
               <span>{{ l.quantity }}</span>
               <button :title="t('Mehr', 'More')" @click="setQty(l, l.quantity + 1)"><WfIcon name="plus" :size="11" /></button>
@@ -116,8 +87,13 @@ onBeforeUnmount(() => {
       </ul>
 
       <div v-if="cart.length" class="wcd__foot">
-        <RentalPerks :lines="cart" />
-        <CartSuggestions :lines="cart" @add="addSuggested" />
+        <RentalDurationPicker compact />
+        <RentalPerks :lines="store.perkLines.value" :months="store.months.value" />
+        <CartSuggestions @add="addSuggested" />
+        <p v-if="store.saving.value > 0" class="wcd__saving">
+          <span>{{ t(`Rabatt Mietdauer (−${store.discount.value} %)`, `Long-term discount (−${store.discount.value}%)`) }}</span>
+          <strong>−{{ eur(store.saving.value) }}</strong>
+        </p>
         <p class="wcd__total"><span>{{ t('Gesamt (monatlich)', 'Total (monthly)') }}</span><strong>{{ eur(monthly) }}</strong></p>
         <p class="wcd__note">{{ t('zzgl. einmaliger Liefer-/Abholgebühr — wird im Angebot ausgewiesen.', 'plus a one-off delivery/collection fee — shown in the quote.') }}</p>
         <button class="wcd__btn" :disabled="!perks.minReached" @click="goCheckout">{{ t('Zum Checkout →', 'To checkout →') }}</button>
@@ -128,6 +104,7 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.wcd__saving { display: flex; justify-content: space-between; margin: .2em 0 .3em; font-size: .85em; color: #2f5d40; }
 /* Über allem (Cookiebar 9999, Header 10000) – wie der Drawer im Shop */
 .wcd {
   --green: #2f5d40; --ink: #2b2b28; --muted: #7a7568; --line: #e6e0d2; --cream: #f7f4ec;
