@@ -7,7 +7,10 @@ const { lang, t, lp } = useLang()
 const flat = (els: any[]): any[] => els.flatMap(e => [e, ...flat(e.children || [])])
 const els = computed(() => flat(props.page.columns?.main || []))
 const h1 = computed(() => els.value.find(e => e.type === 'headline')?.headline || props.page.title)
-const strip = (h: string) => h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+// HTML → Text (Tags weg, gängige Entities wie &amp; zurückwandeln – Ausgabe erfolgt per {{ }})
+const strip = (h: string) => h.replace(/<[^>]+>/g, ' ')
+  .replace(/&nbsp;/g, ' ').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#0?39;/g, "'").replace(/&amp;/g, '&')
+  .replace(/\s+/g, ' ').trim()
 
 // Telefon / E-Mail aus der Definitionsliste (Website-Link ist auf der eigenen Seite überflüssig)
 const channels = computed(() => {
@@ -37,7 +40,12 @@ const socials = computed(() => {
 })
 
 const TEAM = '/files/wohnfee/team/'
-const faces = [TEAM + 'WohnFee_Brandingfotos_23-26.jpg', TEAM + 'WohnFee_Brandingfotos_23-6.jpg']
+// Ganzkörperfotos → Gesicht je Foto über Zoom-Mittelpunkt (focus = Gesichtsposition im
+// quadratischen Ausschnitt oben) in den Kreis holen
+const faces = [
+  { src: TEAM + 'WohnFee_Brandingfotos_23-26.jpg', focus: '40% 14%', zoom: 2.3 },
+  { src: TEAM + 'WohnFee_Brandingfotos_23-6.jpg', focus: '55% 50%', zoom: 2.6 } // Sandra Berte (sitzend)
+]
 
 const shortcuts = computed(() => [
   { to: lp('/faq.html'), icon: 'search', title: t('Häufige Fragen', 'FAQ'), text: t('Ablauf, Kosten & Leistungen – vieles ist schon beantwortet.', 'Process, costs & services – many questions are already answered.') },
@@ -72,8 +80,9 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
 
           <div class="hsc2__people">
             <span class="hsc2__faces">
-              <span v-for="f in faces" :key="f" class="hsc2__face">
-                <HsImg :src="f" alt="" sizes="xs:120px sm:120px md:120px lg:120px xl:120px xxl:120px 2xl:120px" />
+              <span v-for="f in faces" :key="f.src" class="hsc2__face"
+                    :style="{ '--focus': f.focus, '--zoom': f.zoom }">
+                <HsImg :src="f.src" alt="" sizes="xs:120px sm:120px md:120px lg:120px xl:120px xxl:120px 2xl:120px" />
               </span>
             </span>
             <span>{{ t('Ihre Ansprechpartnerinnen', 'Your contacts') }} – <NuxtLink :to="lp('/team.html')">{{ t('das Team kennenlernen', 'meet the team') }}</NuxtLink></span>
@@ -166,7 +175,7 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
   border: 3px solid var(--cream); margin-right: -.6em; box-shadow: 0 4px 10px rgba(60, 50, 30, .15);
 }
 /* Ganzkörper-Porträts → aufs Gesicht zoomen */
-.hsc2__face :deep(img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; display: block; transform: scale(2.3); transform-origin: 50% 14%; }
+.hsc2__face :deep(img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; display: block; transform: scale(var(--zoom, 2.3)); transform-origin: var(--focus, 50% 14%); }
 
 .hsc2__channels { list-style: none; margin: 0 0 1.4em; padding: 0; display: grid; gap: .65em; }
 .hsc2__channel {
