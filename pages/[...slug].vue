@@ -220,6 +220,7 @@ const regularMain = computed(() =>
   <div v-else-if="pageData?.route === '/furniture-leasing.html'" class="page-content" :data-route="pageData.route">
     <RentalShop />
     <FlInfo />
+    <HsSustainability />
     <div class="content-wrapper">
       <div class="main-column">
         <ContentElements :elements="leasingInfo" />
@@ -234,6 +235,7 @@ const regularMain = computed(() =>
   <div v-else-if="pageData?.route === '/en/furniture-leasing.html'" class="page-content" :data-route="pageData.route">
     <RentalShop lang="en" />
     <FlInfo lang="en" />
+    <HsSustainability />
     <div class="content-wrapper">
       <div class="main-column">
         <ContentElements :elements="enInfo" />

@@ -13,6 +13,12 @@ const audience = computed(() => HS_AUDIENCES.find(a => a.route === baseRoute(pro
 const others = computed(() => HS_AUDIENCES.filter(a => a.route !== baseRoute(props.page))
   .map(a => ({ ...a, route: lp(a.route), title: t(a.title, a.titleEn), text: t(a.text, a.textEn) })))
 
+// Zielgruppe für Kundenstimmen (Dashboard → Website-Inhalte → Kundenstimmen)
+const AUDIENCE_KEYS: Record<string, 'bautraeger' | 'makler' | 'privat'> = {
+  '/fuer-bautraeger-2.html': 'bautraeger', '/fuer-makler.html': 'makler', '/fuer-privatpersonen-2.html': 'privat'
+}
+const audienceKey = computed(() => AUDIENCE_KEYS[baseRoute(props.page)] || 'alle')
+
 const elements = computed<any[]>(() => props.page.columns?.main || [])
 const h1 = computed(() => elements.value.find(e => e.type === 'headline')?.headline || props.page.title)
 const list = computed(() => elements.value.find(e => e.type === 'newslist'))
@@ -132,8 +138,13 @@ function scrollToProjects(e: Event) {
     </section>
 
     <!-- ── Projektbeispiele ─────────────────────────── -->
-    <!-- Kunden-Logos (nur bei Bauträgern und nur, wenn Referenzen freigeschaltet sind) -->
-    <HsReferences v-if="[props.page?.route, props.page?.alternate].includes('/fuer-bautraeger-2.html')" />
+    <!-- Bauträger: Zahlen & Fakten + Kunden-Logos (nur, wenn im Dashboard freigeschaltet) -->
+    <template v-if="audienceKey === 'bautraeger'">
+      <HsDeveloperFacts />
+      <HsReferences />
+    </template>
+    <!-- Kundenstimmen der jeweiligen Zielgruppe (nur sichtbare) -->
+    <HsTestimonials :audience="audienceKey" />
 
     <section v-if="projects.length" id="projekte" class="hsa__projects">
       <div class="hsa__wrap">

@@ -147,6 +147,9 @@ function scrollToId(id: string, e?: Event) {
     </section>
 
     <!-- ── 01 Home Staging ──────────────────────────── -->
+    <!-- Kennzahlen aus dem Dashboard (nur wenn freigeschaltet) -->
+    <HsStats />
+
     <section id="home-staging" class="hss__hs">
       <div class="hss__wrap hss__split rv">
         <div class="hss__text">
@@ -296,6 +299,9 @@ function scrollToId(id: string, e?: Event) {
     </section>
 
     <!-- ── Kontakt ──────────────────────────────────── -->
+    <HsTestimonials />
+    <HsSustainability />
+
     <section class="hss__cta">
       <div class="hss__wrap">
         <div class="hss__ctabox rv">
