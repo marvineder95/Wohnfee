@@ -105,7 +105,7 @@ function scrollToId(id: string, e: Event) {
           </div>
           <ul class="hst__faces" :aria-label="t('Unser Team', 'Our team')">
             <li v-for="m in members" :key="m.id">
-              <a :href="`#person-${m.id}`" :title="m.name" @click="scrollToId(`person-${m.id}`, $event)">
+              <a :href="`#person-${m.id}`" :title="m.name" :style="teamFaceStyle(m.img)" @click="scrollToId(`person-${m.id}`, $event)">
                 <HsImg :src="m.img" :alt="m.name" sizes="xs:120px sm:120px md:120px lg:120px xl:120px xxl:120px 2xl:120px" />
               </a>
             </li>
@@ -262,7 +262,7 @@ function scrollToId(id: string, e: Event) {
 .hst__faces { list-style: none; margin: 2.2em 0 0; padding: 0; display: flex; align-items: center; }
 .hst__faces li a { display: block; width: 3.4em; height: 3.4em; border-radius: 50%; overflow: hidden; border: 3px solid var(--cream); margin-right: -.7em; box-shadow: 0 4px 12px rgba(60, 50, 30, .15); transition: transform .2s; }
 .hst__faces li a:hover { transform: translateY(-3px); z-index: 1; position: relative; }
-.hst__faces :deep(img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; display: block; transform: scale(2.3); transform-origin: 50% 14%; }
+.hst__faces :deep(img) { width: 100%; height: 100%; object-fit: cover; object-position: 50% 0; display: block; transform: scale(var(--zoom, 2.3)); transform-origin: var(--focus, 50% 14%); }
 .hst__facestext { margin-left: 1.5em; font-family: var(--serif); font-size: 1.05em; line-height: 1.3; }
 .hst__facestext small { font-family: var(--font-family-01, 'Open Sans', sans-serif); font-size: .78em; color: var(--muted); }
 

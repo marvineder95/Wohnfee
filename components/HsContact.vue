@@ -40,12 +40,8 @@ const socials = computed(() => {
 })
 
 const TEAM = '/files/wohnfee/team/'
-// Ganzkörperfotos → Gesicht je Foto über Zoom-Mittelpunkt (focus = Gesichtsposition im
-// quadratischen Ausschnitt oben) in den Kreis holen
-const faces = [
-  { src: TEAM + 'WohnFee_Brandingfotos_23-26.jpg', focus: '40% 14%', zoom: 2.3 },
-  { src: TEAM + 'WohnFee_Brandingfotos_23-6.jpg', focus: '55% 50%', zoom: 2.6 } // Sandra Berte (sitzend)
-]
+// Ganzkörperfotos → Gesichts-Ausschnitt je Foto aus teamFaceStyle() (composables/teamFaces.ts)
+const faces = [TEAM + 'WohnFee_Brandingfotos_23-26.jpg', TEAM + 'WohnFee_Brandingfotos_23-6.jpg']
 
 const shortcuts = computed(() => [
   { to: lp('/faq.html'), icon: 'search', title: t('Häufige Fragen', 'FAQ'), text: t('Ablauf, Kosten & Leistungen – vieles ist schon beantwortet.', 'Process, costs & services – many questions are already answered.') },
@@ -80,9 +76,8 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
 
           <div class="hsc2__people">
             <span class="hsc2__faces">
-              <span v-for="f in faces" :key="f.src" class="hsc2__face"
-                    :style="{ '--focus': f.focus, '--zoom': f.zoom }">
-                <HsImg :src="f.src" alt="" sizes="xs:120px sm:120px md:120px lg:120px xl:120px xxl:120px 2xl:120px" />
+              <span v-for="f in faces" :key="f" class="hsc2__face" :style="teamFaceStyle(f)">
+                <HsImg :src="f" alt="" sizes="xs:120px sm:120px md:120px lg:120px xl:120px xxl:120px 2xl:120px" />
               </span>
             </span>
             <span>{{ t('Ihre Ansprechpartnerinnen', 'Your contacts') }} – <NuxtLink :to="lp('/team.html')">{{ t('das Team kennenlernen', 'meet the team') }}</NuxtLink></span>
