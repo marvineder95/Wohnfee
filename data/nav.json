@@ -82,6 +82,12 @@
      "children": []
     },
     {
+     "title": "Partner",
+     "route": "/partner.html",
+     "children": [],
+     "requires": "partners"
+    },
+    {
      "title": "FAQ",
      "route": "/faq.html",
      "children": []

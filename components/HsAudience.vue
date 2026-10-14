@@ -132,6 +132,9 @@ function scrollToProjects(e: Event) {
     </section>
 
     <!-- ── Projektbeispiele ─────────────────────────── -->
+    <!-- Kunden-Logos (nur bei Bauträgern und nur, wenn Referenzen freigeschaltet sind) -->
+    <HsReferences v-if="[props.page?.route, props.page?.alternate].includes('/fuer-bautraeger-2.html')" />
+
     <section v-if="projects.length" id="projekte" class="hsa__projects">
       <div class="hsa__wrap">
         <div class="hsa__head rv">

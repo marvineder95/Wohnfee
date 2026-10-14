@@ -63,7 +63,7 @@ const hidden = computed(() =>
   || dePath.value === '/faq.html' || dePath.value === '/team.html'
   || ['/aktuelles.html', '/projekte.html', '/trends-tipps.html', '/events.html'].includes(dePath.value)
   || dePath.value.startsWith('/projekte/category/')
-  || dePath.value === '/kontakt.html' || dePath.value === '/impressum.html' || dePath.value === '/datenschutz.html' || dePath.value === '/widerrufsbelehrung.html' || dePath.value === '/immobilien.html' || dePath.value.startsWith('/immobilien/') || dePath.value === '/presse.html' || dePath.value.startsWith('/presse/category/')
+  || dePath.value === '/kontakt.html' || dePath.value === '/impressum.html' || dePath.value === '/datenschutz.html' || dePath.value === '/widerrufsbelehrung.html' || dePath.value === '/immobilien.html' || dePath.value.startsWith('/immobilien/') || dePath.value === '/presse.html' || dePath.value.startsWith('/presse/category/') || dePath.value === '/partner.html'
   || HS_AUDIENCE_ROUTES.includes(dePath.value))
 
 const liClass = (r: string) => plain.value ? '' : [
@@ -78,7 +78,7 @@ const liClass = (r: string) => plain.value ? '' : [
       <nav class="mod_navigation block">
         <a :href="`${route.path}#skipNavigation2`" class="invisible">Navigation überspringen</a>
         <ul class="level_1">
-          <li v-for="child in section.item.children" :key="child.route" :class="liClass(child.route)">
+          <li v-for="child in section.item.children.filter((c: any) => !c.requires)" :key="child.route" :class="liClass(child.route)">
             <strong v-if="child.route === dePath && !plain" :class="liClass(child.route)">{{ titleFor(child) }}</strong>
             <NuxtLink v-else :to="linkFor(child.route)" :title="titleFor(child)" :class="liClass(child.route)">{{ titleFor(child) }}</NuxtLink>
           </li>

@@ -1042,5 +1042,13 @@
  "/en/immobilien.html": {
   "type": "page",
   "id": "immobilien"
+ },
+ "/partner.html": {
+  "type": "page",
+  "id": "partner"
+ },
+ "/en/partners.html": {
+  "type": "page",
+  "id": "partner"
  }
 }

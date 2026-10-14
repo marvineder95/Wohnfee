@@ -11,7 +11,7 @@ export type Access = 'none' | 'view' | 'edit'
 
 export type Area =
   | 'dashboard' | 'anfragen' | 'mietanfragen' | 'projekte' | 'touren' | 'kalender' | 'inventar'
-  | 'kontakte' | 'angebote' | 'rechnungen' | 'artikel' | 'newsletter' | 'konditionen' | 'users' | 'immobilien'
+  | 'kontakte' | 'angebote' | 'rechnungen' | 'artikel' | 'newsletter' | 'konditionen' | 'users' | 'immobilien' | 'partner'
 
 export const ROLES: Array<{ value: Role; label: string; text: string }> = [
   { value: 'superadmin', label: 'Admin', text: 'Voller Zugriff inkl. Benutzerverwaltung und Konditionen.' },
@@ -25,12 +25,12 @@ const MATRIX: Record<Role, Partial<Record<Area, Access>>> = {
   superadmin: {
     dashboard: 'edit', anfragen: 'edit', mietanfragen: 'edit', projekte: 'edit', touren: 'edit', kalender: 'edit',
     inventar: 'edit', kontakte: 'edit', angebote: 'edit', rechnungen: 'edit', artikel: 'edit', newsletter: 'edit',
-    konditionen: 'edit', users: 'edit', immobilien: 'edit'
+    konditionen: 'edit', users: 'edit', immobilien: 'edit', partner: 'edit'
   },
   designer: {
     dashboard: 'edit', anfragen: 'edit', mietanfragen: 'edit', projekte: 'edit', touren: 'edit', kalender: 'edit',
     inventar: 'edit', kontakte: 'edit', angebote: 'edit', rechnungen: 'edit', artikel: 'edit', newsletter: 'edit',
-    konditionen: 'view', users: 'none', immobilien: 'edit'
+    konditionen: 'view', users: 'none', immobilien: 'edit', partner: 'edit'
   },
   driver: {
     dashboard: 'view', anfragen: 'view', mietanfragen: 'view', projekte: 'view', touren: 'view',
@@ -55,7 +55,7 @@ export function areaForPath(path: string): Area | null {
     dashboard: 'dashboard', anfragen: 'anfragen', mietanfragen: 'mietanfragen', projekte: 'projekte',
     touren: 'touren', packliste: 'touren', kalender: 'kalender', inventar: 'inventar', kontakte: 'kontakte',
     angebote: 'angebote', rechnungen: 'rechnungen', artikel: 'artikel', newsletter: 'newsletter',
-    konditionen: 'konditionen', users: 'users', immobilien: 'immobilien'
+    konditionen: 'konditionen', users: 'users', immobilien: 'immobilien', partner: 'partner'
   }
   return map[p] || null // profil, passwort, einladung … sind für alle offen
 }
@@ -84,7 +84,7 @@ export function requirementForApi(path: string, method: string): { area: Area; n
     dashboard: 'dashboard', inquiries: 'anfragen', 'rental-inquiries': 'mietanfragen', projects: 'projekte',
     logistics: 'touren', calendar: 'kalender', inventory: 'inventar', contacts: 'kontakte', offers: 'angebote',
     invoices: 'rechnungen', recurring: 'rechnungen', blog: 'artikel', newsletter: 'newsletter',
-    transport: 'konditionen', users: 'users', properties: 'immobilien'
+    transport: 'konditionen', users: 'users', properties: 'immobilien', partners: 'partner'
   }
   const area = map[seg[0]]
   return area ? { area, need } : null

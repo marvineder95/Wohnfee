@@ -158,6 +158,15 @@ if (propMatch) {
   property = data.value?.slug ? data.value : null
 }
 
+// Partner-Seite: nur vorhanden, wenn im Dashboard sichtbare Partner eingetragen sind
+let partnerList: any[] = []
+if (entry.value && pageRoute.value === '/partner.html') {
+  const { data } = await useAsyncData(`partners-${slug.value}`,
+    () => $fetch<any>('/api/partners').catch(() => ({ partners: [] })))
+  partnerList = data.value?.partners || []
+  if (!partnerList.length) throw createError({ statusCode: 404, statusMessage: 'Seite nicht gefunden' })
+}
+
 // 404 for unknown routes
 if (!entry.value && !dbArticle && !property) {
   throw createError({ statusCode: 404, statusMessage: 'Seite nicht gefunden' })
@@ -289,6 +298,11 @@ const regularMain = computed(() =>
   <!-- Impressum: Rechtstext-Karten -->
   <div v-else-if="pageRoute === '/impressum.html'" class="page-content" :data-route="pageData.route">
     <HsLegal :page="pageData" />
+  </div>
+
+  <!-- Partner (aus dem Dashboard) -->
+  <div v-else-if="pageRoute === '/partner.html'" class="page-content" :data-route="pageData.route">
+    <HsPartners :page="pageData" :partners="partnerList" />
   </div>
 
   <!-- Immobilien-Übersicht -->

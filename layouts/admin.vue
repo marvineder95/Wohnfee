@@ -87,6 +87,7 @@ const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
   { label: 'Website', items: [
     { to: '/admin/immobilien', label: 'Immobilien', icon: 'pin', exact: false, area: 'immobilien' },
     { to: '/admin/artikel', label: 'Beiträge', icon: 'edit', exact: false, area: 'artikel' },
+    { to: '/admin/partner', label: 'Partner', icon: 'diamond', exact: false, area: 'partner' },
     { to: '/admin/newsletter', label: 'Newsletter', icon: 'mail', exact: false, area: 'newsletter' }
   ] },
   { label: 'Verwaltung', items: [

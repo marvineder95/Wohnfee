@@ -275,6 +275,9 @@ function scrollToId(id: string, e?: Event) {
     </section>
 
     <!-- ── Presse ───────────────────────────────────── -->
+    <!-- Kunden-Logos aus dem Dashboard (nur sichtbar, wenn Referenzen freigeschaltet sind) -->
+    <HsReferences />
+
     <section v-if="pressClips.length" class="hss__press">
       <div class="hss__wrap hss__pressrow rv">
         <div>

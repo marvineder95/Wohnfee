@@ -88,6 +88,7 @@ const EN_TITLES: Record<string, string> = {
   '/events.html': 'Events',
   '/team.html': 'About Us',
   '/presse.html': 'Press',
+  '/partner.html': 'Partners',
   '/kontakt.html': 'Contact',
   '/impressum.html': 'Legal Notice',
   '/datenschutz.html': 'Privacy Policy'
@@ -152,6 +153,9 @@ onBeforeUnmount(() => {
   if (import.meta.client) window.removeEventListener('scroll', onScroll)
 })
 
+// Menüpunkte mit "requires" (z. B. „Partner“) erst zeigen, wenn im Dashboard etwas sichtbar ist
+const { navAllowed } = usePartners()
+
 // ---------- „Neu"-Hinweis am Menüpunkt ----------
 // Kleines Abzeichen am Mietshop (Furniture Leasing). Später einfach aus NEW_ROUTES entfernen.
 const NEW_ROUTES = ['/furniture-leasing.html']
@@ -208,7 +212,7 @@ onBeforeUnmount(() => {
             <span v-if="isNew(item)" class="wfh-new" aria-hidden="true">{{ newLabel }}</span>
             <div v-if="item.children?.length" class="wfh-drop">
               <ul>
-                <li v-for="child in item.children" :key="child.route">
+                <li v-for="child in item.children.filter(navAllowed)" :key="child.route">
                   <NuxtLink :to="linkFor(child.route)" :class="{ 'is-current': child.route === dePath(route.path) }">
                     <span>{{ titleFor(child) }}</span>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
@@ -285,7 +289,7 @@ onBeforeUnmount(() => {
               </div>
               <div v-if="item.children?.length" class="wfm__sub">
                 <div class="wfm__subinner">
-                  <NuxtLink v-for="child in item.children" :key="child.route" :to="linkFor(child.route)"
+                  <NuxtLink v-for="child in item.children.filter(navAllowed)" :key="child.route" :to="linkFor(child.route)"
                             class="wfm__sublink" :class="{ 'is-current': child.route === dePath(route.path) }"
                             @click="open = false">
                     {{ titleFor(child) }}

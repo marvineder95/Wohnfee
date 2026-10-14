@@ -2161,5 +2161,20 @@
   "columns": {
    "main": []
   }
+ },
+ "partner": {
+  "route": "/partner.html",
+  "title": "Partner",
+  "alias": "partner",
+  "pageTitle": "",
+  "description": "Unsere Partner: Mit diesen Unternehmen arbeitet WOHNFEE bei Home Staging, Furniture Leasing und Redesign zusammen.",
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "8",
+  "cssClass": "no-slider",
+  "alternate": "/en/partners.html",
+  "columns": {
+   "main": []
+  }
  }
 }

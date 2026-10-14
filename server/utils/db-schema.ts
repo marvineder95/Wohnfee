@@ -392,6 +392,23 @@ CREATE TABLE IF NOT EXISTS recurring_invoices (
   CONSTRAINT fk_recurring_source FOREIGN KEY (source_invoice_id) REFERENCES invoices(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS partners (
+  id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  kind ENUM('partner','referenz') NOT NULL DEFAULT 'partner',
+  name VARCHAR(190) NOT NULL,
+  category VARCHAR(64) NULL,
+  description TEXT NULL,
+  description_en TEXT NULL,
+  website VARCHAR(255) NULL,
+  logo_path VARCHAR(255) NULL,
+  visible TINYINT(1) NOT NULL DEFAULT 0,
+  sort_order INT NOT NULL DEFAULT 0,
+  note TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  KEY idx_partners_kind (kind, visible, sort_order)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS properties (
   id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   slug VARCHAR(190) NOT NULL,

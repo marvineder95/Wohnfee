@@ -77,6 +77,10 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   `shared/properties.ts`): Website /immobilien.html + /immobilien/<slug>.html (live), Anfrage → contact_inquiries
   (property_id). willhaben: OpenImmo-XML (`server/utils/openimmo.ts`), Feed /api/feeds/openimmo?key=… (Setting
   willhaben_feed/_feed_key). willhaben-Business-Zugang + genaue Feldanforderungen noch mit willhaben klären.
+- Partner & Referenzen (`/admin/partner`, Tabelle `partners`, `shared/partners.ts`): Art „partner“ → Seite /partner.html
+  (Menü „Über uns“ → „Partner“, nav.json `requires: "partners"`), Art „referenz“ → Logo-Leiste `HsReferences.vue` auf Startseite
+  und „Für Bauträger“. Nur Einträge mit „Auf der Website zeigen“ erscheinen; ohne solche: Menüpunkt weg, Seite 404, nicht in der
+  Sitemap. Website lädt die Daten im Browser (`usePartners`), damit vorgerenderte Seiten ohne Neu-Build aktuell sind.
 - Touren & Rückgaben (`/admin/touren`, API `/api/admin/logistics`): Kalendertermine +
   Projekt-Deadlines mit Möbeln + Überfälliges; Packliste `/admin/packliste/:id` (druckbar).
 - Abo-Rechnungen: Tabelle `recurring_invoices`, Erzeugung `server/utils/recurring.ts`

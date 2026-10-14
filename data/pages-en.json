@@ -1670,5 +1670,21 @@
   "columns": {
    "main": []
   }
+ },
+ "partner": {
+  "route": "/en/partners.html",
+  "title": "Partners",
+  "alias": "partners",
+  "pageTitle": "",
+  "description": "Our partners: the companies WOHNFEE works with on home staging, furniture leasing and redesign.",
+  "robots": "index,follow",
+  "hide": false,
+  "parent": "8",
+  "cssClass": "no-slider",
+  "lang": "en",
+  "alternate": "/partner.html",
+  "columns": {
+   "main": []
+  }
  }
 }

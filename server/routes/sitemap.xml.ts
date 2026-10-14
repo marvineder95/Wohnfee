@@ -8,7 +8,11 @@ export default defineEventHandler(async (event) => {
   const base = (site as any).baseUrl as string
   const entries: string[] = []
 
+  // Partner-Seite nur listen, wenn es sichtbare Partner gibt
+  const hasPartners = !!(await query<any>(`SELECT id FROM partners WHERE visible = 1 AND kind = 'partner' LIMIT 1`).catch(() => [])).length
+
   for (const [path, info] of Object.entries(routes as Record<string, { type: string, id: string }>)) {
+    if (info.id === 'partner' && !hasPartners) continue
     if (info.type === 'news') {
       const n = (news as Record<string, any>)[info.id]
       // press items link to external sources; live sitemap excludes them
