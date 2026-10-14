@@ -152,6 +152,12 @@ onBeforeUnmount(() => {
   if (import.meta.client) window.removeEventListener('scroll', onScroll)
 })
 
+// ---------- „Neu"-Hinweis am Menüpunkt ----------
+// Kleines Abzeichen am Mietshop (Furniture Leasing). Später einfach aus NEW_ROUTES entfernen.
+const NEW_ROUTES = ['/furniture-leasing.html']
+const isNew = (item: any) => NEW_ROUTES.includes(item.route)
+const newLabel = computed(() => (currentLang.value === 'en' ? '✦ New shop' : '✦ Neuer Shop'))
+
 // ---------- Sprach-Dropdown ----------
 // Klick öffnet/schließt (auch Touch), Hover öffnet am Desktop (CSS); schließt bei
 // Klick außerhalb, Esc und Seitenwechsel. Der Warenkorb sitzt als Button unten rechts (AppCartFab).
@@ -199,6 +205,7 @@ onBeforeUnmount(() => {
               {{ titleFor(item) }}
               <svg v-if="item.children?.length" class="wfh-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
             </NuxtLink>
+            <span v-if="isNew(item)" class="wfh-new" aria-hidden="true">{{ newLabel }}</span>
             <div v-if="item.children?.length" class="wfh-drop">
               <ul>
                 <li v-for="child in item.children" :key="child.route">
@@ -267,6 +274,7 @@ onBeforeUnmount(() => {
               <div class="wfm__row">
                 <NuxtLink :to="linkFor(item.route)" class="wfm__link" @click="open = false">
                   <span class="wfm__no">0{{ i + 1 }}</span>{{ titleFor(item) }}
+                  <span v-if="isNew(item)" class="wfm__new">{{ newLabel }}</span>
                 </NuxtLink>
                 <button v-if="item.children?.length" type="button" class="wfm__toggle"
                         :aria-expanded="expanded === item.route"
@@ -411,6 +419,18 @@ onBeforeUnmount(() => {
 }
 #header.wfh .wfh-nav li.has-drop:hover .wfh-chev,
 #header.wfh .wfh-nav li.has-drop:focus-within .wfh-chev { transform: rotate(180deg); }
+
+/* „Neu"-Abzeichen: schwebt über dem Menüpunkt, verändert die Navibreite nicht */
+#header.wfh .wfh-new {
+  position: absolute; top: -.55em; right: -.2em; z-index: 2; pointer-events: none;
+  padding: .2em .6em; border-radius: 999px; background: #c8913a; color: #fff;
+  font-family: var(--font-family-01, 'Open Sans', sans-serif); font-size: .62em; font-weight: 700; letter-spacing: .04em;
+  line-height: 1.35; white-space: nowrap; box-shadow: 0 4px 10px rgba(200, 145, 58, .35);
+  animation: wfh-new-pulse 2.6s ease-in-out infinite;
+}
+@keyframes wfh-new-pulse { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { #header.wfh .wfh-new { animation: none; } }
+@media (max-width: 1100px) { #header.wfh .wfh-new { top: -.75em; right: -.4em; } }
 
 /* Dropdown */
 #header.wfh .wfh-drop {
@@ -589,6 +609,11 @@ onBeforeUnmount(() => {
 .wfm__foot {
   flex: none; display: flex; align-items: center; justify-content: space-between; gap: 1rem;
   padding: .9rem 16px calc(.9rem + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: rgba(255, 255, 255, .6);
+}
+.wfm__new {
+  display: inline-block; margin-left: .6em; padding: .25em .7em; border-radius: 999px; vertical-align: middle;
+  background: #c8913a; color: #fff; font-family: var(--font-family-01, 'Open Sans', sans-serif);
+  font-size: .42em; font-weight: 700; letter-spacing: .05em; line-height: 1.4; white-space: nowrap; flex: none;
 }
 .wfm__lang { display: inline-flex; padding: 3px; border-radius: 999px; border: 1px solid var(--line); background: #fff; }
 .wfm__lang a, .wfm__lang span {
