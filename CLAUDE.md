@@ -37,7 +37,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   serverseitig), Gratis-Transport in Wien ab € 350/Monat (nur Positionen ≥ 3 Monate),
   sonst −50 % auf Liefer-/Abholgebühr. Anzeige: `RentalPerks.vue` in Warenkorb und Checkout;
   der Vorteil landet als Notiz in der Mietanfrage (Dashboard + Mail).
-- Warenkorb öffnet seitenweit ohne Weiterleitung (`AppCartDrawer.vue`, Event `wf:open-cart`).
+- Warenkorb: runder Button unten rechts (`AppCartFab.vue`, nicht im Checkout/auf /angebot), öffnet seitenweit ohne Weiterleitung (`AppCartDrawer.vue` bzw. Shop-Drawer, Event `wf:open-cart`). Sprache im Header als Dropdown (AppHeader `.langdrop`).
 
 ## Dashboard (/admin)
 - Navigation gruppiert in `layouts/admin.vue` (`NAV_GROUPS`): Eingang · Planung ·

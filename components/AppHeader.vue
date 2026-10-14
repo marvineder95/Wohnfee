@@ -152,31 +152,24 @@ onBeforeUnmount(() => {
   if (import.meta.client) window.removeEventListener('scroll', onScroll)
 })
 
-// ---------- Warenkorb-Icon (Furniture Leasing) ----------
-// Anzahl aus dem localStorage des RentalShops ('wf_rental_cart'); der Shop
-// feuert bei Änderungen das Event 'wf:cart-changed'.
-const cartCount = ref(0)
-const refreshCart = () => {
-  if (!import.meta.client) return
-  try {
-    const lines = JSON.parse(window.localStorage.getItem('wf_rental_cart') || '[]')
-    cartCount.value = lines.reduce((s: number, l: any) => s + (Number(l.quantity) || 0), 0)
-  } catch { cartCount.value = 0 }
+// ---------- Sprach-Dropdown ----------
+// Klick öffnet/schließt (auch Touch), Hover öffnet am Desktop (CSS); schließt bei
+// Klick außerhalb, Esc und Seitenwechsel. Der Warenkorb sitzt als Button unten rechts (AppCartFab).
+const langOpen = ref(false)
+const langEl = ref<HTMLElement | null>(null)
+const onDocClick = (e: MouseEvent) => {
+  if (langOpen.value && langEl.value && !langEl.value.contains(e.target as Node)) langOpen.value = false
 }
-// Öffnet den Warenkorb an Ort und Stelle – im Shop dessen Drawer (RentalShop),
-// auf allen anderen Seiten den seitenweiten AppCartDrawer. Keine Weiterleitung.
-const openCart = () => {
-  window.dispatchEvent(new CustomEvent('wf:open-cart'))
-}
+const onLangKey = (e: KeyboardEvent) => { if (e.key === 'Escape') langOpen.value = false }
+watch(() => route.path, () => { langOpen.value = false })
 onMounted(() => {
-  refreshCart()
-  window.addEventListener('wf:cart-changed', refreshCart)
-  window.addEventListener('storage', refreshCart)
+  document.addEventListener('click', onDocClick)
+  window.addEventListener('keydown', onLangKey)
 })
 onBeforeUnmount(() => {
   if (!import.meta.client) return
-  window.removeEventListener('wf:cart-changed', refreshCart)
-  window.removeEventListener('storage', refreshCart)
+  document.removeEventListener('click', onDocClick)
+  window.removeEventListener('keydown', onLangKey)
 })
 </script>
 
@@ -220,27 +213,28 @@ onBeforeUnmount(() => {
         </ul>
         <span id="skipNavigation1" class="invisible"></span>
       </nav>
-      <div class="langswitch" role="navigation" :aria-label="currentLang === 'en' ? 'Choose language' : 'Sprache wählen'">
-        <NuxtLink v-if="deTarget" :to="deTarget" hreflang="de" :class="{ 'is-active': currentLang === 'de' }" @click="setLangPref('de')">DE</NuxtLink>
-        <span v-else class="is-active is-current" aria-current="true">DE</span>
-        <span class="langswitch__sep" aria-hidden="true">|</span>
-        <NuxtLink v-if="enTarget" :to="enTarget" hreflang="en" lang="en" :class="{ 'is-active': currentLang === 'en' }" @click="setLangPref('en')">EN</NuxtLink>
-        <span v-else class="is-active is-current" aria-current="true" lang="en">EN</span>
+      <div ref="langEl" class="langdrop" :class="{ 'is-open': langOpen }">
+        <button type="button" class="langdrop__btn" :aria-expanded="langOpen" aria-haspopup="true"
+                :aria-label="currentLang === 'en' ? 'Language: English – change' : 'Sprache: Deutsch – ändern'"
+                @click="langOpen = !langOpen">
+          <svg class="langdrop__globe" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" /></svg>
+          <span>{{ currentLang === 'en' ? 'EN' : 'DE' }}</span>
+          <svg class="wfh-chev" viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
+        </button>
+        <div class="langdrop__menu" role="menu">
+          <NuxtLink v-if="deTarget" :to="deTarget" hreflang="de" role="menuitem" @click="setLangPref('de'); langOpen = false">
+            Deutsch
+          </NuxtLink>
+          <span v-else class="is-current" role="menuitem" aria-current="true">Deutsch <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></span>
+          <NuxtLink v-if="enTarget" :to="enTarget" hreflang="en" lang="en" role="menuitem" @click="setLangPref('en'); langOpen = false">
+            English
+          </NuxtLink>
+          <span v-else class="is-current" role="menuitem" aria-current="true" lang="en">English <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 5 5 9-10" /></svg></span>
+        </div>
       </div>
       <NuxtLink :to="linkFor('/kontakt.html')" class="wfh-cta">
         {{ currentLang === 'en' ? 'Get in touch' : 'Beratung anfragen' }}
       </NuxtLink>
-      <!-- Warenkorb ganz rechts am Ende der Navigation -->
-      <button type="button" class="cartbtn" :aria-label="currentLang === 'en' ? 'Open cart' : 'Warenkorb öffnen'"
-              @click="openCart">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"
-             stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="9" cy="20" r="1.4" />
-          <circle cx="17" cy="20" r="1.4" />
-          <path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h8.9a1 1 0 0 0 1-.76L20 8H6" />
-        </svg>
-        <span v-if="cartCount > 0" class="cartbtn__badge">{{ cartCount }}</span>
-      </button>
       <button type="button" class="wfm-trigger" :class="{ 'is-open': open }"
               :aria-label="currentLang === 'en' ? (open ? 'Close menu' : 'Open menu') : (open ? 'Menü schließen' : 'Menü öffnen')"
               :aria-expanded="open" aria-controls="wfm" @click="open = !open">
@@ -347,52 +341,6 @@ onBeforeUnmount(() => {
   margin-bottom: 0;
 }
 
-/* DE|EN-Sprachswitch — als dezente Pill rechts neben der Hauptnavigation.
-   Vertikal zentriert in der Headerzeile, linkslier Abstand trennt die
-   Icon-Gruppe von den Nav-Punkten. */
-#header .langswitch {
-  position: relative;
-  /* über der Cookiebar (z-index 9999), damit der Switch auch vor der
-     Einwilligung klickbar bleibt */
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  gap: .35em;
-  margin: 0 0 0 1.8rem;
-  padding: .4em .85em;
-  border: 1px solid #e4ddcb;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, .9);
-  font-size: .92em;
-  letter-spacing: .05em;
-  align-self: center;
-  flex-shrink: 0;
-}
-
-#header .langswitch a,
-#header .langswitch .is-current {
-  color: #a8a396;
-  text-decoration: none;
-  font-weight: 600;
-  padding: .05em .2em;
-  line-height: 1.4;
-}
-
-#header .langswitch a:hover { color: #2f2f2b; }
-
-#header .langswitch .is-current {
-  color: #2f5d40;
-  border-bottom: 2px solid #759364;
-  cursor: default;
-}
-
-#header .langswitch__sep { color: #d8d2c4; }
-
-
-@media (max-width: 767px) {
-  #header .langswitch { display: none; }
-}
-
 /* Neues WOHNFEE-Logo: PNG hat keine Eigengröße -> feste Breite */
 #header #logo img {
   width: 215px;
@@ -403,34 +351,6 @@ onBeforeUnmount(() => {
 /* Logo-Block ohne Top-Margin – die Höhe bestimmt nur Bild + „since 2011",
    die Zeile wird über align-items:center in .inside zentriert. */
 #header #logo { margin-top: 0; padding-bottom: 0; }
-
-/* Warenkorb-Icon rechts neben der Navigation (vor DE|EN-Switch) */
-#header .cartbtn {
-  position: relative;
-  z-index: 10000;
-  /* Buttons erben browserseitig KEINE Schriftgröße – ohne inherit würden
-     alle em-Angaben (Icon, Margins) auf der kleinen UA-Standardgröße
-     basieren und das Icon säße zu hoch/klein. */
-  font-size: inherit;
-  font-family: inherit;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  align-self: center;
-  flex-shrink: 0;
-  /* größerer linkslier Abstand trennt die Icon-Gruppe deutlich von den Nav-Punkten */
-  margin: 0 0 0 2.6rem;
-  padding: .35em;
-  width: 2.4em;
-  height: 2.4em;
-  border: 0;
-  background: none;
-  color: #2f2f2b;
-  cursor: pointer;
-  transition: color .15s ease;
-}
-#header .cartbtn:hover { color: #2f5d40; }
-#header .cartbtn svg { width: 1.55em; height: 1.55em; }
 
 /* ── Header-Entwurf „wfh" ─────────────────────────────
    Heller, leicht transparenter Header mit Blur, Pill-Navigation in der
@@ -526,8 +446,35 @@ onBeforeUnmount(() => {
 #header.wfh .wfh-drop a.is-current { color: #2f5d40; font-weight: 600; background: #eef3ee; }
 
 /* Icon-Gruppe + CTA */
-#header.wfh .cartbtn { margin-left: .9rem; }
-#header.wfh .langswitch { margin-left: 1.4rem; font-size: .85em; }
+/* Sprach-Dropdown: kompakter Pill-Button „🌐 DE ▾“, Menü wie die Nav-Dropdowns */
+#header.wfh .langdrop { position: relative; z-index: 10000; flex-shrink: 0; align-self: center; margin-left: .6rem; }
+#header.wfh .langdrop__btn {
+  display: inline-flex; align-items: center; gap: .35em; padding: .5em .8em; border: 1px solid transparent; border-radius: 999px;
+  background: none; color: #2b2b28; cursor: pointer;
+  font-family: var(--font-family-01, 'Open Sans', sans-serif); font-size: .85em; font-weight: 600; letter-spacing: .04em;
+  transition: background .15s ease, border-color .15s ease;
+}
+#header.wfh .langdrop__btn:hover, #header.wfh .langdrop.is-open .langdrop__btn { background: #f4f0e7; }
+#header.wfh .langdrop__globe { width: 1.05em; height: 1.05em; fill: none; stroke: currentColor; stroke-width: 1.6; opacity: .75; }
+#header.wfh .langdrop.is-open .wfh-chev { transform: rotate(180deg); }
+#header.wfh .langdrop__menu {
+  position: absolute; top: 100%; right: 0; margin-top: .5em; min-width: 150px; padding: .4em;
+  background: #fff; border: 1px solid #ece7da; border-radius: 14px; box-shadow: 0 20px 44px rgba(40, 35, 20, .14);
+  opacity: 0; visibility: hidden; transform: translateY(6px);
+  transition: opacity .18s ease, transform .18s ease, visibility 0s linear .18s;
+}
+#header.wfh .langdrop.is-open .langdrop__menu {
+  opacity: 1; visibility: visible; transform: none; transition: opacity .18s ease, transform .18s ease, visibility 0s;
+}
+#header.wfh .langdrop__menu a, #header.wfh .langdrop__menu .is-current {
+  display: flex; align-items: center; justify-content: space-between; gap: 1em; padding: .6em .8em; border-radius: 9px;
+  font-family: var(--font-family-01, 'Open Sans', sans-serif); font-size: .88em; font-weight: 500;
+  color: #2b2b28; text-decoration: none; white-space: nowrap;
+}
+#header.wfh .langdrop__menu a:hover { background: #f6f3ec; color: #2f5d40; }
+#header.wfh .langdrop__menu .is-current { color: #2f5d40; font-weight: 600; background: #eef3ee; cursor: default; }
+#header.wfh .langdrop__menu svg { width: 1em; height: 1em; fill: none; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+@media (max-width: 767px) { #header.wfh .langdrop { display: none; } }
 #header.wfh .wfh-cta {
   flex-shrink: 0; align-self: center; margin-left: 1rem;
   /* feste Breite für den längsten Text („Beratung anfragen“) – EN ist kürzer */
@@ -546,28 +493,11 @@ onBeforeUnmount(() => {
   #header.wfh .wfh-nav { margin: 0 .5rem; }
   #header.wfh .wfh-nav > ul.level_1 > li > a,
   #header.wfh .wfh-nav > ul.level_1 > li > strong { padding: .5em .7em; font-size: .88em; }
-  #header.wfh .cartbtn { margin-left: .6rem; }
-}
-
-#header .cartbtn__badge {
-  position: absolute;
-  top: -.15em;
-  right: -.45em;
-  min-width: 1.35em;
-  height: 1.35em;
-  padding: 0 .3em;
-  border-radius: 999px;
-  background: #2f5d40;
-  color: #fff;
-  font-size: .68em;
-  font-weight: 700;
-  line-height: 1.35em;
-  text-align: center;
 }
 
 @media (max-width: 767px) {
   #header #logo img { width: 150px; }
-  #header.wfh .cartbtn { margin-left: auto; margin-right: .2rem; }
+  #header.wfh .wfm-trigger { margin-left: auto; }
 }
 
 /* ── Mobiles Menü ─────────────────────────────────────── */

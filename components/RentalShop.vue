@@ -777,10 +777,7 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
     </div>
 
     <!-- ── WARENKORB (Slide-over) ───────────────────────── -->
-    <button class="fl__cartbtn" :title="t.openCart" @click="cartOpen = true">
-      <WfIcon name="bag" :size="20" />
-      <span v-if="cartCount" class="fl__cartn">{{ cartCount }}</span>
-    </button>
+    <!-- Öffnen über den seitenweiten Button unten rechts (AppCartFab → wf:open-cart) -->
 
     <div v-if="cartOpen" class="fl__drawerwrap" @click.self="cartOpen = false">
       <aside class="fl__drawer" role="dialog" aria-modal="true" :aria-label="t.cart">
