@@ -95,19 +95,23 @@ async function save() {
 .sf__switch input { accent-color: var(--wf-green); }
 .sf__warn { display: flex; align-items: center; gap: .5em; margin: 0; padding: .55em .8em; border-radius: 10px; background: #fff6e6; color: #8a5a12; font-size: .84em; }
 .sf__rows { display: grid; gap: .6em; }
-.sf__row { display: grid; grid-template-columns: 8em minmax(0, 1.4fr) minmax(0, 1.2fr) auto; gap: .6em; align-items: end; padding: .6em; border-radius: 12px; border: 1px solid transparent; }
+.sf__row { display: grid; grid-template-columns: 8em minmax(0, 1fr) auto; gap: .5em .6em; align-items: end; padding: .6em; border-radius: 12px; border: 1px solid transparent; }
 .sf__row.is-example { border-color: #ecd5a8; background: #fffbf3; }
 .sf__fld { display: grid; gap: .25em; font-size: .82em; min-width: 0; }
 .sf__fld > span { color: var(--wf-muted); }
 .sf__fld input { width: 100%; box-sizing: border-box; font: inherit; font-size: 1.05em; padding: .55em .7em; border: 1px solid var(--wf-line); border-radius: 9px; background: #fff; }
 .sf__fld input:disabled { background: #f6f3ec; }
-.sf__en { display: grid; grid-template-columns: 5.5em minmax(0, 1fr); gap: .4em; }
-.sf__acts { display: flex; gap: .4em; align-items: center; padding-bottom: .2em; }
+/* Englisch in eigener Zeile, gleiche Spalten wie Wert/Text darüber */
+.sf__fld--en { grid-column: 1 / -1; grid-row: 2; }
+.sf__en { display: grid; grid-template-columns: 8em minmax(0, 1fr); gap: .6em; }
+/* automatische Zeile (Bestand) hat nur das Text-Feld → volle Breite */
+.sf__en > input:only-child { grid-column: 1 / -1; }
+.sf__acts { display: flex; gap: .4em; align-items: center; padding-bottom: .2em; grid-column: 3; grid-row: 1; }
 .sf__x { border: 0; background: none; font-size: 1.3em; color: var(--wf-muted); cursor: pointer; }
 .sf__x:hover { color: var(--wf-red); }
 .sf__muted { color: var(--wf-muted); }
 .sf__error { color: var(--wf-red); }
 .sf__ok { color: var(--wf-green); background: var(--wf-green-soft); border-radius: 10px; padding: .6em .9em; font-size: .88em; }
 .sf__save { display: flex; justify-content: flex-end; margin-top: 1em; }
-@media (max-width: 900px) { .sf__row { grid-template-columns: 1fr; } }
+@media (max-width: 700px) { .sf__row { grid-template-columns: 1fr; } .sf__fld--en, .sf__acts { grid-column: auto; grid-row: auto; } .sf__en { grid-template-columns: 1fr; } }
 </style>
