@@ -17,6 +17,9 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Unicode-NFC halten (Linux-Build findet sonst „Küche.jpg" nicht).
 - Betrieb nur als Node-Server (`nuxt build`), **nicht** `nuxt generate` – Dashboard,
   Formulare, Shop und Blog-API brauchen den Server.
+- Uploads werden beim Hochladen zugeschnitten (`server/utils/image-optimize.ts`, sharp): EXIF-Drehung, Metadaten weg,
+  Inventar max. 1200 px/80 %, Pakete 1600 px, Blog/Immobilien 1920 px, Logos 800 px (PNG mit Transparenz bleibt PNG),
+  Avatare 400 px. ASOL-Fotos (Okt. 2026: 581 Stück, `item-<id>-asol.jpg`) wurden einmalig übernommen und verkleinert.
 - `public/uploads/` (Inventar, Avatare, Blog-Bilder) muss beim Deployment erhalten bleiben;
   ausgeliefert über `server/routes/uploads/[...path].get.ts`.
 
