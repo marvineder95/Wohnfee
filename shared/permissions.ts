@@ -55,7 +55,7 @@ export function areaForPath(path: string): Area | null {
     dashboard: 'dashboard', anfragen: 'anfragen', mietanfragen: 'mietanfragen', projekte: 'projekte',
     touren: 'touren', packliste: 'touren', kalender: 'kalender', inventar: 'inventar', kontakte: 'kontakte',
     angebote: 'angebote', rechnungen: 'rechnungen', artikel: 'artikel', newsletter: 'newsletter',
-    konditionen: 'konditionen', users: 'users', immobilien: 'immobilien', partner: 'partner', pakete: 'inventar', inhalte: 'partner'
+    konditionen: 'konditionen', users: 'users', immobilien: 'immobilien', partner: 'partner', pakete: 'inventar', inhalte: 'partner', fotos: 'inventar'
   }
   return map[p] || null // profil, passwort, einladung … sind für alle offen
 }

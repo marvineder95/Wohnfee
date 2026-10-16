@@ -78,7 +78,8 @@ const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
     { to: '/admin/touren', label: 'Touren & Rückgaben', icon: 'truck', exact: false, area: 'touren', badge: 'overdue' },
     { to: '/admin/kalender', label: 'Kalender', icon: 'calendar', exact: false, area: 'kalender' },
     { to: '/admin/inventar', label: 'Inventar', icon: 'box', exact: false, area: 'inventar' },
-    { to: '/admin/pakete', label: 'Mietpakete', icon: 'bag', exact: false, area: 'inventar' }
+    { to: '/admin/pakete', label: 'Mietpakete', icon: 'bag', exact: false, area: 'inventar' },
+    { to: '/admin/fotos', label: 'Foto-Modus', icon: 'camera', exact: false, area: 'inventar' }
   ] },
   { label: 'Kunden & Finanzen', items: [
     { to: '/admin/kontakte', label: 'Kontakte', icon: 'contacts', exact: false, area: 'kontakte' },

@@ -699,6 +699,8 @@ export async function migrateSchema() {
   // Mietanfragen: Rabatt nach Mietdauer + Paket-Herkunft der Positionen
   await addCol('rental_inquiries', 'discount_pct', 'ADD COLUMN discount_pct DECIMAL(5,2) NOT NULL DEFAULT 0')
   await addCol('rental_inquiry_items', 'package_title', 'ADD COLUMN package_title VARCHAR(190) NULL')
+  // Inventar: Referenz-Link (Hersteller-/Händlerseite, nur intern – Bild wird nicht kopiert)
+  await addCol('inventory_items', 'reference_url', 'ADD COLUMN reference_url VARCHAR(500) NULL AFTER internal_note')
   // Inventar: interne Notiz (Zustand, Schäden, Lagerort-Details) – nie im Shop
   await addCol('inventory_items', 'internal_note', 'ADD COLUMN internal_note TEXT NULL AFTER description_en')
   // Immobilien-Anfragen: Verknüpfung zur Immobilie

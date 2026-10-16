@@ -19,7 +19,8 @@ const SORT_SQL: Record<string, string> = {
   newest: 'id DESC',
   price_desc: 'original_price IS NULL, original_price DESC, title',
   price_asc: 'original_price IS NULL, original_price ASC, title',
-  rent_desc: 'rent_price_1m IS NULL, rent_price_1m DESC, title'
+  rent_desc: 'rent_price_1m IS NULL, rent_price_1m DESC, title',
+  warehouse: 'warehouse IS NULL, warehouse, category IS NULL, category, title, id'
 }
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
@@ -67,7 +68,7 @@ export default defineEventHandler(async (event) => {
   const items = await query(
     `SELECT id, asol_id AS asolId, title, category, image_path AS imagePath, supplier, ean, quantity, original_price AS originalPrice,
             rent_price_1m AS rentPrice1m, rent_price_3m AS rentPrice3m, rentable,
-            status, warehouse, customer_location AS customerLocation, purchased_year AS purchasedYear,
+            status, warehouse, customer_location AS customerLocation, purchased_year AS purchasedYear, reference_url AS referenceUrl,
             (SELECT MIN(pi.return_date) FROM project_items pi
               WHERE pi.item_id = inventory_items.id AND pi.return_date IS NOT NULL) AS returnDate
      FROM inventory_items ${whereSql}

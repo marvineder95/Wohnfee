@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { referenceSearchUrl } from '~~/shared/reference-search'
 import { INVENTORY_CATEGORIES } from '~~/shared/inventory-categories'
 
 definePageMeta({ layout: 'admin' })
@@ -12,6 +13,7 @@ interface Item {
   title: string
   category: string | null
   imagePath: string | null
+  referenceUrl?: string | null
   supplier: string | null
   ean: string | null
   quantity: number
@@ -104,7 +106,7 @@ const form = reactive({
   title: '', titleEn: '', category: '', supplier: '', ean: '', quantity: 1,
   originalPrice: '', rentPrice1m: '', rentPrice3m: '', rentable: false,
   status: 'lager', warehouse: '', customerLocation: '',
-  purchasedAt: '', purchasedYear: '', description: '', descriptionEn: '', internalNote: ''
+  purchasedAt: '', purchasedYear: '', description: '', descriptionEn: '', internalNote: '', referenceUrl: ''
 })
 const saving = ref(false)
 const saveError = ref('')
@@ -264,7 +266,7 @@ async function openNew() {
     title: '', titleEn: '', category: '', supplier: '', ean: '', quantity: 1,
     originalPrice: '', rentPrice1m: '', rentPrice3m: '', rentable: false,
     status: 'lager', warehouse: '', customerLocation: '',
-    purchasedAt: '', purchasedYear: '', description: '', descriptionEn: '', internalNote: ''
+    purchasedAt: '', purchasedYear: '', description: '', descriptionEn: '', internalNote: '', referenceUrl: ''
   })
   tagsArr.value = []
   matches.value = []
@@ -315,7 +317,7 @@ async function openEdit(item: Item) {
       status: res.item.status, warehouse: res.item.warehouse || '',
       customerLocation: res.item.customerLocation || '',
       purchasedAt: res.item.purchasedAt || '', purchasedYear: res.item.purchasedYear || '',
-      description: res.item.description || '', descriptionEn: res.item.descriptionEn || '', internalNote: res.item.internalNote || ''
+      description: res.item.description || '', descriptionEn: res.item.descriptionEn || '', internalNote: res.item.internalNote || '', referenceUrl: res.item.referenceUrl || ''
     })
     tagsArr.value = res.tags
     matches.value = (res as any).matches || []
@@ -483,6 +485,7 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
           <td class="inv__idcell">
             <span class="inv__id">#{{ i.id }}</span>
             <span v-if="i.asolId" class="inv__asolid" title="Alte ASOL-Nummer">ASOL {{ i.asolId }}</span>
+            <a v-if="i.referenceUrl" :href="i.referenceUrl" target="_blank" rel="noopener" class="inv__reflink" title="Referenz beim Hersteller (nur intern)">Referenz ↗</a>
           </td>
           <td>
             <button class="inv__name" @click="openEdit(i)">{{ i.title }}</button>
@@ -625,6 +628,13 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
                 <textarea v-model="form.internalNote" rows="3" maxlength="1000" placeholder="z. B. Kratzer links hinten, Bezug in Reinigung, gehört zu Set …" />
               </label>
               <p class="inv__hint">Wird nie auf der Website oder in Angeboten angezeigt.</p>
+              <label class="inv__field inv__field--internal">
+                <span class="inv__labelrow"><span><WfIcon name="globe" :size="13" /> Referenz-Link (nur intern)</span>
+                  <a v-if="form.referenceUrl" :href="form.referenceUrl" target="_blank" rel="noopener" class="inv__reflink">öffnen ↗</a></span>
+                <input v-model="form.referenceUrl" type="url" inputmode="url" maxlength="255" placeholder="z. B. Produktseite beim Hersteller">
+              </label>
+              <a v-if="!form.referenceUrl && form.title" :href="referenceSearchUrl(form.title, form.supplier)" target="_blank" rel="noopener" class="inv__reflink inv__refsearch">Im Netz nach diesem Modell suchen ↗</a>
+              <p class="inv__hint">Zum Wiedererkennen des Modells – das Bild dort ist nicht unseres und wird nicht übernommen.</p>
             </section>
 
             <section class="inv__sec">
@@ -774,6 +784,9 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
   border: 1px solid var(--wf-line); background: var(--wf-bg); color: var(--wf-muted);
 }
 .inv__thumb--ph { display: inline-flex; align-items: center; justify-content: center; }
+.inv__reflink { display: inline-block; font-size: .74em; color: var(--wf-green); text-decoration: none; white-space: nowrap; }
+.inv__reflink:hover { text-decoration: underline; }
+.inv__refsearch { margin: -.2em 0 .5em; color: var(--wf-muted); }
 .inv__thumbbtn, .inv__photoview { display: block; padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 10px; }
 .inv__thumbbtn:hover .inv__thumb { border-color: var(--wf-green); box-shadow: 0 0 0 2px rgba(47, 93, 64, .18); }
 .inv__thumbbtn:focus-visible, .inv__photoview:focus-visible { outline: 2px solid var(--wf-green); outline-offset: 2px; }
