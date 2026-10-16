@@ -70,6 +70,11 @@ async function submit() {
           {{ loading ? 'Anmeldung läuft …' : 'Anmelden' }}
         </button>
       </form>
+
+      <NuxtLink to="/start.html" class="admin-login__site">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19 12H5m6-6-6 6 6 6" /></svg>
+        Zur Website
+      </NuxtLink>
     </div>
   </div>
 </template>
@@ -219,6 +224,14 @@ async function submit() {
   cursor: default;
 }
 
+.admin-login__site {
+  display: flex; align-items: center; justify-content: center; gap: .45em; margin-top: .8em; width: 100%;
+  box-sizing: border-box; padding: .8em 1em; border: 1px solid #d9d4c7; border-radius: 10px;
+  color: #2f5d40; font-weight: 600; font-size: .95em; text-decoration: none; transition: border-color .15s, background .15s;
+}
+.admin-login__site:hover { border-color: #2f5d40; background: #f3f7f3; }
+.admin-login__site:focus-visible { outline: 2px solid #2f5d40; outline-offset: 2px; }
+.admin-login__site svg { width: 1.1em; height: 1.1em; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .is-loading {
   pointer-events: none;
 }
