@@ -279,6 +279,29 @@ async function openNew() {
     .catch(() => { nextId.value = null })
 }
 
+// ---------- Foto-Großansicht ----------
+// Liste: alle Objekte mit Foto auf der aktuellen Seite (blättern); Dialog: alle Fotos des Objekts
+const lightbox = ref<{ images: Array<{ src: string; title?: string; meta?: string; itemId?: number }>; index: number } | null>(null)
+function showListPhoto(item: Item) {
+  const withPhoto = items.value.filter(i => i.imagePath)
+  lightbox.value = {
+    images: withPhoto.map(i => ({ src: i.imagePath as string, title: i.title, meta: `#${i.id}${i.asolId ? ' · ASOL ' + i.asolId : ''}`, itemId: i.id })),
+    index: Math.max(0, withPhoto.findIndex(i => i.id === item.id))
+  }
+}
+function showDialogPhoto(p: { url: string }) {
+  const list = photos.value.filter(x => x.url)
+  lightbox.value = {
+    images: list.map((x, n) => ({ src: x.url as string, title: form.title || editing.value?.title, meta: `Foto ${n + 1}` })),
+    index: Math.max(0, list.findIndex(x => x.url === p.url))
+  }
+}
+function openFromLightbox(id: number) {
+  const it = items.value.find(i => i.id === id)
+  lightbox.value = null
+  if (it) openEdit(it)
+}
+
 async function openEdit(item: Item) {
   editing.value = item
   saveError.value = ''
@@ -452,7 +475,9 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
       <tbody>
         <tr v-for="i in items" :key="i.id">
           <td>
-            <img v-if="i.imagePath" :src="i.imagePath" alt="" class="inv__thumb">
+            <button v-if="i.imagePath" type="button" class="inv__thumbbtn" :aria-label="`Foto von ${i.title} groß anzeigen`" @click="showListPhoto(i)">
+              <img :src="i.imagePath" alt="" class="inv__thumb" loading="lazy">
+            </button>
             <span v-else class="inv__thumb inv__thumb--ph" aria-hidden="true"><WfIcon name="box" :size="18" /></span>
           </td>
           <td class="inv__idcell">
@@ -652,7 +677,7 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
               <p v-if="imgError" class="inv__error" role="alert">{{ imgError }}</p>
               <div v-if="photos.length" class="inv__photogrid">
                 <div v-for="p in photos" :key="p.key" class="inv__photocell">
-                  <img :src="p.url" alt="" class="inv__photothumb">
+                  <button type="button" class="inv__photoview" aria-label="Foto groß anzeigen" @click="showDialogPhoto(p)"><img :src="p.url" alt="" class="inv__photothumb"></button>
                   <button class="inv__photox" title="Entfernen" @click="removePhoto(p)">×</button>
                 </div>
                 <label class="inv__photocell inv__photoadd" title="Weiteres Foto hinzufügen">
@@ -704,6 +729,8 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
         </div>
       </div>
     </div>
+    <AdminLightbox v-if="lightbox" :images="lightbox.images" :index="lightbox.index"
+                   @update:index="(i: number) => lightbox && (lightbox.index = i)" @close="lightbox = null" @open="openFromLightbox" />
   </div>
 </template>
 
@@ -747,6 +774,10 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
   border: 1px solid var(--wf-line); background: var(--wf-bg); color: var(--wf-muted);
 }
 .inv__thumb--ph { display: inline-flex; align-items: center; justify-content: center; }
+.inv__thumbbtn, .inv__photoview { display: block; padding: 0; border: 0; background: none; cursor: zoom-in; border-radius: 10px; }
+.inv__thumbbtn:hover .inv__thumb { border-color: var(--wf-green); box-shadow: 0 0 0 2px rgba(47, 93, 64, .18); }
+.inv__thumbbtn:focus-visible, .inv__photoview:focus-visible { outline: 2px solid var(--wf-green); outline-offset: 2px; }
+.inv__photoview { width: 100%; height: 100%; }
 .inv__thimg { width: 46px; }
 .inv__thid { width: 4.5em; }
 .inv__idcell { vertical-align: middle; }
