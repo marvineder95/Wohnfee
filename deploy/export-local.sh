@@ -6,5 +6,6 @@ cd "$(dirname "$0")"
 mkdir -p backups
 docker exec wohnfee-mysql sh -c 'exec mysqldump --single-transaction --routines --no-tablespaces -uwohnfee -pwohnfee-dev wohnfee' 2>/dev/null \
   | gzip > backups/initial-db.sql.gz
-tar czf backups/initial-uploads.tar.gz -C ../public/uploads .
+# COPYFILE_DISABLE: keine macOS-Hilfsdateien (._*) ins Archiv
+COPYFILE_DISABLE=1 tar czf backups/initial-uploads.tar.gz --exclude='._*' --exclude='.DS_Store' -C ../public/uploads .
 ls -lh backups/initial-*
