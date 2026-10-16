@@ -81,7 +81,7 @@ export default defineEventHandler(async (event) => {
   )
   const warehouses = await query(
     `SELECT warehouse AS name, COUNT(*) AS n FROM inventory_items
-     WHERE warehouse IS NOT NULL GROUP BY warehouse ORDER BY n DESC`
+     WHERE warehouse IS NOT NULL AND status IN ('lager','pflege') GROUP BY warehouse ORDER BY n DESC`
   )
   const suppliers = await query(
     `SELECT supplier AS name, COUNT(*) AS n FROM inventory_items

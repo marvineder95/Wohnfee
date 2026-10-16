@@ -2,6 +2,7 @@ import { requireAdmin } from '../../../../utils/admin-auth'
 import { query, queryOne } from '../../../../utils/db'
 import { syncItemStatus } from '../../../../utils/inventory-sync'
 import { roleLabel } from '../../../../../shared/permissions'
+import { MAIN_WAREHOUSE } from '../../../../../shared/warehouses'
 
 const STATES = ['lager', 'pflege', 'ausser_dienst']
 
@@ -32,8 +33,10 @@ export default defineEventHandler(async (event) => {
     await syncItemStatus(itemId)
     if (state !== 'lager') {
       await query(
-        `UPDATE inventory_items SET status = :state, customer_location = NULL WHERE id = :itemId AND status IN ('lager','vermietet')`,
-        { state, itemId })
+        `UPDATE inventory_items SET status = :state, customer_location = NULL,
+           warehouse = IF(warehouse IS NULL OR warehouse = '', :mainWh, warehouse)
+         WHERE id = :itemId AND status IN ('lager','vermietet')`,
+        { mainWh: MAIN_WAREHOUSE, state, itemId })
     }
     const note = String(raw?.note || '').trim().slice(0, 120)
     done.push(`${row.title}${state === 'pflege' ? ' (Reinigung/Reparatur)' : state === 'ausser_dienst' ? ' (defekt)' : ''}${note ? ` – ${note}` : ''}`)

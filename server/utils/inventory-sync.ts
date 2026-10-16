@@ -30,7 +30,8 @@ export async function syncItemStatus(itemId: number) {
     await query(`UPDATE inventory_items SET status = 'vermietet', customer_location = :loc WHERE id = :itemId`, { loc, itemId })
   } else if (assigned < stock && item.status === 'vermietet') {
     await query(
-      `UPDATE inventory_items SET status = 'lager', customer_location = IF(:assigned = 0, NULL, customer_location) WHERE id = :itemId`,
+      `UPDATE inventory_items SET status = 'lager', customer_location = IF(:assigned = 0, NULL, customer_location),
+         warehouse = IF(warehouse IS NULL OR warehouse = '', 'Eibesbrunn', warehouse) WHERE id = :itemId`,
       { assigned, itemId }
     )
   }

@@ -17,6 +17,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Unicode-NFC halten (Linux-Build findet sonst „Küche.jpg" nicht).
 - Betrieb nur als Node-Server (`nuxt build`), **nicht** `nuxt generate` – Dashboard,
   Formulare, Shop und Blog-API brauchen den Server.
+- Lager (Okt. 2026): nur noch Eibesbrunn (Hauptlager) + Boxroom (`shared/warehouses.ts`); zurückgegebene Möbel bekommen Eibesbrunn.
 - Foto-Modus (`/admin/fotos`): Objekte ohne Foto nach Lager sortiert, Kamera-Upload direkt je Objekt (Handy).
   Referenz-Link je Objekt (`inventory_items.reference_url`, nur intern, Bild wird nie kopiert); ohne Link zeigt das
   Dashboard „Im Netz suchen“ (Bildersuche, `shared/reference-search.ts`). Geprüfte Links Okt. 2026: SITS-Kollektionen,

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { referenceSearchUrl } from '~~/shared/reference-search'
+import { WAREHOUSES, MAIN_WAREHOUSE } from '~~/shared/warehouses'
 import { INVENTORY_CATEGORIES } from '~~/shared/inventory-categories'
 
 definePageMeta({ layout: 'admin' })
@@ -105,7 +106,7 @@ const locationModel = computed<string>({
 const form = reactive({
   title: '', titleEn: '', category: '', supplier: '', ean: '', quantity: 1,
   originalPrice: '', rentPrice1m: '', rentPrice3m: '', rentable: false,
-  status: 'lager', warehouse: '', customerLocation: '',
+  status: 'lager', warehouse: MAIN_WAREHOUSE, customerLocation: '',
   purchasedAt: '', purchasedYear: '', description: '', descriptionEn: '', internalNote: '', referenceUrl: ''
 })
 const saving = ref(false)
@@ -265,7 +266,7 @@ async function openNew() {
   Object.assign(form, {
     title: '', titleEn: '', category: '', supplier: '', ean: '', quantity: 1,
     originalPrice: '', rentPrice1m: '', rentPrice3m: '', rentable: false,
-    status: 'lager', warehouse: '', customerLocation: '',
+    status: 'lager', warehouse: MAIN_WAREHOUSE, customerLocation: '',
     purchasedAt: '', purchasedYear: '', description: '', descriptionEn: '', internalNote: '', referenceUrl: ''
   })
   tagsArr.value = []
@@ -602,8 +603,9 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
                 </label>
                 <label class="inv__field">
                   <span>{{ form.status === 'vermietet' ? 'Kundeneinsatzort' : 'Lager' }}</span>
-                  <input v-model="locationModel"
-                         type="text" :placeholder="form.status === 'vermietet' ? 'z. B. HS - KANTOR' : 'z. B. Graz'">
+                  <input v-model="locationModel" :list="form.status === 'vermietet' ? undefined : 'inv-warehouses'"
+                         type="text" :placeholder="form.status === 'vermietet' ? 'z. B. HS - KANTOR' : 'z. B. Eibesbrunn'">
+                  <datalist id="inv-warehouses"><option v-for="w in WAREHOUSES" :key="w" :value="w" /></datalist>
                 </label>
                 <label class="inv__field inv__field--small">
                   <span>EAN (optional)</span>
