@@ -258,12 +258,7 @@ const initials = computed(() => {
             </button>
             <button type="button" class="admin-shell__pushx" title="Später" @click="dismissPush">×</button>
           </span>
-          <NuxtLink :to="newInquiries > 0 || !newRentalInquiries ? '/admin/anfragen' : '/admin/mietanfragen'"
-                    class="admin-shell__iconbtn admin-shell__bell"
-                    :title="`${newInquiries} neue Kontaktanfrage(n), ${newRentalInquiries} neue Mietanfrage(n)`">
-            <WfIcon name="bell" :size="19" />
-            <span v-if="newInquiries + newRentalInquiries > 0" class="admin-shell__bellbadge">{{ newInquiries + newRentalInquiries > 9 ? '9+' : newInquiries + newRentalInquiries }}</span>
-          </NuxtLink>
+          <AdminNotificationBell :new-inquiries="newInquiries" :new-rental="newRentalInquiries" />
           <span class="admin-shell__userchip">
             {{ user?.displayName || user?.username }}
             <em>{{ perms.roleName.value.toUpperCase() }}</em>
@@ -455,18 +450,6 @@ const initials = computed(() => {
 .admin-shell__pushx:hover { color: var(--wf-ink); }
 @media (max-width: 520px) { .admin-shell__pushprompt .wf-btn { font-size: .78em; } }
 
-.admin-shell__bellbadge {
-  position: absolute;
-  top: 0;
-  right: -2px;
-  background: var(--wf-red);
-  color: #fff;
-  font-size: .62em;
-  font-weight: 700;
-  border-radius: 999px;
-  padding: .1em .38em;
-  border: 2px solid var(--wf-bg);
-}
 
 .admin-shell__userchip {
   display: flex;

@@ -705,6 +705,22 @@ export async function migrateSchema() {
   await addCol('inventory_items', 'internal_note', 'ADD COLUMN internal_note TEXT NULL AFTER description_en')
   // Immobilien-Anfragen: Verknüpfung zur Immobilie
   await addCol('contact_inquiries', 'property_id', 'ADD COLUMN property_id INT UNSIGNED NULL')
+  // Benachrichtigungen im Dashboard (Glocke) – je Benutzer, zusätzlich als Push
+  await db.query(`CREATE TABLE IF NOT EXISTS notifications (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NOT NULL,
+    title VARCHAR(190) NOT NULL,
+    body VARCHAR(500) NULL,
+    url VARCHAR(255) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    read_at DATETIME NULL,
+    KEY idx_notifications_user (user_id, read_at)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`)
+  // Kalender: Termine von Mitarbeitern bestätigt der Chef (offen / bestaetigt / abgelehnt + Nachricht)
+  await addCol('calendar_events', 'review_status', 'ADD COLUMN review_status VARCHAR(16) NULL')
+  await addCol('calendar_events', 'review_note', 'ADD COLUMN review_note VARCHAR(500) NULL')
+  await addCol('calendar_events', 'reviewed_by_name', 'ADD COLUMN reviewed_by_name VARCHAR(128) NULL')
+  await addCol('calendar_events', 'reviewed_at', 'ADD COLUMN reviewed_at DATETIME NULL')
   // Jeder Abonnent braucht einen persönlichen Abmelde-Token (für den Link in jeder Mail)
   await db.query("UPDATE newsletter_subscribers SET unsub_token = LOWER(HEX(RANDOM_BYTES(16))) WHERE unsub_token IS NULL")
 }

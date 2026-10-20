@@ -1,5 +1,6 @@
 import { requireAdmin } from '../../../utils/admin-auth'
 import { query } from '../../../utils/db'
+import { notifySuperadmins, eventSummary, calendarUrl } from '../../../utils/notifications'
 
 const TYPES = ['aufbau', 'abholung', 'lieferung', 'beratung', 'sonstiges']
 
@@ -24,9 +25,19 @@ export default defineEventHandler(async (event) => {
 
   const res = await query(
     `INSERT INTO calendar_events
-       (title, type, event_date, start_time, end_time, all_day, location, project_id, notes, created_by, created_by_name)
-     VALUES (:title, :type, :eventDate, :startTime, :endTime, :allDay, :location, :projectId, :notes, :createdBy, :createdByName)`,
-    { title: title.slice(0, 190), type, eventDate, startTime, endTime, allDay, location, projectId, notes, createdBy: user.id, createdByName }
+       (title, type, event_date, start_time, end_time, all_day, location, project_id, notes, created_by, created_by_name, review_status)
+     VALUES (:title, :type, :eventDate, :startTime, :endTime, :allDay, :location, :projectId, :notes, :createdBy, :createdByName, :review)`,
+    { title: title.slice(0, 190), type, eventDate, startTime, endTime, allDay, location, projectId, notes, createdBy: user.id, createdByName,
+      // Termine von Mitarbeitern bestätigt der Chef; eigene Termine des Chefs brauchen keine Bestätigung
+      review: user.role === 'superadmin' ? null : 'offen' }
   )
-  return { id: Number((res as any).insertId) }
+  const id = Number((res as any).insertId)
+  if (user.role !== 'superadmin') {
+    await notifySuperadmins({
+      title: `${createdByName || 'Mitarbeiter'} hat einen Termin eingetragen`,
+      body: `${title.slice(0, 120)} – ${eventSummary({ type, eventDate, startTime, allDay })}`,
+      url: calendarUrl(id, eventDate)
+    }, user.id)
+  }
+  return { id }
 })

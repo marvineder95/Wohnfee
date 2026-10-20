@@ -1,5 +1,6 @@
 import { requireAdmin } from '../../../utils/admin-auth'
 import { query, queryOne } from '../../../utils/db'
+import { notifyUser, notifySuperadmins, eventSummary } from '../../../utils/notifications'
 
 // DELETE /api/admin/calendar/:id – Termin löschen.
 // Erlaubt für: Ersteller selbst ODER Superadmin (Chef).
@@ -8,7 +9,7 @@ export default defineEventHandler(async (event) => {
   const id = Number(event.context.params?.id)
   if (!id) throw createError({ statusCode: 400, statusMessage: 'ID fehlt' })
 
-  const existing = await queryOne<any>('SELECT created_by AS createdBy FROM calendar_events WHERE id = :id', { id })
+  const existing = await queryOne<any>('SELECT created_by AS createdBy, title, type, event_date, start_time, all_day FROM calendar_events WHERE id = :id', { id })
   if (!existing) throw createError({ statusCode: 404, statusMessage: 'Termin nicht gefunden' })
   // Admin & Designerin dürfen alle Termine ändern, Spediteure nur ihre eigenen
   if (user.role === 'driver' && Number(existing.createdBy) !== user.id) {
@@ -16,5 +17,12 @@ export default defineEventHandler(async (event) => {
   }
 
   await query('DELETE FROM calendar_events WHERE id = :id', { id })
+  const who = user.displayName || user.username || 'Jemand'
+  const body = `${existing.title} – ${eventSummary(existing)}`
+  if (user.role !== 'superadmin') {
+    await notifySuperadmins({ title: `${who} hat einen Termin gelöscht`, body, url: `/admin/kalender?focus=${String(existing.event_date).slice(0, 10)}` }, user.id)
+  } else if (existing.createdBy && Number(existing.createdBy) !== user.id) {
+    await notifyUser(Number(existing.createdBy), { title: `${who} hat deinen Termin gelöscht`, body, url: `/admin/kalender?focus=${String(existing.event_date).slice(0, 10)}` })
+  }
   return { ok: true }
 })

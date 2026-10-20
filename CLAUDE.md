@@ -105,6 +105,11 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   (Menü „Über uns“ → „Partner“, nav.json `requires: "partners"`), Art „referenz“ → Logo-Leiste `HsReferences.vue` auf Startseite
   und „Für Bauträger“. Nur Einträge mit „Auf der Website zeigen“ erscheinen; ohne solche: Menüpunkt weg, Seite 404, nicht in der
   Sitemap. Website lädt die Daten im Browser (`usePartners`), damit vorgerenderte Seiten ohne Neu-Build aktuell sind.
+- Benachrichtigungen: Glocke oben (`components/admin/NotificationBell.vue`) = neue Anfragen + persönliche Einträge (Tabelle
+  `notifications`, `server/utils/notifications.ts` → zusätzlich Push an die Geräte des Benutzers). Kalender: Termine von
+  Mitarbeitern (nicht Superadmin) → `review_status = 'offen'`, Chef bekommt Nachricht, bestätigt/lehnt ab mit optionaler
+  Nachricht (`/api/admin/calendar/:id/review`) → Ersteller bekommt Nachricht. Ändert der Mitarbeiter den Termin, ist er wieder
+  offen. Offene Termine stehen beim Chef oben im Kalender; Links `/admin/kalender?focus=<Datum>&event=<id>`.
 - Touren & Rückgaben (`/admin/touren`, API `/api/admin/logistics`): Kalendertermine +
   Projekt-Deadlines mit Möbeln + Überfälliges; Packliste `/admin/packliste/:id` (druckbar).
 - Abo-Rechnungen: Tabelle `recurring_invoices`, Erzeugung `server/utils/recurring.ts`

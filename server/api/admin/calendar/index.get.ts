@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
             e.start_time AS startTime, e.end_time AS endTime,
             e.all_day AS allDay, e.location, e.project_id AS projectId,
             e.notes, e.created_by AS createdBy, e.created_by_name AS createdByName,
+            e.review_status AS reviewStatus, e.review_note AS reviewNote, e.reviewed_by_name AS reviewedByName,
             p.title AS projectTitle, p.customer AS projectCustomer, p.category AS projectCategory
      FROM calendar_events e
      LEFT JOIN projects p ON p.id = e.project_id
@@ -22,5 +23,11 @@ export default defineEventHandler(async (event) => {
      ORDER BY e.event_date, e.all_day, e.start_time, e.id`,
     { from: from || '1970-01-01', to: to || '2999-12-31' }
   )
-  return { events }
+  // Chef: alle offenen Bestätigungen (auch außerhalb des angezeigten Monats)
+  const pending = await query(
+    `SELECT id, title, type, DATE_FORMAT(event_date, '%Y-%m-%d') AS eventDate, start_time AS startTime, all_day AS allDay,
+            created_by_name AS createdByName
+     FROM calendar_events WHERE review_status = 'offen' ORDER BY event_date, start_time LIMIT 50`
+  )
+  return { events, pending }
 })

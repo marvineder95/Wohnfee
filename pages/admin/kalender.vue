@@ -25,7 +25,11 @@ interface CalEvent {
   notes: string | null
   createdBy: number | null
   createdByName: string | null
+  reviewStatus: 'offen' | 'bestaetigt' | 'abgelehnt' | null
+  reviewNote: string | null
+  reviewedByName: string | null
 }
+interface PendingEv { id: number; title: string; type: string; eventDate: string; startTime: string | null; allDay: number; createdByName: string | null }
 interface ProjectOpt { id: number; label: string; category: string }
 
 const TYPE_META: Record<string, { label: string; tone: string }> = {
@@ -43,6 +47,7 @@ const MONTHS = ['Jänner', 'Februar', 'März', 'April', 'Mai', 'Juni', 'Juli', '
 const today = new Date()
 const route = useRoute()
 const focusParam = typeof route.query.focus === 'string' ? route.query.focus : null
+const focusEvent = Number(route.query.event) || null
 const focusDate = focusParam && /^\d{4}-\d{2}-\d{2}$/.test(focusParam) ? new Date(focusParam + 'T12:00:00') : null
 const viewYear = ref(focusDate ? focusDate.getFullYear() : today.getFullYear())
 const viewMonth = ref(focusDate ? focusDate.getMonth() : today.getMonth()) // 0-basiert
@@ -96,7 +101,7 @@ async function load() {
   loading.value = true
   try {
     const [cal, proj, log] = await Promise.all([
-      $fetch<{ events: CalEvent[] }>('/api/admin/calendar', {
+      $fetch<{ events: CalEvent[]; pending: PendingEv[] }>('/api/admin/calendar', {
         query: { from: range.value.from, to: range.value.to }
       }),
       $fetch<{ projects: any[] }>('/api/admin/projects'),
@@ -105,6 +110,7 @@ async function load() {
       }).catch(() => ({ deadlines: [], returns: [] }))
     ])
     events.value = cal.events
+    pending.value = cal.pending || []
     autoEntries.value = [
       ...log.deadlines.map((d: any) => ({ ...d, kind: 'deadline' as const })),
       ...log.returns.map((r: any) => ({ ...r, kind: 'rueckgabe' as const }))
@@ -121,7 +127,53 @@ async function load() {
   }
 }
 watch([viewYear, viewMonth], load)
-onMounted(async () => { await load(); newParam.consume(() => openNew()) })
+onMounted(async () => {
+  await load()
+  newParam.consume(() => openNew())
+  // Link aus einer Benachrichtigung: Termin hervorheben
+  if (focusEvent) {
+    highlightId.value = focusEvent
+    await nextTick()
+    document.getElementById(`cal-ev-${focusEvent}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  }
+})
+
+// ---------- Bestätigung durch den Chef ----------
+const isChef = computed(() => user.value?.role === 'superadmin')
+const pending = ref<PendingEv[]>([])
+const highlightId = ref<number | null>(null)
+const reviewNote = ref<Record<number, string>>({})
+const reviewBusy = ref<number | null>(null)
+const REVIEW_META: Record<string, { label: string; tone: string }> = {
+  offen: { label: 'Wartet auf Bestätigung', tone: 'amber' },
+  bestaetigt: { label: 'Bestätigt', tone: 'green' },
+  abgelehnt: { label: 'Abgelehnt', tone: 'red' }
+}
+async function review(ev: { id: number }, status: 'bestaetigt' | 'abgelehnt') {
+  reviewBusy.value = ev.id
+  try {
+    await $fetch(`/api/admin/calendar/${ev.id}/review`, { method: 'POST', body: { status, note: reviewNote.value[ev.id] || '' } })
+    reviewNote.value[ev.id] = ''
+    await load()
+  } catch (e: any) {
+    loadError.value = e?.data?.statusMessage || 'Rückmeldung konnte nicht gespeichert werden.'
+  } finally { reviewBusy.value = null }
+}
+// Benachrichtigung angeklickt, während der Kalender schon offen ist (nur die Query ändert sich)
+watch(() => [route.query.focus, route.query.event], ([f, e]) => {
+  if (typeof f === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(f)) {
+    jumpTo({ id: Number(e) || 0, eventDate: f } as PendingEv)
+    load()
+  }
+})
+function jumpTo(p: PendingEv) {
+  const d = new Date(p.eventDate + 'T12:00:00')
+  viewYear.value = d.getFullYear()
+  viewMonth.value = d.getMonth()
+  selectedDate.value = p.eventDate
+  highlightId.value = p.id
+  setTimeout(() => document.getElementById(`cal-ev-${p.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 400)
+}
 
 // Automatische Einträge aus Projekten (Abholung fällig / Rückgaben) – nicht editierbar
 interface AutoEntry { kind: 'deadline' | 'rueckgabe'; date: string; projectId: number; projectCustomer: string | null; projectTitle: string | null; projectCategory: string; pieceCount: number }
@@ -238,6 +290,18 @@ function timeLabel(ev: CalEvent) {
 
     <p v-if="loadError" class="cal-error">{{ loadError }}</p>
 
+    <section v-if="isChef && pending.length" class="cal-pending wf-card">
+      <h2><span class="cal-pending__n">{{ pending.length }}</span> {{ pending.length === 1 ? 'Termin wartet' : 'Termine warten' }} auf deine Bestätigung</h2>
+      <ul>
+        <li v-for="p in pending" :key="p.id">
+          <button type="button" @click="jumpTo(p)">
+            <strong>{{ p.title }}</strong>
+            <small>{{ weekdayLabel(p.eventDate) }}, {{ fmtDate(p.eventDate) }}<template v-if="!p.allDay && p.startTime"> · {{ p.startTime.slice(0, 5) }}</template> · von {{ p.createdByName || 'unbekannt' }}</small>
+          </button>
+        </li>
+      </ul>
+    </section>
+
     <div class="cal-layout">
       <!-- ── Monatskalender ─────────────────────────────── -->
       <section class="cal-card wf-card">
@@ -270,7 +334,7 @@ function timeLabel(ev: CalEvent) {
             <span class="cal-day__num">{{ d.day }}</span>
             <span class="cal-day__events">
               <span v-for="ev in dayEvents(d.iso).slice(0, 2)" :key="ev.id"
-                    class="cal-chip" :data-tone="ev.type" :title="ev.title">
+                    class="cal-chip" :class="{ 'is-pending': ev.reviewStatus === 'offen' }" :data-tone="ev.type" :title="ev.title">
                 <template v-if="!ev.allDay && ev.startTime">{{ ev.startTime.slice(0, 5) }} </template>{{ ev.title }}
               </span>
               <span v-if="dayEvents(d.iso).length > 2" class="cal-more">+{{ dayEvents(d.iso).length - 2 }}</span>
@@ -312,7 +376,7 @@ function timeLabel(ev: CalEvent) {
           Keine Termine an diesem Tag.<br>Lege einen neuen Termin an.
         </p>
         <ul v-else class="cal-list">
-          <li v-for="ev in selectedEvents" :key="ev.id" class="cal-ev" :data-tone="ev.type">
+          <li v-for="ev in selectedEvents" :id="`cal-ev-${ev.id}`" :key="ev.id" class="cal-ev" :class="{ 'is-highlight': highlightId === ev.id }" :data-tone="ev.type">
             <span class="cal-ev__bar" aria-hidden="true" />
             <div class="cal-ev__body">
               <div class="cal-ev__top">
@@ -332,6 +396,25 @@ function timeLabel(ev: CalEvent) {
               </p>
               <p v-if="ev.notes" class="cal-ev__notes">{{ ev.notes }}</p>
               <p class="cal-ev__who">Eingetragen von {{ ev.createdByName || 'unbekannt' }}</p>
+              <div v-if="ev.reviewStatus" class="cal-review" :data-tone="REVIEW_META[ev.reviewStatus]?.tone">
+                <span class="cal-review__status">
+                  <WfIcon :name="ev.reviewStatus === 'bestaetigt' ? 'check' : ev.reviewStatus === 'abgelehnt' ? 'alert' : 'clock'" :size="12" />
+                  {{ REVIEW_META[ev.reviewStatus]?.label }}<template v-if="ev.reviewStatus !== 'offen' && ev.reviewedByName"> von {{ ev.reviewedByName }}</template>
+                </span>
+                <p v-if="ev.reviewNote" class="cal-review__note">„{{ ev.reviewNote }}“</p>
+                <div v-if="isChef" class="cal-review__form">
+                  <input v-model="reviewNote[ev.id]" type="text" maxlength="500" class="wf-input"
+                         :placeholder="ev.reviewStatus === 'offen' ? 'Nachricht an ' + (ev.createdByName || 'Mitarbeiter') + ' (optional)' : 'Neue Nachricht (optional)'">
+                  <span class="cal-review__btns">
+                    <button v-if="ev.reviewStatus !== 'bestaetigt' || reviewNote[ev.id]" type="button" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="reviewBusy === ev.id" @click="review(ev, 'bestaetigt')">
+                      <WfIcon name="check" :size="13" /> Bestätigen
+                    </button>
+                    <button v-if="ev.reviewStatus !== 'abgelehnt' || reviewNote[ev.id]" type="button" class="wf-btn wf-btn--sm" :disabled="reviewBusy === ev.id" @click="review(ev, 'abgelehnt')">
+                      Ablehnen
+                    </button>
+                  </span>
+                </div>
+              </div>
             </div>
             <div v-if="canManage(ev)" class="cal-ev__actions">
               <button class="cal-icobtn" title="Bearbeiten" @click="openEdit(ev)"><WfIcon name="edit" :size="14" /></button>
@@ -416,6 +499,27 @@ function timeLabel(ev: CalEvent) {
 </template>
 
 <style scoped>
+/* Bestätigungen */
+.cal-pending { padding: 1em 1.2em; margin-bottom: 1.2em; border-left: 4px solid #e0a82e; }
+.cal-pending h2 { display: flex; align-items: center; gap: .5em; margin: 0 0 .6em; font-size: 1em; text-align: left; }
+.cal-pending__n { display: inline-grid; place-items: center; min-width: 1.6em; height: 1.6em; border-radius: 999px; background: #e0a82e; color: #fff; font-size: .82em; font-weight: 700; }
+.cal-pending ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: .5em; }
+.cal-pending button { display: grid; gap: .1em; text-align: left; font: inherit; padding: .55em .85em; border: 1px solid var(--wf-line); border-radius: 12px; background: #fff; cursor: pointer; color: var(--wf-ink); }
+.cal-pending button:hover { border-color: var(--wf-green); }
+.cal-pending strong { font-size: .88em; }
+.cal-pending small { font-size: .76em; color: var(--wf-muted); }
+.cal-chip.is-pending { outline: 2px dashed #e0a82e; outline-offset: -2px; }
+.cal-ev.is-highlight { box-shadow: 0 0 0 2px var(--wf-green); border-radius: 12px; }
+.cal-review { margin-top: .55em; padding: .55em .7em; border-radius: 10px; background: #fdf6e7; display: grid; gap: .4em; }
+.cal-review[data-tone="green"] { background: #eef5ef; }
+.cal-review[data-tone="red"] { background: #fbeeee; }
+.cal-review__status { display: inline-flex; align-items: center; gap: .35em; font-size: .78em; font-weight: 600; color: #8a5a12; }
+.cal-review[data-tone="green"] .cal-review__status { color: var(--wf-green); }
+.cal-review[data-tone="red"] .cal-review__status { color: var(--wf-red); }
+.cal-review__note { margin: 0; font-size: .82em; font-style: italic; }
+.cal-review__form { display: grid; gap: .4em; }
+.cal-review__form .wf-input { font-size: .82em; padding: .45em .7em; }
+.cal-review__btns { display: flex; gap: .4em; flex-wrap: wrap; }
 /* Hero */
 .cal-hero {
   display: flex;

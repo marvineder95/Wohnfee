@@ -1,5 +1,6 @@
 import { requireAdmin } from '../../../utils/admin-auth'
 import { query, queryOne } from '../../../utils/db'
+import { notifyUser, notifySuperadmins, eventSummary, calendarUrl } from '../../../utils/notifications'
 
 const TYPES = ['aufbau', 'abholung', 'lieferung', 'beratung', 'sonstiges']
 
@@ -10,7 +11,7 @@ export default defineEventHandler(async (event) => {
   const id = Number(event.context.params?.id)
   if (!id) throw createError({ statusCode: 400, statusMessage: 'ID fehlt' })
 
-  const existing = await queryOne<any>('SELECT created_by AS createdBy FROM calendar_events WHERE id = :id', { id })
+  const existing = await queryOne<any>('SELECT created_by AS createdBy, review_status AS reviewStatus FROM calendar_events WHERE id = :id', { id })
   if (!existing) throw createError({ statusCode: 404, statusMessage: 'Termin nicht gefunden' })
   // Admin & Designerin dürfen alle Termine ändern, Spediteure nur ihre eigenen
   if (user.role === 'driver' && Number(existing.createdBy) !== user.id) {
@@ -42,5 +43,15 @@ export default defineEventHandler(async (event) => {
       id
     }
   )
+  const who = user.displayName || user.username || 'Jemand'
+  const summary = `${title.slice(0, 120)} – ${eventSummary({ type, eventDate, startTime, allDay })}`
+  if (user.role !== 'superadmin') {
+    // Mitarbeiter ändert → wieder zur Bestätigung beim Chef
+    await query("UPDATE calendar_events SET review_status = 'offen', review_note = NULL, reviewed_by_name = NULL, reviewed_at = NULL WHERE id = :id", { id })
+    await notifySuperadmins({ title: `${who} hat einen Termin geändert`, body: summary, url: calendarUrl(id, eventDate) }, user.id)
+  } else if (existing.createdBy && Number(existing.createdBy) !== user.id) {
+    // Chef ändert den Termin eines Mitarbeiters → Mitarbeiter informieren
+    await notifyUser(Number(existing.createdBy), { title: `${who} hat deinen Termin geändert`, body: summary, url: calendarUrl(id, eventDate) })
+  }
   return { ok: true }
 })
