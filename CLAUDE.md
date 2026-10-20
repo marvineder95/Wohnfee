@@ -136,6 +136,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Karten mit 16–26px Radius, grüne CTA-Bänder, Scroll-Reveal (`.rv`).
 - Texte möglichst aus den Seitendaten lesen; feste Beschriftungen zweisprachig mit
   `useLang()` → `t('Deutsch', 'English')`, interne Links mit `lp('/seite.html')`.
+- Favicon: `public/favicon.svg` (W mit Spross aus dem Logo, Grün #2f5d40) + daraus erzeugt `favicon.ico` (16/32/48) und
+  `apple-touch-icon.png` (180), eingebunden in nuxt.config `app.head.link`. Dashboard-App-Icon bleibt `wf-admin-*`.
 - Bilder: `HsImg` (nutzt IPX, außer für `/uploads/…`).
 - Altes Contao-CSS stylt globale Elemente (h1/h2 zentriert, `header`, `footer`, `ul`, `nav`):
   in Komponenten gezielt überschreiben, keine `<header>`/`<footer>`-Tags in Inhalten verwenden.

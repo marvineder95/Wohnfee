@@ -51,6 +51,10 @@ export default defineNuxtConfig({
         { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }
       ],
       link: [
+        // Favicon: W mit Spross aus dem Logo (Quelle public/favicon.svg)
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'icon', href: '/favicon.ico', sizes: '48x48' },
+        { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
         { rel: 'stylesheet', href: '/vendor/swiper/swiper-bundle.min.css' },
         { rel: 'stylesheet', href: '/system/modules/mobile_menu/assets/css/mobile-menu.min.css' },
         { rel: 'stylesheet', href: '/assets/contao/css/layout.min.css' },
