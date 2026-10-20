@@ -393,11 +393,35 @@ async function doSend() {
 // ---------- Filter ----------
 const listFilter = ref<'alle' | 'offen' | 'ueberfaellig' | 'entwurf'>('alle')
 const overdueCount = computed(() => invoices.value.filter(i => (i.days_overdue ?? 0) > 0).length)
+// Zeitraum (Rechnungsdatum) – gilt für Liste und ZIP-Download
+const dateFrom = ref('')
+const dateTo = ref('')
+const inRange = (i: InvoiceRow) => {
+  const d = String(i.doc_date || '').slice(0, 10)
+  return (!dateFrom.value || d >= dateFrom.value) && (!dateTo.value || d <= dateTo.value)
+}
 const visibleInvoices = computed(() => {
-  if (listFilter.value === 'offen') return invoices.value.filter(i => i.status === 'gesendet' && !i.storno_of)
-  if (listFilter.value === 'ueberfaellig') return invoices.value.filter(i => (i.days_overdue ?? 0) > 0)
-  if (listFilter.value === 'entwurf') return invoices.value.filter(i => i.status === 'entwurf')
-  return invoices.value
+  const list = invoices.value.filter(inRange)
+  if (listFilter.value === 'offen') return list.filter(i => i.status === 'gesendet' && !i.storno_of)
+  if (listFilter.value === 'ueberfaellig') return list.filter(i => (i.days_overdue ?? 0) > 0)
+  if (listFilter.value === 'entwurf') return list.filter(i => i.status === 'entwurf')
+  return list
+})
+const visibleNetto = computed(() => visibleInvoices.value.reduce((s, i) => s + Number(i.netto || 0), 0))
+const iso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+function setRange(kind: 'month' | 'lastmonth' | 'quarter' | 'year' | 'clear') {
+  const now = new Date()
+  const y = now.getFullYear()
+  const m = now.getMonth()
+  if (kind === 'clear') { dateFrom.value = ''; dateTo.value = ''; return }
+  if (kind === 'month') { dateFrom.value = iso(new Date(y, m, 1)); dateTo.value = iso(new Date(y, m + 1, 0)) }
+  if (kind === 'lastmonth') { dateFrom.value = iso(new Date(y, m - 1, 1)); dateTo.value = iso(new Date(y, m, 0)) }
+  if (kind === 'quarter') { const q = Math.floor(m / 3) * 3; dateFrom.value = iso(new Date(y, q, 1)); dateTo.value = iso(new Date(y, q + 3, 0)) }
+  if (kind === 'year') { dateFrom.value = iso(new Date(y, 0, 1)); dateTo.value = iso(new Date(y, 11, 31)) }
+}
+const zipUrl = computed(() => {
+  const p = new URLSearchParams({ from: dateFrom.value, to: dateTo.value, filter: listFilter.value })
+  return `/api/admin/invoices/zip?${p}`
 })
 
 // ---------- Mahnwesen ----------
@@ -528,6 +552,23 @@ onMounted(async () => {
       </button>
     </div>
 
+    <div class="inv__range">
+      <label class="inv__rangef"><span>Von</span><input v-model="dateFrom" type="date" :max="dateTo || undefined"></label>
+      <label class="inv__rangef"><span>Bis</span><input v-model="dateTo" type="date" :min="dateFrom || undefined"></label>
+      <div class="inv__rangequick">
+        <button type="button" @click="setRange('month')">Dieser Monat</button>
+        <button type="button" @click="setRange('lastmonth')">Letzter Monat</button>
+        <button type="button" @click="setRange('quarter')">Quartal</button>
+        <button type="button" @click="setRange('year')">Jahr</button>
+        <button v-if="dateFrom || dateTo" type="button" class="is-clear" @click="setRange('clear')">× Zurücksetzen</button>
+      </div>
+      <span class="inv__rangesum">{{ visibleInvoices.length }} {{ visibleInvoices.length === 1 ? 'Rechnung' : 'Rechnungen' }} · {{ fmtEuro(visibleNetto) }} netto</span>
+      <a class="wf-btn wf-btn--primary inv__zip" :class="{ 'is-disabled': !visibleInvoices.length }" :href="visibleInvoices.length ? zipUrl : undefined"
+         :aria-disabled="!visibleInvoices.length" title="Alle angezeigten Rechnungen als PDF in einer ZIP-Datei (inkl. Uebersicht.csv)">
+        <WfIcon name="download" :size="15" /> Als ZIP herunterladen
+      </a>
+    </div>
+
     <p v-if="error" class="inv__error" role="alert">{{ error }}</p>
     <p v-if="loading" class="inv__loading">Rechnungen werden geladen …</p>
     <p v-else-if="!invoices.length" class="inv__empty">Noch keine Rechnungen erstellt.</p>
@@ -537,7 +578,7 @@ onMounted(async () => {
         <tr><th>Nummer</th><th>Kunde</th><th>Datum</th><th class="inv__num">Netto</th><th>Status</th><th>Fällig</th><th /></tr>
       </thead>
       <tbody>
-        <tr v-if="!visibleInvoices.length"><td colspan="7" class="inv__empty">Keine Rechnungen in dieser Ansicht.</td></tr>
+        <tr v-if="!visibleInvoices.length"><td colspan="7" class="inv__empty">Keine Rechnungen in dieser Ansicht{{ dateFrom || dateTo ? ' bzw. in diesem Zeitraum' : '' }}.</td></tr>
         <tr v-for="i in visibleInvoices" :key="i.id">
           <td><button class="inv__number" @click="openEdit(i)">{{ i.number }}</button></td>
           <td>{{ i.customer_name }}</td>
@@ -986,6 +1027,17 @@ onMounted(async () => {
   border-radius: 999px; font: inherit; font-size: .86em; padding: .45em 1em; cursor: pointer; color: var(--wf-ink);
 }
 .inv__filter.is-active { background: var(--wf-green); border-color: var(--wf-green); color: #fff; }
+.inv__range { display: flex; flex-wrap: wrap; align-items: flex-end; gap: .6em .8em; margin: -.2em 0 1em; padding: .8em 1em; border: 1px solid var(--wf-line); border-radius: 14px; background: var(--wf-card); }
+.inv__rangef { display: grid; gap: .2em; font-size: .78em; color: var(--wf-muted); }
+.inv__rangef input { font: inherit; font-size: 1.15em; color: var(--wf-ink); padding: .4em .6em; border: 1px solid var(--wf-line); border-radius: 10px; background: #fff; }
+.inv__rangequick { display: flex; flex-wrap: wrap; gap: .35em; }
+.inv__rangequick button { font: inherit; font-size: .8em; padding: .45em .8em; border: 1px solid var(--wf-line); border-radius: 999px; background: #fff; cursor: pointer; color: var(--wf-ink); }
+.inv__rangequick button:hover { border-color: var(--wf-green); color: var(--wf-green); }
+.inv__rangequick .is-clear { color: var(--wf-muted); }
+.inv__rangesum { margin-left: auto; font-size: .84em; color: var(--wf-muted); align-self: center; }
+.inv__zip { display: inline-flex; align-items: center; gap: .45em; }
+.inv__zip.is-disabled { opacity: .45; pointer-events: none; }
+@media (max-width: 700px) { .inv__rangesum { margin-left: 0; flex-basis: 100%; } .inv__zip { flex-basis: 100%; justify-content: center; } }
 .inv__filtern { background: var(--wf-red); color: #fff; border-radius: 999px; font-size: .78em; font-weight: 700; padding: .05em .5em; }
 .inv__due { white-space: nowrap; font-size: .9em; }
 .inv__due small { display: block; font-size: .78em; color: var(--wf-muted); }
