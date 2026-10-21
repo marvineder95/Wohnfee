@@ -38,7 +38,12 @@ MSG=$(git log -1 --format=%s "$NEW")
 log "Update ${OLD:0:7} → ${NEW:0:7}: $MSG"
 deploy/backup.sh >/dev/null 2>&1 && log "Backup ok" || log "Warnung: Backup fehlgeschlagen"
 
-git checkout -q -B "$BRANCH" "$NEW"
+# -f: lokale Änderungen an versionierten Dateien verwerfen (.env & Uploads sind nicht versioniert)
+if ! git checkout -q -f -B "$BRANCH" "$NEW"; then
+  log "CHECKOUT FEHLGESCHLAGEN – bleibe auf ${OLD:0:7}"
+  notify "Website-Update fehlgeschlagen" "„$MSG\" konnte nicht ausgecheckt werden – die bisherige Version läuft weiter."
+  exit 1
+fi
 cd deploy
 if ! docker compose build app >/tmp/wohnfee-build.log 2>&1; then
   log "BUILD FEHLGESCHLAGEN – bleibe auf ${OLD:0:7}"; tail -20 /tmp/wohnfee-build.log
