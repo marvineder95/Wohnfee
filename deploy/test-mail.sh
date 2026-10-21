@@ -2,8 +2,8 @@
 # Prüft die SMTP-Anmeldung und schickt eine Test-Mail an den Absender (oder an $1).
 set -euo pipefail
 cd "$(dirname "$0")"
-docker compose exec -T -e TO="${1:-}" app node -e '
-const nm = require("/app/.output/server/node_modules/nodemailer");
+docker compose exec -T -e TO="${1:-}" app node --input-type=module -e '
+const nm = (await import("/app/.output/server/node_modules/nodemailer/dist/esm/nodemailer.js")).default;
 const port = Number(process.env.NUXT_SMTP_PORT || 465);
 const t = nm.createTransport({ host: process.env.NUXT_SMTP_HOST, port,
   secure: process.env.NUXT_SMTP_SECURE ? process.env.NUXT_SMTP_SECURE === "true" : port === 465,
