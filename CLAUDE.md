@@ -153,7 +153,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Gewerbe im Impressum: nur Handel + Kleintransport aufgeführt (IT, Eisenbahn weggelassen)?
 - Widersprüche: „80–150 Teile“ vs. alte FAQ „100–200“; Leihdauer „mind. 2 Monate“ vs. „3 Monate“.
 - Datenschutzerklärung inhaltlich auf Eder & Steiner GmbH prüfen (nur Adresse ersetzt).
-- SMTP-Passwort (`NUXT_SMTP_PASSWORD`) fehlt → Mails werden nur geloggt.
+- Mail (seit 21.10.2026 bei world4you, MX mail.wohnfee.at): SMTP smtp.world4you.com:587 STARTTLS, Benutzer office@wohnfee.at.
+  Passwort setzt der Kunde selbst: `bash /opt/wohnfee/deploy/set-smtp-password.sh`, Test: `deploy/test-mail.sh [empfänger]`.
 - Mietkatalog: Möbel ohne Fotos; danach Live-Produktvorschau auf der Startseite möglich.
 - Tippfehler im Pflegetext: Redesign „entseht“, Preise Paket 1/3 (Komma/€ am Ende).
 - Konditionen: Stundensatz (Platzhalter 45 €/Std.), Aufbau-/Abbauzeiten und Kilometergeld
