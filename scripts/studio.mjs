@@ -4,6 +4,8 @@ import sharp from 'sharp'
 // Studio-Hintergrund im WOHNFEE-Ton + freigestelltes Motiv + weicher Schatten → 1200×1200 JPG
 const [input, output, mode] = process.argv.slice(2) // mode: floor | hang | wall
 const W = 1200
+// BG=white → reines Weiß (Shop-Karten), sonst warmer Studio-Verlauf
+const WHITE = process.env.BG === 'white'
 const bgSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${W}">
   <defs>
     <radialGradient id="g" cx="50%" cy="38%" r="75%">
@@ -13,8 +15,8 @@ const bgSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${W}
       <stop offset="0" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#7a6648" stop-opacity=".10"/>
     </linearGradient>
   </defs>
-  <rect width="100%" height="100%" fill="url(#g)"/>
-  <rect y="${W * 0.72}" width="100%" height="${W * 0.28}" fill="url(#floor)"/>
+  <rect width="100%" height="100%" fill="${WHITE ? '#ffffff' : 'url(#g)'}"/>
+  ${WHITE ? '' : `<rect y="${W * 0.72}" width="100%" height="${W * 0.28}" fill="url(#floor)"/>`}
 </svg>`
 const subj = sharp(input)
 const meta = await subj.metadata()
