@@ -1,3 +1,4 @@
+import { mailButton, mailSignature } from './mail-layout'
 import { withdrawalHtml, withdrawalText, earlyStartTexts } from '../../shared/withdrawal'
 
 // E-Mails rund um die Online-Angebotsannahme (Kunde + Team).
@@ -6,21 +7,10 @@ import { withdrawalHtml, withdrawalText, earlyStartTexts } from '../../shared/wi
 const esc = (s: any) => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!))
 
 const SIGN_TEXT = '\n\nMarvin Eder\nWOHNFEE Home Staging\nEder & Steiner GmbH\noffice@wohnfee.at · +43 676 9202236'
-const SIGN_HTML = '<strong>Marvin Eder</strong><br>WOHNFEE Home Staging<br>Eder &amp; Steiner GmbH<br>' +
-  '<a href="mailto:office@wohnfee.at" style="color:#2f5d40">office@wohnfee.at</a> · +43 676 9202236'
 
-function layout(inner: string) {
-  return `<div style="font-family:Georgia,'Times New Roman',serif;max-width:580px;margin:0 auto;padding:28px 24px;color:#3f3c35;line-height:1.55">` +
-    `<p style="font-size:22px;letter-spacing:.04em;color:#26492f;margin:0 0 22px">WOHN<span style="color:#7fa07a">FEE</span></p>` +
-    inner +
-    `<p style="font-size:12px;color:#a8a396;margin-top:28px;border-top:1px solid #ece7dc;padding-top:12px">` +
-    `WOHNFEE – Eder &amp; Steiner GmbH · Obersdorferstraße 5, 2201 Seyring</p></div>`
-}
-
-function button(url: string, label: string) {
-  return `<p style="margin:22px 0"><a href="${esc(url)}" style="display:inline-block;background:#2f5d40;color:#fff;` +
-    `padding:13px 28px;border-radius:999px;text-decoration:none;font-family:Arial,sans-serif;font-size:15px">${esc(label)}</a></p>`
-}
+// Logo, Fuß mit Firmendaten usw. legt sendMail() automatisch um (server/utils/mail-layout.ts)
+const layout = (inner: string) => inner
+const button = mailButton
 
 type L = 'de' | 'en'
 const tr = (lang: L) => (de: string, en: string) => (lang === 'en' ? en : de)
@@ -48,8 +38,8 @@ export function offerMail(o: { number: string; subject?: string | null; dateStr:
     `<p>${t('Sie können das Angebot online ansehen und direkt annehmen oder ablehnen:', 'You can view the offer online and accept or decline it right away:')}</p>` +
     button(o.url, t('Angebot ansehen', 'View offer')) +
     `<p>${t('Bei Fragen stehen wir Ihnen jederzeit gerne zur Verfügung.', 'If you have any questions, please do not hesitate to contact us.')}</p>` +
-    `<p>${t('Mit freundlichen Grüßen', 'Kind regards')}<br>${SIGN_HTML}</p>` +
-    (o.rental ? `<p style="font-size:12px;color:#8a857a">${t('Für Privatkunden gilt ein 14-tägiges Widerrufsrecht', 'Private customers have a 14-day right of withdrawal')}: ` +
+    `${mailSignature(t('de', 'en') as L)}` +
+    (o.rental ? `<p style="margin-top:24px;font-size:12px;color:#8a857a">${t('Für Privatkunden gilt ein 14-tägiges Widerrufsrecht', 'Private customers have a 14-day right of withdrawal')}: ` +
       `<a href="${esc(o.withdrawalUrl || '')}" style="color:#2f5d40">${t('Widerrufsbelehrung und Muster-Formular', 'withdrawal information and model form')}</a></p>` : '')
   )
   return { subject, text: text + (o.rental && o.withdrawalUrl ? `\n\n${t('Widerrufsbelehrung für Privatkunden', 'Withdrawal information for private customers')}: ${o.withdrawalUrl}` : ''), html }
@@ -73,7 +63,7 @@ export function reminderMail(o: { number: string; validStr: string; url: string;
     `<p>${t('Sehr geehrte Damen und Herren', 'Dear Sir or Madam')},</p><p>${esc(line1)}</p>` +
     `<p style="background:#f3efe6;border-radius:12px;padding:12px 16px">${esc(line2)}</p>` +
     button(o.url, t('Angebot ansehen', 'View offer')) +
-    `<p>${esc(line3)}</p><p>${t('Mit freundlichen Grüßen', 'Kind regards')}<br>${SIGN_HTML}</p>`
+    `<p>${esc(line3)}</p>${mailSignature(t('de', 'en') as L)}`
   )
   return { subject, text, html }
 }
@@ -97,7 +87,7 @@ export function acceptedMail(o: { number: string; name?: string | null; period?:
     `<p>${t('Sehr geehrte Damen und Herren', 'Dear Sir or Madam')},</p>` + lines.map(l => `<p>${esc(l)}</p>`).join('') +
     button(o.url, t('Angebot ansehen', 'View offer')) +
     (early ? `<p style="font-size:14px"><strong>${t('Ihre Erklärungen bei der Annahme', 'Your statements on acceptance')}:</strong><br>✓ ${esc(early.request)}<br>✓ ${esc(early.ack)}</p>` : '') +
-    `<p>${t('Mit freundlichen Grüßen', 'Kind regards')}<br>${SIGN_HTML}</p>` +
+    `${mailSignature(t('de', 'en') as L)}` +
     (o.privat ? `<div style="margin-top:26px;padding:16px 18px;border:1px solid #ece7dc;border-radius:12px;font-size:13px;line-height:1.55;color:#5e584b">` +
       withdrawalHtml(o.lang, { h: 'h3' }).replace(/<h3>/g, '<h3 style="font-size:15px;color:#26492f;margin:14px 0 6px">') + '</div>' : '')
   )
@@ -111,7 +101,7 @@ export function declinedMail(o: { number: string; lang: L }) {
   const line = t('vielen Dank für Ihre Rückmeldung – schade, dass es diesmal nicht passt. Wenn wir Ihnen ein angepasstes Angebot machen dürfen, melden Sie sich jederzeit gerne bei uns.',
     'thank you for letting us know – a pity it does not fit this time. If you would like an adjusted offer, feel free to get in touch at any time.')
   const text = `${t('Sehr geehrte Damen und Herren', 'Dear Sir or Madam')},\n\n${line}\n\n${t('Mit freundlichen Grüßen', 'Kind regards')}${SIGN_TEXT}`
-  const html = layout(`<p>${t('Sehr geehrte Damen und Herren', 'Dear Sir or Madam')},</p><p>${esc(line)}</p><p>${t('Mit freundlichen Grüßen', 'Kind regards')}<br>${SIGN_HTML}</p>`)
+  const html = layout(`<p>${t('Sehr geehrte Damen und Herren', 'Dear Sir or Madam')},</p><p>${esc(line)}</p>${mailSignature(t('de', 'en') as L)}`)
   return { subject, text, html }
 }
 
@@ -147,7 +137,7 @@ export function withdrawalReceiptMail(o: { number: string; name: string; email: 
   const html = layout(
     `<p>${t('Sehr geehrte Damen und Herren', 'Dear Sir or Madam')},</p><p>${t('wir bestätigen den Eingang Ihres Widerrufs:', 'we confirm receipt of your withdrawal:')}</p>` +
     `<p style="background:#f3efe6;border-radius:12px;padding:12px 16px">${content.map(esc).join('<br>')}</p>` +
-    `<p>${esc(next)}</p><p>${t('Mit freundlichen Grüßen', 'Kind regards')}<br>${SIGN_HTML}</p>`
+    `<p>${esc(next)}</p>${mailSignature(t('de', 'en') as L)}`
   )
   return { subject, text, html }
 }

@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer'
+import { wrapMail, hasMailLayout, mailButton, mailSignature } from './mail-layout'
 
 // SMTP via Env konfigurierbar:
 //   NUXT_SMTP_HOST, NUXT_SMTP_PORT (default 465), NUXT_SMTP_USER, NUXT_SMTP_PASSWORD,
@@ -27,7 +28,8 @@ export async function sendMail(to: string, subject: string, text: string, html: 
     to,
     subject,
     text,
-    html,
+    // jede Mail bekommt das WOHNFEE-Layout (Logo, Fuß mit Firmendaten), sofern sie es nicht schon hat
+    html: hasMailLayout(html) ? html : wrapMail(html),
     attachments,
     headers
   })
@@ -51,10 +53,10 @@ export function inviteMail({ to, displayName, inviterName, inviteUrl }: {
   const html =
     `<p>Hallo ${escapeHtml(displayName)},</p>` +
     `<p><strong>${escapeHtml(inviterName)}</strong> hat dich zum WOHNFEE Dashboard eingeladen.</p>` +
-    `<p><a href="${inviteUrl}" style="display:inline-block;background:#317046;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none">Benutzerkonto einrichten</a></p>` +
-    `<p>oder diesen Link im Browser öffnen:<br>${inviteUrl}</p>` +
+    mailButton(inviteUrl, 'Benutzerkonto einrichten') +
+    `<p style="font-size:12px;color:#8a857a">Falls der Button nicht funktioniert, diesen Link im Browser öffnen:<br>${inviteUrl}</p>` +
     `<p>Der Link ist 48 Stunden gültig.</p>` +
-    `<p>Liebe Grüße<br>WOHNFEE Home Staging</p>`
+    mailSignature('de', 'Liebe Grüße')
   return { subject, text, html }
 }
 
@@ -75,10 +77,10 @@ export function resetMail({ to, displayName, inviterName, resetUrl }: {
   const html =
     `<p>Hallo ${escapeHtml(displayName)},</p>` +
     `<p><strong>${escapeHtml(inviterName)}</strong> hat ein Zurücksetzen deines Passworts für das WOHNFEE Dashboard angefordert.</p>` +
-    `<p><a href="${resetUrl}" style="display:inline-block;background:#317046;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none">Neues Passwort vergeben</a></p>` +
-    `<p>oder diesen Link im Browser öffnen:<br>${resetUrl}</p>` +
+    mailButton(resetUrl, 'Neues Passwort vergeben') +
+    `<p style="font-size:12px;color:#8a857a">Falls der Button nicht funktioniert, diesen Link im Browser öffnen:<br>${resetUrl}</p>` +
     `<p>Der Link ist 2 Stunden gültig. Falls du dein Passwort nicht zurücksetzen möchtest, ignoriere diese E-Mail.</p>` +
-    `<p>Liebe Grüße<br>WOHNFEE Home Staging</p>`
+    mailSignature('de', 'Liebe Grüße')
   return { subject, text, html }
 }
 
@@ -98,10 +100,10 @@ export function selfResetMail({ to, displayName, resetUrl }: {
   const html =
     `<p>Hallo ${escapeHtml(displayName)},</p>` +
     `<p>für dein Konto am WOHNFEE Dashboard wurde ein Zurücksetzen des Passworts angefordert.</p>` +
-    `<p><a href="${resetUrl}" style="display:inline-block;background:#317046;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none">Neues Passwort vergeben</a></p>` +
-    `<p>oder diesen Link im Browser öffnen:<br>${resetUrl}</p>` +
+    mailButton(resetUrl, 'Neues Passwort vergeben') +
+    `<p style="font-size:12px;color:#8a857a">Falls der Button nicht funktioniert, diesen Link im Browser öffnen:<br>${resetUrl}</p>` +
     `<p>Der Link ist 2 Stunden gültig. Falls du das nicht warst, ignoriere diese E-Mail — dein Passwort bleibt unverändert.</p>` +
-    `<p>Liebe Grüße<br>WOHNFEE Home Staging</p>`
+    mailSignature('de', 'Liebe Grüße')
   return { subject, text, html }
 }
 
@@ -121,7 +123,7 @@ export function newsletterMail(data: { subject: string; bodyText: string; lang: 
     .map(p => p.trim())
     .filter(Boolean)
   const bodyHtml = paragraphs
-    .map(p => `<p style="margin:0 0 14px;font-size:15px;line-height:1.7;color:#45423a">${esc(p).replace(/\n/g, '<br>')}</p>`)
+    .map(p => `<p>${esc(p).replace(/\n/g, '<br>')}</p>`)
     .join('')
 
   const text =
@@ -130,31 +132,16 @@ export function newsletterMail(data: { subject: string; bodyText: string; lang: 
       ? `WOHNFEE – Eder & Steiner GmbH\nObersdorferstraße 5, 2201 Seyring\noffice@wohnfee.at | +43 676 9202236 | wohnfee.at\n\nUnsubscribe: ${data.unsubscribeUrl}`
       : `WOHNFEE – Eder & Steiner GmbH\nObersdorferstraße 5, 2201 Seyring\noffice@wohnfee.at | +43 676 9202236 | wohnfee.at\n\nVom Newsletter abmelden: ${data.unsubscribeUrl}`)
 
-  const html =
-    `<div style="margin:0;padding:24px 12px;background:#f4f3ee;font-family:Georgia,'Times New Roman',serif">` +
-    `<div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:10px;overflow:hidden">` +
-    // Kopf: dunkelgrüne Leiste mit Wortmarke
-    `<div style="background:#26492f;padding:22px 32px">` +
-    `<span style="color:#ffffff;font-size:22px;letter-spacing:.06em;font-weight:600">WOHN<span style="color:#cfe0c3">FEE</span></span>` +
-    `<span style="display:block;color:#a9c2a0;font-size:11px;letter-spacing:.18em;text-transform:uppercase;margin-top:2px">Home Staging &amp; Furniture Leasing</span>` +
-    `</div>` +
-    `<div style="height:3px;background:#c9a86a"></div>` +
-    // Betreff als Titel
-    `<div style="padding:28px 32px 8px">` +
-    `<h1 style="margin:0 0 16px;font-size:20px;line-height:1.35;color:#26492f;font-weight:600">${esc(data.subject)}</h1>` +
-    bodyHtml +
-    `</div>` +
-    // Footer
-    `<div style="padding:18px 32px 24px;border-top:1px solid #ece7da;background:#faf8f2">` +
-    `<p style="margin:0 0 4px;font-size:12px;line-height:1.6;color:#8a857a"><strong style="color:#55554e">WOHNFEE – Eder &amp; Steiner GmbH</strong><br>` +
-    `Obersdorferstraße 5, 2201 Seyring<br>` +
-    `<a href="mailto:office@wohnfee.at" style="color:#26492f;text-decoration:none">office@wohnfee.at</a> | +43 676 9202236 | <a href="https://wohnfee.at" style="color:#26492f;text-decoration:none">wohnfee.at</a></p>` +
-    `<p style="margin:10px 0 0;font-size:11px;line-height:1.5;color:#a8a396">${isEn
-      ? `You receive this e-mail because you subscribed to the WOHNFEE newsletter. <a href="${esc(data.unsubscribeUrl)}" style="color:#8a857a">Unsubscribe</a>`
-      : `Du erhältst diese E-Mail, weil du dich beim WOHNFEE-Newsletter angemeldet hast. <a href="${esc(data.unsubscribeUrl)}" style="color:#8a857a">Vom Newsletter abmelden</a>`}</p>` +
-    `</div>` +
-    `</div>` +
-    `</div>`
+  const html = wrapMail(
+    `<h1>${esc(data.subject)}</h1>` + bodyHtml,
+    {
+      lang: data.lang,
+      preheader: paragraphs[0]?.slice(0, 120),
+      footerNote: isEn
+        ? `You receive this e-mail because you subscribed to the WOHNFEE newsletter. <a href="${esc(data.unsubscribeUrl)}" style="color:#8a857a">Unsubscribe</a>`
+        : `Du erhältst diese E-Mail, weil du dich beim WOHNFEE-Newsletter angemeldet hast. <a href="${esc(data.unsubscribeUrl)}" style="color:#8a857a">Vom Newsletter abmelden</a>`
+    }
+  )
 
   return { subject: data.subject, text, html }
 }
@@ -198,7 +185,7 @@ export function rentalInquiryMail(data: {
     (data.notes ? `\nAnmerkungen: ${data.notes}\n` : '') +
     `\nDie Anfrage liegt im WOHNFEE Dashboard unter „Mietanfragen“ zur Bearbeitung bereit.`
   const html =
-    `<h2 style="margin:0 0 12px;color:#2f5d40">Neue Mietanfrage ${esc(data.number)}</h2>` +
+    `<h2>Neue Mietanfrage ${esc(data.number)}</h2>` +
     `<table style="border-collapse:collapse;margin-bottom:14px">` +
     `<tr><td style="padding:3px 12px 3px 0;color:#777">Name</td><td><strong>${esc(data.name)}</strong></td></tr>` +
     `<tr><td style="padding:3px 12px 3px 0;color:#777">E-Mail</td><td><a href="mailto:${esc(data.email)}">${esc(data.email)}</a></td></tr>` +
@@ -225,12 +212,9 @@ export function newsletterConfirmMail(data: { confirmUrl: string; lang: 'de' | '
     ? `Hello,\n\nplease confirm that you would like to receive the WOHNFEE newsletter:\n${data.confirmUrl}\n\nIf you did not sign up, simply ignore this e-mail – you will not receive any further messages.\n\nWOHNFEE – Eder & Steiner GmbH`
     : `Hallo,\n\nbitte bestätige, dass du den WOHNFEE-Newsletter erhalten möchtest:\n${data.confirmUrl}\n\nFalls du dich nicht angemeldet hast, ignoriere diese E-Mail einfach – du bekommst dann keine weiteren Nachrichten.\n\nWOHNFEE – Eder & Steiner GmbH`
   const html =
-    `<div style="font-family:Georgia,serif;max-width:560px;margin:0 auto;padding:24px;color:#45423a">` +
-    `<p style="font-size:20px;color:#26492f;margin:0 0 16px">WOHN<span style="color:#7fa07a">FEE</span></p>` +
-    `<p>${en ? 'Hello,' : 'Hallo,'}</p>` +
-    `<p>${en ? 'please confirm that you would like to receive the WOHNFEE newsletter:' : 'bitte bestätige, dass du den WOHNFEE-Newsletter erhalten möchtest:'}</p>` +
-    `<p><a href="${escapeHtml(data.confirmUrl)}" style="display:inline-block;background:#2f5d40;color:#fff;padding:12px 24px;border-radius:999px;text-decoration:none">${en ? 'Confirm subscription' : 'Anmeldung bestätigen'}</a></p>` +
-    `<p style="font-size:13px;color:#8a857a">${en ? 'If you did not sign up, simply ignore this e-mail.' : 'Falls du dich nicht angemeldet hast, ignoriere diese E-Mail einfach.'}</p>` +
-    `<p style="font-size:12px;color:#a8a396">WOHNFEE – Eder &amp; Steiner GmbH · Obersdorferstraße 5, 2201 Seyring</p></div>`
+    `<h1>${en ? 'Almost there!' : 'Fast geschafft!'}</h1>` +
+    `<p>${en ? 'Please confirm that you would like to receive the WOHNFEE newsletter:' : 'Bitte bestätige, dass du den WOHNFEE-Newsletter erhalten möchtest:'}</p>` +
+    mailButton(data.confirmUrl, en ? 'Confirm subscription' : 'Anmeldung bestätigen') +
+    `<p style="font-size:13px;color:#8a857a">${en ? 'If you did not sign up, simply ignore this e-mail.' : 'Falls du dich nicht angemeldet hast, ignoriere diese E-Mail einfach.'}</p>`
   return { subject, text, html }
 }

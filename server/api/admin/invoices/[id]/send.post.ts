@@ -1,7 +1,9 @@
 import { requireAdmin } from '../../../../utils/admin-auth'
 import { query, queryOne } from '../../../../utils/db'
 import { buildInvoicePdf } from '../../../../utils/invoice-pdf'
-import { fmtDate } from '../../../../utils/invoice-pdf'
+import { fmtDate, fmtAmount } from '../../../../utils/invoice-pdf'
+import { mailFacts, mailSignature } from '../../../../utils/mail-layout'
+import { dueDate } from '../../../../utils/dunning'
 import { sendMail } from '../../../../utils/mailer'
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
@@ -64,14 +66,26 @@ export default defineEventHandler(async (event) => {
     `\n\n` +
     t('Mit freundlichen Grüßen', 'Kind regards') + `\nMarvin Eder\nWOHNFEE Home Staging\nEder & Steiner GmbH`
 
+  // Betrag wie im PDF: Netto + USt (außer steuerfrei)
+  const netto = Math.round(items.reduce((sum, it) => sum + Number(it.quantity) * Number(it.unit_price), 0) * 100) / 100
+  const vat = invoice.vat_free ? 0 : Math.round(netto * (Number(invoice.vat_rate) || 20) / 100 * 100) / 100
+  const facts: Array<[string, string]> = [
+    [isStorno ? t('Stornorechnung', 'Cancellation invoice') : t('Rechnungsnummer', 'Invoice number'), escapeHtml(invoice.number)],
+    [t('Rechnungsdatum', 'Invoice date'), escapeHtml(dateStr)]
+  ]
+  if (!isStorno) facts.push([t('Zahlbar bis', 'Due date'), escapeHtml(fmtDate(dueDate(invoice), lang))])
+  facts.push([t('Betrag', 'Amount') + (invoice.vat_free ? '' : t(' inkl. USt.', ' incl. VAT')), escapeHtml(fmtAmount(netto + vat, lang))])
+
   const html =
     `<p>${t('Sehr geehrte Damen und Herren', 'Dear Sir or Madam')},</p>` +
     `<p>${t(
-      `anbei erhalten Sie ${isStorno ? 'die Stornorechnung' : 'die Rechnung'} <strong>${escapeHtml(invoice.number)}</strong> vom ${dateStr}.`,
-      `please find attached the ${isStorno ? 'cancellation invoice' : 'invoice'} <strong>${escapeHtml(invoice.number)}</strong> dated ${dateStr}.`
+      `anbei erhalten Sie ${isStorno ? 'die Stornorechnung' : 'unsere Rechnung'} als PDF.`,
+      `please find attached our ${isStorno ? 'cancellation invoice' : 'invoice'} as a PDF.`
     )}${isStorno ? t(' Diese Rechnung hebt eine frühere Abrechnung auf.', ' This invoice cancels a previous billing.') : ''}</p>` +
+    mailFacts(facts, { highlightLast: true }) +
     `<p>${t('Bei Fragen stehen wir Ihnen jederzeit gerne zur Verfügung.', 'If you have any questions, please do not hesitate to contact us.')}</p>` +
-    `<p>${t('Mit freundlichen Grüßen', 'Kind regards')}<br><strong>Marvin Eder</strong><br>WOHNFEE Home Staging<br>Eder &amp; Steiner GmbH</p>`
+    `<p>${t('Vielen Dank für Ihr Vertrauen!', 'Thank you for your trust!')}</p>` +
+    mailSignature(lang)
 
   let sent = false
   let sendError = ''
