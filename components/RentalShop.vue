@@ -1020,8 +1020,12 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
   transition: color .15s;
 }
 .fl__heart.is-on { color: var(--green); }
-.fl__media { position: relative; display: block; width: 100%; border: 0; padding: 0; cursor: pointer; background: var(--cream); aspect-ratio: 4 / 3; }
-.fl__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.fl__media {
+  position: relative; display: block; width: 100%; border: 0; padding: 0; cursor: pointer; background: #fff;
+  aspect-ratio: 1 / 1; overflow: hidden; flex: none;
+}
+/* alle Karten gleich hoch: Bild im festen Quadrat, ganzes Motiv sichtbar (Studio-Fotos sind selbst quadratisch) */
+.fl__img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; display: block; }
 .fl__ph {
   width: 100%; height: 100%; display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: .5em;
@@ -1084,7 +1088,7 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 .fl__dclose:hover { color: var(--ink); }
 .fl__crumbs { font-size: .76em; color: var(--muted); margin-bottom: 1.2em; }
 .fl__dgrid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 2em; }
-.fl__dimg { width: 100%; aspect-ratio: 4 / 3.2; object-fit: cover; border-radius: 14px; display: block; }
+.fl__dimg { width: 100%; aspect-ratio: 1 / 1; object-fit: contain; background: #fff; border-radius: 14px; display: block; }
 .fl__dname { font-family: Georgia, serif; font-weight: 500; font-size: 1.5em; margin: 0 0 .3em; color: var(--ink); }
 .fl__dprice { font-size: 1em; color: var(--muted); margin: 0 0 .4em; }
 .fl__dprice strong { color: var(--ink); font-size: 1.6em; }
