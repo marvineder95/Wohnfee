@@ -23,7 +23,7 @@ const best = computed(() => Math.max(0, ...tiers.value.map(x => x.pct)))
       <span>{{ t('Mietdauer', 'Rental period') }}</span>
       <small v-if="best">{{ t(`Je länger, desto günstiger – bis −${best} %`, `The longer, the cheaper – up to −${best}%`) }}</small>
     </p>
-    <div class="rdp__chips" role="radiogroup" :aria-label="t('Mietdauer', 'Rental period')">
+    <div class="rdp__chips" :style="{ '--n': choices.length }" role="radiogroup" :aria-label="t('Mietdauer', 'Rental period')">
       <button v-for="m in choices" :key="m" type="button" role="radio" class="rdp__chip"
               :class="{ 'is-on': cart.months.value === m }" :aria-checked="cart.months.value === m"
               @click="cart.setMonths(m)">
@@ -35,13 +35,19 @@ const best = computed(() => Math.max(0, ...tiers.value.map(x => x.pct)))
 </template>
 
 <style scoped>
-.rdp { --green: #2f5d40; --green-soft: #eef3ee; --ink: #2b2b28; --muted: #7a7568; --line: #e6e0d2; --gold: #a8741f; min-width: 0; }
+.rdp { --green: #2f5d40; --green-soft: #eef3ee; --ink: #2b2b28; --muted: #7a7568; --line: #e6e0d2; --gold: #a8741f; min-width: 0; container-type: inline-size;
+  /* in einer Flex-Zeile (Shop-Leiste) Platz nehmen – Container-Queries brauchen eine echte Breite */
+  flex: 1 1 34em; width: 100%; max-width: 44em; }
+/* im Warenkorb folgt direkt eine Karte → Abstand */
+.rdp.is-compact { max-width: none; margin-bottom: .9em; }
 .rdp__label { display: flex; flex-wrap: wrap; align-items: baseline; gap: .2em .7em; margin: 0 0 .5em; font-size: .82em; font-weight: 600; color: var(--ink); text-align: left; }
 .rdp__label small { font-weight: 400; color: var(--muted); font-size: .92em; }
-.rdp__chips { display: flex; flex-wrap: wrap; gap: .4em; }
+.rdp__chips { display: grid; grid-template-columns: repeat(var(--n, 7), minmax(0, 1fr)); gap: .4em; }
+/* schmal: zwei gleichmäßige Reihen (4 + 3) statt einer einzelnen Kachel in der zweiten Zeile */
+@container (max-width: 30em) { .rdp__chips { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 .rdp__chip {
   display: inline-flex; flex-direction: column; align-items: center; justify-content: center; gap: .05em;
-  min-width: 4.4em; padding: .45em .7em; border: 1px solid var(--line); border-radius: 12px; background: #fff;
+  min-width: 0; padding: .45em .3em; border: 1px solid var(--line); border-radius: 12px; background: #fff;
   font: inherit; font-size: .82em; color: var(--ink); cursor: pointer; line-height: 1.25;
   transition: border-color .15s, background .15s, color .15s;
 }
@@ -51,5 +57,5 @@ const best = computed(() => Math.max(0, ...tiers.value.map(x => x.pct)))
 .rdp__chip.is-on { border-color: var(--green); background: var(--green); color: #fff; }
 .rdp__chip.is-on em { color: #f3dcae; }
 .rdp__chip:focus-visible { outline: 2px solid var(--green); outline-offset: 2px; }
-.rdp.is-compact .rdp__chip { min-width: 3.6em; padding: .35em .5em; font-size: .76em; }
+.rdp.is-compact .rdp__chip { padding: .35em .2em; font-size: .76em; }
 </style>
