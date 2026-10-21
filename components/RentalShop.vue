@@ -211,10 +211,13 @@ function eur(v: number | null | undefined): string | null {
   return v === null || v === undefined ? null
     : Number(v).toLocaleString(isEn.value ? 'en-IE' : 'de-AT', { style: 'currency', currency: 'EUR' })
 }
+// „Nur noch X verfügbar“ vorerst aus: von fast allem gibt es nur ein Stück (Okt. 2026).
+// Wieder einschalten: SHOW_LOW_STOCK = true.
+const SHOW_LOW_STOCK = false
 function avail(i: RentalItem): 'ok' | 'low' | 'none' {
   const s = Number(i.quantity) || 0
   if (s < 1) return 'none'
-  if (s <= 2) return 'low'
+  if (SHOW_LOW_STOCK && s <= 2) return 'low'
   return 'ok'
 }
 function availLabel(a: 'ok' | 'low' | 'none'): string {
@@ -272,7 +275,7 @@ const availCounts = computed(() => {
 })
 const AVAIL_OPTS = computed(() => [
   { v: 'ok', l: t.value.availNow },
-  { v: 'low', l: t.value.availLow },
+  ...(SHOW_LOW_STOCK ? [{ v: 'low', l: t.value.availLow }] : []),
   { v: 'none', l: t.value.onRequest }
 ])
 
@@ -654,7 +657,7 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
                   <WfIcon name="bag" :size="30" />
                   <em>{{ t.photoSoon }}</em>
                 </span>
-                <span class="fl__catchip" :class="'is-' + avail(i)">
+                <span v-if="avail(i) !== 'ok'" class="fl__catchip" :class="'is-' + avail(i)">
                   <span class="fl__dot" />{{ avail(i) === 'low' ? onlyLeft(i.quantity) : availLabel(avail(i)) }}
                 </span>
               </button>
