@@ -130,6 +130,16 @@ function pillClass(status: string) {
   return 'wf-pill--gray'
 }
 
+const openItem = computed(() => expandedId.value === null ? null : inquiries.value.find(i => i.id === expandedId.value) || null)
+function closeDetail() {
+  expandedId.value = null
+  detail.value = null
+  items.value = []
+}
+function onKey(e: KeyboardEvent) { if (e.key === 'Escape' && expandedId.value !== null) closeDetail() }
+onMounted(() => document.addEventListener('keydown', onKey))
+onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
+
 async function toggleDetail(item: Inquiry) {
   actionError.value = ''
   if (expandedId.value === item.id) {
@@ -280,7 +290,21 @@ onMounted(load)
           </span>
         </button>
 
-        <div v-if="expandedId === item.id" class="rental-inquiries__detail">
+      </li>
+    </ul>
+
+    <!-- Detail als Popup -->
+    <div v-if="openItem" class="wf-modal-overlay" @click.self="closeDetail">
+      <div class="wf-modal rental-inquiries__modal" role="dialog" aria-modal="true" :aria-label="`Mietanfrage ${openItem.number}`">
+        <header class="rental-inquiries__mhead">
+          <div>
+            <span class="wf-pill" :class="pillClass(openItem.status)">{{ STATUS_LABELS[openItem.status] }}</span>
+            <h2>{{ displayName(openItem) }}</h2>
+            <p>{{ openItem.number }}<template v-if="openItem.company"> · {{ openItem.company }}</template> · {{ money(openItem.monthlyTotal) }}/Mon.</p>
+          </div>
+          <button type="button" class="rental-inquiries__mclose" aria-label="Schließen" @click="closeDetail">×</button>
+        </header>
+        <p v-if="actionError" class="rental-inquiries__error">{{ actionError }}</p>
           <p v-if="detailLoading" class="rental-inquiries__loading">Details werden geladen …</p>
           <template v-else-if="detail">
             <div class="rental-inquiries__cols">
@@ -335,45 +359,44 @@ onMounted(load)
               <strong>Anmerkungen:</strong> {{ detail.notes }}
             </p>
 
-            <div v-if="reservation(item)" class="rental-inquiries__reserve">
+            <div v-if="reservation(openItem)" class="rental-inquiries__reserve">
               <span>
-                <strong><WfIcon name="lock" :size="14" /> {{ reservation(item)!.label }}</strong>
-                <small v-if="item.reservationStatus === 'aktiv' && item.reservedUntil && new Date(item.reservedUntil).getTime() > Date.now()">
-                  bis {{ new Date(item.reservedUntil).toLocaleString('de-AT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) }} –
+                <strong><WfIcon name="lock" :size="14" /> {{ reservation(openItem)!.label }}</strong>
+                <small v-if="openItem.reservationStatus === 'aktiv' && openItem.reservedUntil && new Date(openItem.reservedUntil).getTime() > Date.now()">
+                  bis {{ new Date(openItem.reservedUntil).toLocaleString('de-AT', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' }) }} –
                   so lange sind die Möbel nicht im Shop. Danach automatisch wieder frei.
                 </small>
-                <small v-else-if="item.reservationStatus === 'angenommen'">Die Möbel sind dem Projekt zugewiesen, bis die Abholung in „Touren" erledigt ist.</small>
-                <small v-else-if="!['abgelehnt'].includes(item.reservationStatus || '')">Die Möbel sind wieder im Shop. Wird das Angebot trotzdem angenommen, prüfen wir vorher die Verfügbarkeit.</small>
+                <small v-else-if="openItem.reservationStatus === 'angenommen'">Die Möbel sind dem Projekt zugewiesen, bis die Abholung in „Touren" erledigt ist.</small>
+                <small v-else-if="!['abgelehnt'].includes(openItem.reservationStatus || '')">Die Möbel sind wieder im Shop. Wird das Angebot trotzdem angenommen, prüfen wir vorher die Verfügbarkeit.</small>
               </span>
-              <span v-if="perms.canEdit('mietanfragen') && !['angenommen', 'abgelehnt', 'widerrufen'].includes(item.reservationStatus || '')" class="rental-inquiries__resacts">
-                <button class="wf-btn wf-btn--sm" :disabled="resBusy" @click="changeReservation(item, 'extend')">+3 Tage</button>
-                <button v-if="item.reservationStatus === 'aktiv'" class="wf-btn wf-btn--sm" :disabled="resBusy" @click="changeReservation(item, 'release')">Freigeben</button>
+              <span v-if="perms.canEdit('mietanfragen') && !['angenommen', 'abgelehnt', 'widerrufen'].includes(openItem.reservationStatus || '')" class="rental-inquiries__resacts">
+                <button class="wf-btn wf-btn--sm" :disabled="resBusy" @click="changeReservation(openItem, 'extend')">+3 Tage</button>
+                <button v-if="openItem.reservationStatus === 'aktiv'" class="wf-btn wf-btn--sm" :disabled="resBusy" @click="changeReservation(openItem, 'release')">Freigeben</button>
               </span>
-              <NuxtLink v-if="item.projectId" :to="`/admin/projekte?open=${item.projectId}&cat=leasing`" class="wf-btn wf-btn--sm">Projekt öffnen</NuxtLink>
+              <NuxtLink v-if="openItem.projectId" :to="`/admin/projekte?open=${openItem.projectId}&cat=leasing`" class="wf-btn wf-btn--sm">Projekt öffnen</NuxtLink>
             </div>
 
             <div class="rental-inquiries__actions">
-              <button v-if="perms.canEdit('angebote')" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(item)">
+              <button v-if="perms.canEdit('angebote')" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(openItem)">
                 <WfIcon name="file" :size="13" />
                 {{ detail.offerId ? `Angebot ${detail.offerNumber || ''} öffnen` : (offerBusy ? 'Erstelle …' : 'Angebot erstellen') }}
               </button>
               <template v-if="perms.canEdit('mietanfragen')">
-              <a v-if="item.status !== 'beantwortet'" class="wf-btn wf-btn--sm"
+              <a v-if="openItem.status !== 'beantwortet'" class="wf-btn wf-btn--sm"
                  :href="`mailto:${detail.email}?subject=Ihre Mietanfrage ${detail.number} – WOHNFEE Furniture Leasing`">Per E-Mail antworten</a>
-              <button v-if="item.status !== 'in_bearbeitung' && item.status !== 'archiviert'" class="wf-btn wf-btn--sm"
-                      @click="setStatus(item, 'in_bearbeitung')">In Bearbeitung</button>
-              <button v-if="item.status !== 'beantwortet'" class="wf-btn wf-btn--sm"
-                      @click="setStatus(item, 'beantwortet')">Als beantwortet markieren</button>
-              <button v-if="item.status !== 'archiviert'" class="wf-btn wf-btn--sm"
-                      @click="setStatus(item, 'archiviert')">Archivieren</button>
-              <button v-if="item.status === 'archiviert'" class="wf-btn wf-btn--sm"
-                      @click="setStatus(item, 'neu')">Wiederherstellen</button>
+              <button v-if="openItem.status !== 'in_bearbeitung' && openItem.status !== 'archiviert'" class="wf-btn wf-btn--sm"
+                      @click="setStatus(openItem, 'in_bearbeitung')">In Bearbeitung</button>
+              <button v-if="openItem.status !== 'beantwortet'" class="wf-btn wf-btn--sm"
+                      @click="setStatus(openItem, 'beantwortet')">Als beantwortet markieren</button>
+              <button v-if="openItem.status !== 'archiviert'" class="wf-btn wf-btn--sm"
+                      @click="setStatus(openItem, 'archiviert')">Archivieren</button>
+              <button v-if="openItem.status === 'archiviert'" class="wf-btn wf-btn--sm"
+                      @click="setStatus(openItem, 'neu')">Wiederherstellen</button>
               </template>
             </div>
           </template>
-        </div>
-      </li>
-    </ul>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -518,6 +541,12 @@ onMounted(load)
 
 .rental-inquiries__chevron { color: #c9c2b2; }
 
+.rental-inquiries__modal { max-width: 62em; padding: 1.6em 1.8em 1.8em; }
+.rental-inquiries__mhead { display: flex; justify-content: space-between; align-items: flex-start; gap: 1em; margin: 0 0 1.2em; padding-bottom: 1em; border-bottom: 1px solid #f0ebe0; }
+.rental-inquiries__mhead h2 { margin: .35em 0 .1em; font-size: 1.5em; text-align: left; }
+.rental-inquiries__mhead p { margin: 0; font-size: .86em; color: var(--wf-green); }
+.rental-inquiries__mclose { border: 0; background: #f4efe6; width: 2.2em; height: 2.2em; border-radius: 50%; font-size: 1.3em; line-height: 1; cursor: pointer; color: #6e6858; flex: none; }
+.rental-inquiries__mclose:hover { background: #ebe4d6; }
 .rental-inquiries__detail {
   border-top: 1px solid #f4efe6;
   padding: 1.1em 1.2em 1.2em;
@@ -541,7 +570,9 @@ onMounted(load)
   gap: .55em;
 }
 
+.rental-inquiries__facts > div { display: grid; grid-template-columns: 8.5em 1fr; gap: .8em; align-items: baseline; text-align: left; }
 .rental-inquiries__facts dt {
+  text-align: left;
   font-size: .72em;
   text-transform: uppercase;
   letter-spacing: .08em;
@@ -550,7 +581,7 @@ onMounted(load)
 }
 
 .rental-inquiries__facts dd {
-  margin: .1em 0 0;
+  margin: 0;
   font-size: .92em;
 }
 
@@ -579,6 +610,7 @@ onMounted(load)
   font-weight: 600;
 }
 
+.rental-inquiries__items td:nth-child(3), .rental-inquiries__items td.is-right { white-space: nowrap; }
 .rental-inquiries__items td {
   padding: .45em .6em;
   border-bottom: 1px solid #f4efe6;
