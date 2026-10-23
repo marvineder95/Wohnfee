@@ -541,7 +541,7 @@ function scrollToId(id: string, e?: Event) {
 .hss__clips:hover .hss__clip { transform: translateY(-56%) rotate(calc((var(--i) - 2) * 6deg)); }
 
 /* ── Kontakt ── */
-.hss__cta { padding: 0 0 5em; }
+.hss__cta { padding: 4.5em 0 5em; }
 .hss__ctabox {
   display: grid; grid-template-columns: 1.3fr 1fr; gap: 2.5em; align-items: center; border-radius: 26px; padding: 3em 3.2em;
   background: radial-gradient(circle at 15% 20%, #3c7350 0%, var(--green) 45%, #22412d 100%); color: #fff;
