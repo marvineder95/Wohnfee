@@ -23,9 +23,9 @@ const go = (i: number) => { active.value = (i + slides.value.length) % slides.va
 
 // ── Leistungen ──
 const services = computed(() => [
-  { id: 'home-staging', no: '01', title: 'Home Staging', text: t('Immobilien inszenieren – für schnelleren Verkauf und bessere Preise.', 'Staging properties – for faster sales and better prices.') },
-  { id: 'furniture-leasing', no: '02', title: 'Furniture Leasing', text: t('Hochwertige Möbel flexibel mieten – ab 1 Monat.', 'Rent high-quality furniture flexibly – from 1 month.') },
-  { id: 'redesign', no: '03', title: 'Redesign', text: t('Das eigene Zuhause neu gestalten – vom Konzept bis zur Umsetzung.', 'Redesign your own home – from concept to implementation.') }
+  { id: 'home-staging', title: 'Home Staging', text: t('Immobilien inszenieren – für schnelleren Verkauf und bessere Preise.', 'Staging properties – for faster sales and better prices.') },
+  { id: 'furniture-leasing', title: 'Furniture Leasing', text: t('Hochwertige Möbel flexibel mieten – ab 1 Monat.', 'Rent high-quality furniture flexibly – from 1 month.') },
+  { id: 'redesign', title: 'Redesign', text: t('Das eigene Zuhause neu gestalten – vom Konzept bis zur Umsetzung.', 'Redesign your own home – from concept to implementation.') }
 ])
 
 const hsFacts = computed(() => [
@@ -152,7 +152,7 @@ function scrollToId(id: string, e?: Event) {
     <section id="home-staging" class="hss__hs">
       <div class="hss__wrap hss__split rv">
         <div class="hss__text">
-          <p class="hss__label"><span>01</span>{{ t('Unser Kerngeschäft', 'Our core business') }}</p>
+          <p class="hss__label">{{ t('Unser Kerngeschäft', 'Our core business') }}</p>
           <h2 class="hss__h2">Home Staging</h2>
           <p class="hss__intro">
             {{ t('Wir richten leere oder bewohnte Immobilien so ein, dass sich Interessentinnen und Interessenten sofort zuhause fühlen – mit echten Möbeln, Teppichen, Accessoires und Licht. Das Ergebnis: perfekte Fotos, weniger Besichtigungen und eine deutlich kürzere Vermarktung.',
@@ -215,7 +215,7 @@ function scrollToId(id: string, e?: Event) {
           </div>
         </div>
         <div class="hss__text">
-          <p class="hss__label"><span>02</span>{{ t('Möbel auf Zeit', 'Furniture for a while') }}</p>
+          <p class="hss__label">{{ t('Möbel auf Zeit', 'Furniture for a while') }}</p>
           <h2 class="hss__h2">Furniture Leasing</h2>
           <p class="hss__intro">
             {{ t('Stilvolle Möbel für zeitlich flexible Wohnkonzepte: Hochwertige Möbel & Accessoires zur Miete – für Home Staging, temporäre Wohnlösungen und mehr.',
@@ -241,7 +241,7 @@ function scrollToId(id: string, e?: Event) {
           <HsImg src="/files/wohnfee/bilder/redesign/Ferienapartment-0010.jpg" alt="" class="hss__rdimg"
                  sizes="xs:100vw sm:100vw md:50vw lg:560px xl:560px xxl:560px 2xl:560px" />
           <div class="hss__rdtext">
-            <p class="hss__label hss__label--light"><span>03</span>{{ t('Für Ihr Zuhause', 'For your home') }}</p>
+            <p class="hss__label hss__label--light">{{ t('Für Ihr Zuhause', 'For your home') }}</p>
             <h2 class="hss__h2 hss__h2--light">Redesign</h2>
             <p>{{ redesignText }}</p>
             <div class="hss__actions">
@@ -339,11 +339,7 @@ function scrollToId(id: string, e?: Event) {
   display: flex; align-items: center; gap: .8em; margin: 0 0 .9em;
   font-size: .72em; letter-spacing: .2em; text-transform: uppercase; font-weight: 700; color: var(--green);
 }
-.hss__label span {
-  font-family: var(--serif); font-size: 1.5em; letter-spacing: 0; color: transparent; -webkit-text-stroke: 1px var(--green);
-}
 .hss__label--light { color: #cfe0d2; }
-.hss__label--light span { -webkit-text-stroke-color: #cfe0d2; }
 .hss__divider {
   display: flex; align-items: center; justify-content: center; gap: 1.2em; margin: 0 0 1.6em;
   font-size: .7em; letter-spacing: .22em; text-transform: uppercase; font-weight: 600; color: var(--ink);
