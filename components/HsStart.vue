@@ -139,7 +139,6 @@ function scrollToId(id: string, e?: Event) {
 
       <nav class="hss__services" :aria-label="t('Unsere Leistungen', 'Our services')">
         <a v-for="s in services" :key="s.id" :href="`#${s.id}`" class="hss__service" @click="scrollToId(s.id, $event)">
-          <span class="hss__sno">{{ s.no }}</span>
           <span class="hss__stext"><strong>{{ s.title }}</strong><small>{{ s.text }}</small></span>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg>
         </a>
@@ -419,7 +418,6 @@ function scrollToId(id: string, e?: Event) {
   transition: transform .2s, box-shadow .2s, border-color .2s;
 }
 .hss__service:hover { transform: translateY(-3px); border-color: var(--green); box-shadow: 0 18px 36px rgba(60, 50, 30, .14); }
-.hss__sno { font-family: var(--serif); font-size: 1.9em; line-height: 1; color: transparent; -webkit-text-stroke: 1px var(--green); flex: none; }
 .hss__stext { display: grid; gap: .15em; flex: 1; min-width: 0; }
 .hss__stext strong { font-family: var(--serif); font-weight: 500; font-size: 1.15em; }
 .hss__stext small { font-size: .8em; line-height: 1.4; color: var(--muted); }
