@@ -5,6 +5,7 @@
 // Produktdaten laden clientseitig nach (bestehende SEO-Struktur bleibt).
 import { INVENTORY_CATEGORIES } from '~~/shared/inventory-categories'
 import { priceForMonths } from '~~/shared/rental-pricing'
+import { hiddenShopOrder } from '~~/shared/shop-order'
 import type { CatalogPackage } from '~/composables/useRentalCatalog'
 
 interface RentalItem {
@@ -324,6 +325,9 @@ const filtered = computed(() => {
       list.sort((a, b) => (priceFrom(b) ?? -1) - (priceFrom(a) ?? -1)); break
     case 'name':
       list.sort((a, b) => a.title.localeCompare(b.title, 'de')); break
+    default:
+      // „Relevanz“: Betten, Sofas, Tische, Kommoden vorne, Deko hinten – gemischt (shared/shop-order.ts)
+      list = hiddenShopOrder(list)
   }
   return list
 })

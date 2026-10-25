@@ -54,6 +54,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Mietpakete (`/admin/pakete`, Tabellen `rental_packages` + `rental_package_items`, `server/utils/rental-packages.ts`):
   Preis = Summe der Grundpreise − Paketrabatt % (oder fester Preis), Staffel obendrauf; im Shop nur sichtbar + buchbar,
   wenn alle Stücke frei sind. In der Anfrage werden Pakete in ihre Stücke aufgelöst (`package_title`).
+- Shop-Reihenfolge „Relevanz“ (`shared/shop-order.ts`): Stufe 1 Betten/Sofas & Sessel/Tische/Schränke, Stufe 2 Stühle/Spiegel/
+  Lampen/Teppiche, Stufe 3 Deko & Kleinteile; innerhalb der Stufe Kategorien reihum gemischt, Mischung je Tag fest.
 - Warenkorb: runder Button unten rechts (`AppCartFab.vue`, nicht im Checkout/auf /angebot), öffnet seitenweit ohne Weiterleitung (`AppCartDrawer.vue` bzw. Shop-Drawer, Event `wf:open-cart`). Sprache im Header als Dropdown (AppHeader `.langdrop`).
 
 ## Dashboard (/admin)
