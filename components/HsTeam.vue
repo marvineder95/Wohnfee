@@ -6,6 +6,10 @@ const props = defineProps<{ page: any }>()
 const { t, lp } = useLang()
 
 const TEAM = '/files/wohnfee/team/'
+// Platzhalter (Okt. 2026): die bisherigen Gruppenfotos zeigen ehemalige Mitarbeiterinnen.
+// Sobald es ein neues Teamfoto gibt, hier wieder ein Teambild eintragen.
+const PLACEHOLDER_HERO = '/files/wohnfee/bilder/homestaging/2024-04-17_Einwanggasse_27-23_0007.jpg'
+const PLACEHOLDER_CTA = '/files/wohnfee/bilder_slider/SLIDER_Geusaugasse-17_0023.jpg'
 const els = computed<any[]>(() => props.page.columns?.main || [])
 const h1 = computed(() => els.value.find(e => e.type === 'headline')?.headline || props.page.title)
 
@@ -113,7 +117,7 @@ function scrollToId(id: string, e: Event) {
           </ul>
         </div>
         <figure class="hst__heroimg">
-          <HsImg :src="TEAM + 'Wohn.Fee Brandingfotos_23-18.jpg'" :alt="t('Das WOHNFEE Team bei der Planung im Showroom', 'The WOHNFEE team planning in the showroom')"
+          <HsImg :src="PLACEHOLDER_HERO" :alt="t('Home Staging von WOHNFEE – Wohnbereich mit Sitzinsel', 'Home staging by WOHNFEE – living area with seating island')"
                  sizes="xs:100vw sm:100vw md:60vw lg:720px xl:720px xxl:720px 2xl:720px" loading="eager" fetchpriority="high" />
         </figure>
       </div>
@@ -179,7 +183,7 @@ function scrollToId(id: string, e: Event) {
       <div class="hst__wrap">
         <div class="hst__ctabox rv">
           <figure class="hst__ctaimg">
-            <HsImg :src="TEAM + 'sharpen_WohnFee_Brandingfotos_23-22.jpg'" :alt="t('Das WOHNFEE Team mit bunten Kissen', 'The WOHNFEE team with colourful cushions')"
+            <HsImg :src="PLACEHOLDER_CTA" :alt="t('Gemütlicher Wohnbereich – eingerichtet von WOHNFEE', 'Cosy living area – furnished by WOHNFEE')"
                    sizes="xs:100vw sm:100vw md:50vw lg:600px xl:600px xxl:600px 2xl:600px" />
           </figure>
           <div class="hst__ctatext">
