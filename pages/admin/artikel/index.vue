@@ -98,7 +98,7 @@ onMounted(load)
         <p class="wf-subtitle">Aktuelles, Projekte, Trends &amp; Tipps und Events schreiben, mit Bildern gestalten und direkt auf der Website veröffentlichen.</p>
       </div>
       <div class="wf-hero-img">
-        <img src="/files/wohnfee/bilder/blog/Wohn.Fee Brandingfotos_23-18 Kopie.jpg" alt="">
+        <img src="/files/wohnfee/bilder/blog/Staging_Samt_trifft_Rattan_0052.jpg" alt="">
         <NuxtLink :to="newLink" class="wf-btn wf-btn--primary wf-hero-cta">
           <WfIcon name="plus" :size="15" /> Neuer Beitrag
         </NuxtLink>

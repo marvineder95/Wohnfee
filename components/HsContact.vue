@@ -41,7 +41,7 @@ const socials = computed(() => {
 
 const TEAM = '/files/wohnfee/team/'
 // Ganzkörperfotos → Gesichts-Ausschnitt je Foto aus teamFaceStyle() (composables/teamFaces.ts)
-const faces = [TEAM + 'Marvin_Eder_Portrait.jpg', TEAM + 'WohnFee_Brandingfotos_23-6.jpg']
+const faces = [TEAM + 'Marvin_Eder_Platzhalter.jpg', TEAM + 'WohnFee_Brandingfotos_23-6.jpg']
 
 const shortcuts = computed(() => [
   { to: lp('/faq.html'), icon: 'search', title: t('Häufige Fragen', 'FAQ'), text: t('Ablauf, Kosten & Leistungen – vieles ist schon beantwortet.', 'Process, costs & services – many questions are already answered.') },
