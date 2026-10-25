@@ -41,7 +41,7 @@ const socials = computed(() => {
 
 const TEAM = '/files/wohnfee/team/'
 // Ganzkörperfotos → Gesichts-Ausschnitt je Foto aus teamFaceStyle() (composables/teamFaces.ts)
-const faces = [TEAM + 'WohnFee_Brandingfotos_23-26.jpg', TEAM + 'WohnFee_Brandingfotos_23-6.jpg']
+const faces = [TEAM + 'Marvin_Eder_Portrait.jpg', TEAM + 'WohnFee_Brandingfotos_23-6.jpg']
 
 const shortcuts = computed(() => [
   { to: lp('/faq.html'), icon: 'search', title: t('Häufige Fragen', 'FAQ'), text: t('Ablauf, Kosten & Leistungen – vieles ist schon beantwortet.', 'Process, costs & services – many questions are already answered.') },
@@ -80,7 +80,7 @@ onUnmounted(() => window.removeEventListener('resize', syncHeaderHeight))
                 <HsImg :src="f" alt="" sizes="xs:120px sm:120px md:120px lg:120px xl:120px xxl:120px 2xl:120px" />
               </span>
             </span>
-            <span>{{ t('Ihre Ansprechpartnerinnen', 'Your contacts') }} – <NuxtLink :to="lp('/team.html')">{{ t('das Team kennenlernen', 'meet the team') }}</NuxtLink></span>
+            <span>{{ t('Ihre Ansprechpartner', 'Your contacts') }} – <NuxtLink :to="lp('/team.html')">{{ t('das Team kennenlernen', 'meet the team') }}</NuxtLink></span>
           </div>
 
           <ul class="hsc2__channels">
