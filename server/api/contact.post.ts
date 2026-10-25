@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto'
 import site from '../../data/site.json'
 import { query, queryOne } from '../utils/db'
 import { sendMail } from '../utils/mailer'
+import { CUSTOMER_TYPES, REFERRAL_SOURCES, optionLabel } from '../../shared/inquiry-fields'
 
 // Öffentlicher Endpunkt für das Kontaktformular auf /kontakt.html
 // - validiert Eingaben
@@ -24,6 +25,14 @@ export default defineEventHandler(async (event) => {
   const phone = String(body?.phone || '').trim()
   const subjectKey = String(body?.subject || 'allgemein')
   const message = String(body?.message || '').trim()
+  // Zusatzfelder: unbekannte Werte verwerfen, Freitext kürzen
+  const pick = (list: { value: string }[], v: unknown) => list.some(o => o.value === v) ? String(v) : null
+  const customerType = pick(CUSTOMER_TYPES, body?.customerType)
+  const referral = pick(REFERRAL_SOURCES, body?.referral)
+  const clip = (v: unknown, n: number) => String(v || '').trim().slice(0, n) || null
+  const objectSize = clip(body?.objectSize, 32)
+  const objectZip = clip(body?.objectZip, 64)
+  const objectDate = clip(body?.objectDate, 64)
   // Honeypot: normale Besucher füllen das Feld (per CSS versteckt) nie aus
   const website = String(body?.website || '')
 
@@ -65,10 +74,21 @@ export default defineEventHandler(async (event) => {
 
   const subject = SUBJECTS[subjectKey] || SUBJECTS.allgemein
   const result: any = await query(
-    `INSERT INTO contact_inquiries (name, email, phone, subject, message, ip_hash)
-     VALUES (:name, :email, :phone, :subject, :message, :ip)`,
-    { name, email, phone: phone || null, subject, message, ip: ipHash }
+    `INSERT INTO contact_inquiries (name, email, phone, subject, message, ip_hash,
+       customer_type, object_size, object_zip, object_date, referral)
+     VALUES (:name, :email, :phone, :subject, :message, :ip,
+       :customerType, :objectSize, :objectZip, :objectDate, :referral)`,
+    { name, email, phone: phone || null, subject, message, ip: ipHash, customerType, objectSize, objectZip, objectDate, referral }
   )
+
+  // Zusatzangaben für die Mail ans Büro (nur ausgefüllte)
+  const extras: [string, string][] = ([
+    ['Ich bin', optionLabel(CUSTOMER_TYPES, customerType)],
+    ['Größe', objectSize ? `${objectSize}${/m/i.test(objectSize) ? '' : ' m²'}` : ''],
+    ['PLZ / Ort', objectZip || ''],
+    ['Wunschtermin', objectDate || ''],
+    ['Gefunden über', optionLabel(REFERRAL_SOURCES, referral)]
+  ] as [string, string][]).filter(([, v]) => v)
 
   const inquiryId = result.insertId
   const detailUrl = `${site.baseUrl}/admin/anfragen`
@@ -81,13 +101,15 @@ export default defineEventHandler(async (event) => {
       'office@wohnfee.at',
       `Neue Kontaktanfrage #${inquiryId}: ${subject}`,
       `Neue Anfrage über das Kontaktformular (wohnfee.at)\n\n` +
-      `Name: ${name}\nE-Mail: ${email}\nTelefon: ${phone || '–'}\nBetreff: ${subject}\n\n` +
+      `Name: ${name}\nE-Mail: ${email}\nTelefon: ${phone || '–'}\nBetreff: ${subject}\n` +
+      extras.map(([k, v]) => `${k}: ${v}\n`).join('') + '\n' +
       `Nachricht:\n${message}\n\n— Im Dashboard öffnen: ${detailUrl}`,
       `<p>Neue Anfrage über das Kontaktformular (wohnfee.at)</p>` +
       `<p><strong>Name:</strong> ${esc(name)}<br>` +
       `<strong>E-Mail:</strong> ${esc(email)}<br>` +
       `<strong>Telefon:</strong> ${esc(phone || '–')}<br>` +
-      `<strong>Betreff:</strong> ${esc(subject)}</p>` +
+      `<strong>Betreff:</strong> ${esc(subject)}` +
+      extras.map(([k, v]) => `<br><strong>${k}:</strong> ${esc(v)}`).join('') + `</p>` +
       `<p><strong>Nachricht:</strong><br>${esc(message).replace(/\n/g, '<br>')}</p>` +
       `<p><a href="${detailUrl}" style="display:inline-block;background:#317046;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none">Im Dashboard öffnen</a></p>`
     )

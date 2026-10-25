@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { CUSTOMER_TYPES, REFERRAL_SOURCES, optionLabel } from '~~/shared/inquiry-fields'
+
 definePageMeta({ layout: 'admin' })
 
 useHead({ title: 'Anfragen - WOHNFEE Dashboard' })
@@ -10,16 +12,25 @@ interface Inquiry {
   phone: string | null
   subject: string | null
   status: 'neu' | 'gelesen' | 'archiviert'
+  customerType: string | null
   messagePreview: string
   createdAt: string
+}
+interface Detail {
+  id: number; message: string; createdAt: string; offerId: number | null; offerNumber: string | null; contactId: number | null
+  customerType: string | null; objectSize: string | null; objectZip: string | null; objectDate: string | null; referral: string | null
 }
 
 const inquiries = ref<Inquiry[]>([])
 const counts = ref<Record<string, number>>({ neu: 0, gelesen: 0, archiviert: 0 })
+const referrals = ref<{ value: string; n: number }[]>([])
+const referralTotal = computed(() => referrals.value.reduce((s, r) => s + r.n, 0))
+const customerLabel = (v: string | null) => optionLabel(CUSTOMER_TYPES, v)
+const referralLabel = (v: string | null) => optionLabel(REFERRAL_SOURCES, v) || v || ''
 const filter = ref<'alle' | 'neu' | 'gelesen' | 'archiviert'>('alle')
 const loading = ref(true)
 const error = ref('')
-const detail = ref<{ id: number; message: string; createdAt: string; offerId: number | null; offerNumber: string | null; contactId: number | null } | null>(null)
+const detail = ref<Detail | null>(null)
 const detailLoading = ref(false)
 const expandedId = ref<number | null>(null)
 const actionError = ref('')
@@ -37,9 +48,10 @@ async function load() {
   error.value = ''
   try {
     const q = filter.value === 'alle' ? '' : `?status=${filter.value}`
-    const res = await $fetch<{ inquiries: Inquiry[]; counts: Record<string, number> }>(`/api/admin/inquiries${q}`)
+    const res = await $fetch<{ inquiries: Inquiry[]; counts: Record<string, number>; referrals: { value: string; n: number }[] }>(`/api/admin/inquiries${q}`)
     inquiries.value = res.inquiries
     counts.value = res.counts
+    referrals.value = res.referrals || []
   } catch (e: any) {
     error.value = e?.data?.statusMessage || 'Anfragen konnten nicht geladen werden.'
   } finally {
@@ -71,9 +83,12 @@ async function toggleDetail(item: Inquiry) {
   }
   try {
     const res = await $fetch<{ inquiry: any }>(`/api/admin/inquiries/${item.id}`)
+    const r = res.inquiry
     detail.value = {
-      id: res.inquiry.id, message: res.inquiry.message, createdAt: res.inquiry.createdAt,
-      offerId: res.inquiry.offerId, offerNumber: res.inquiry.offerNumber, contactId: res.inquiry.contactId
+      id: r.id, message: r.message, createdAt: r.createdAt,
+      offerId: r.offerId, offerNumber: r.offerNumber, contactId: r.contactId,
+      customerType: r.customerType, objectSize: r.objectSize, objectZip: r.objectZip,
+      objectDate: r.objectDate, referral: r.referral
     }
   } catch (e: any) {
     detail.value = null
@@ -154,6 +169,14 @@ onMounted(load)
       </button>
     </div>
 
+    <div v-if="referralTotal" class="inquiries__sources">
+      <span class="inquiries__sourcestitle">Wie gefunden? <small>(12 Monate, {{ referralTotal }} Angaben)</small></span>
+      <span v-for="r in referrals" :key="r.value" class="inquiries__source">
+        {{ referralLabel(r.value) }} <strong>{{ r.n }}</strong>
+        <small>{{ Math.round(r.n / referralTotal * 100) }} %</small>
+      </span>
+    </div>
+
     <p v-if="error" class="inquiries__error" role="alert">{{ error }}</p>
     <p v-if="actionError" class="inquiries__error" role="alert">{{ actionError }}</p>
 
@@ -171,7 +194,9 @@ onMounted(load)
           <span class="wf-pill" :class="item.status === 'neu' ? '' : item.status === 'gelesen' ? 'wf-pill--amber' : 'wf-pill--gray'">{{ tabs.find(t => t.value === item.status)?.label || item.status }}</span>
           <span class="inquiries__main">
             <strong>{{ item.name }}</strong>
-            <span class="inquiries__subject">{{ item.subject || 'Allgemeine Anfrage' }}</span>
+            <span class="inquiries__subject">
+              {{ item.subject || 'Allgemeine Anfrage' }}<template v-if="item.customerType"> · {{ customerLabel(item.customerType) }}</template>
+            </span>
             <span class="inquiries__preview">{{ item.messagePreview }}</span>
           </span>
           <span class="inquiries__meta">
@@ -187,6 +212,11 @@ onMounted(load)
               <div><dt>E-Mail</dt><dd><a :href="`mailto:${item.email}`">{{ item.email }}</a></dd></div>
               <div v-if="item.phone"><dt>Telefon</dt><dd><a :href="`tel:${item.phone}`">{{ item.phone }}</a></dd></div>
               <div><dt>Eingegangen</dt><dd>{{ formatDate(detail.createdAt) }}</dd></div>
+              <div v-if="detail.customerType"><dt>Ich bin</dt><dd>{{ customerLabel(detail.customerType) }}</dd></div>
+              <div v-if="detail.objectSize"><dt>Größe</dt><dd>{{ detail.objectSize }}{{ /m/i.test(detail.objectSize) ? '' : ' m²' }}</dd></div>
+              <div v-if="detail.objectZip"><dt>PLZ / Ort</dt><dd>{{ detail.objectZip }}</dd></div>
+              <div v-if="detail.objectDate"><dt>Wunschtermin</dt><dd>{{ detail.objectDate }}</dd></div>
+              <div v-if="detail.referral"><dt>Gefunden über</dt><dd>{{ referralLabel(detail.referral) }}</dd></div>
             </dl>
             <p class="inquiries__message">{{ detail.message }}</p>
           </template>
@@ -256,6 +286,19 @@ onMounted(load)
 }
 
 .inquiries__tab.is-active .inquiries__tabcount { background: var(--wf-green); color: #fff; }
+
+.inquiries__sources {
+  display: flex; flex-wrap: wrap; align-items: center; gap: .5em; margin: -.4em 0 1.4em;
+  font-size: .84em; color: var(--wf-muted);
+}
+.inquiries__sourcestitle { font-weight: 600; margin-right: .3em; }
+.inquiries__sourcestitle small { font-weight: 400; }
+.inquiries__source {
+  display: inline-flex; align-items: baseline; gap: .35em; padding: .3em .8em; border-radius: 999px;
+  background: var(--wf-card); border: 1px solid var(--wf-line);
+}
+.inquiries__source strong { color: var(--wf-green); }
+.inquiries__source small { font-size: .85em; }
 
 .inquiries__loading,
 .inquiries__empty {

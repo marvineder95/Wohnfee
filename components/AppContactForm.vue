@@ -1,5 +1,7 @@
 <script setup lang="ts">
 // Kontaktformular für /kontakt.html — sendet an /api/contact
+import { CUSTOMER_TYPES, REFERRAL_SOURCES } from '~~/shared/inquiry-fields'
+
 const props = withDefaults(defineProps<{ lang?: string }>(), { lang: 'de' })
 const isEn = computed(() => props.lang === 'en')
 
@@ -10,6 +12,14 @@ const DE = {
   email: 'E-Mail *',
   phone: 'Telefon',
   subject: 'Worum geht es?',
+  customerType: 'Ich bin …',
+  object: 'Zum Objekt (optional – so können wir schneller anbieten)',
+  objectSize: 'Größe in m²',
+  objectZip: 'PLZ / Ort',
+  objectDate: 'Gewünschter Termin',
+  objectDateHint: 'z. B. ab 15.11.',
+  referral: 'Wie haben Sie uns gefunden?',
+  referralNone: 'Bitte wählen (optional)',
   message: 'Ihre Nachricht *',
   privacyPre: 'Ich habe die',
   privacyLabel: 'Datenschutzerklärung',
@@ -29,6 +39,14 @@ const EN = {
   email: 'E-mail *',
   phone: 'Phone',
   subject: 'What is it about?',
+  customerType: 'I am …',
+  object: 'About the property (optional – helps us quote faster)',
+  objectSize: 'Size in m²',
+  objectZip: 'Postcode / town',
+  objectDate: 'Preferred date',
+  objectDateHint: 'e.g. from 15 Nov',
+  referral: 'How did you find us?',
+  referralNone: 'Please choose (optional)',
   message: 'Your message *',
   privacyPre: 'I have read the',
   privacyLabel: 'Privacy Policy',
@@ -48,14 +66,21 @@ const form = reactive({
   email: '',
   phone: '',
   subject: 'allgemein',
+  customerType: '',
+  objectSize: '',
+  objectZip: '',
+  objectDate: '',
+  referral: '',
   message: '',
   privacy: false
 })
-// Vorbelegung über Links, z. B. /kontakt.html?thema=staging&nachricht=Anfrage%20zu%20PAKET%202
+// Vorbelegung über Links, z. B. /kontakt.html?thema=staging&ich=makler&nachricht=Anfrage%20zu%20PAKET%202
 const route = useRoute()
 onMounted(() => {
   const thema = String(route.query.thema || '')
   if (subjects.value.some(x => x.value === thema)) form.subject = thema
+  const ich = String(route.query.ich || '')
+  if (CUSTOMER_TYPES.some(x => x.value === ich)) form.customerType = ich
   const msg = String(route.query.nachricht || '').slice(0, 300)
   if (msg && !form.message) form.message = msg + '\n\n'
 })
@@ -75,6 +100,10 @@ const subjects = computed(() => [
   { value: 'presse', label: isEn.value ? 'Press / partnership' : 'Presse / Kooperation' },
   { value: 'sonstiges', label: isEn.value ? 'Other' : 'Sonstiges' }
 ])
+const customerTypes = computed(() => CUSTOMER_TYPES.map(o => ({ value: o.value, label: isEn.value ? o.labelEn : o.label })))
+const referrals = computed(() => REFERRAL_SOURCES.map(o => ({ value: o.value, label: isEn.value ? o.labelEn : o.label })))
+// Objektdaten nur bei Anfragen zu einer Immobilie (nicht bei Presse/Sonstiges)
+const showObject = computed(() => !['presse', 'sonstiges'].includes(form.subject))
 
 async function submit() {
   error.value = ''
@@ -89,10 +118,12 @@ async function submit() {
   }
   sending.value = true
   try {
-    await $fetch('/api/contact', { method: 'POST', body: { ...form, website: website.value, lang: props.lang } })
+    const body = showObject.value ? { ...form } : { ...form, objectSize: '', objectZip: '', objectDate: '' }
+    await $fetch('/api/contact', { method: 'POST', body: { ...body, website: website.value, lang: props.lang } })
     success.value = true
     form.name = ''; form.email = ''; form.phone = ''
     form.subject = 'allgemein'; form.message = ''; form.privacy = false
+    form.customerType = ''; form.objectSize = ''; form.objectZip = ''; form.objectDate = ''; form.referral = ''
   } catch (e: any) {
     error.value = e?.data?.statusMessage || t.value.errSend
   } finally {
@@ -135,9 +166,43 @@ async function submit() {
         </label>
       </fieldset>
 
+      <fieldset class="contact-form__topics">
+        <legend>{{ t.customerType }}</legend>
+        <label v-for="c in customerTypes" :key="c.value" class="contact-form__topic" :class="{ 'is-active': form.customerType === c.value }">
+          <input v-model="form.customerType" type="radio" name="customerType" :value="c.value">
+          <span>{{ c.label }}</span>
+        </label>
+      </fieldset>
+
+      <fieldset v-if="showObject" class="contact-form__object">
+        <legend>{{ t.object }}</legend>
+        <div class="contact-form__row contact-form__row--3">
+          <label class="contact-form__field">
+            <span>{{ t.objectSize }}</span>
+            <input v-model="form.objectSize" type="text" inputmode="numeric" name="objectSize" maxlength="32">
+          </label>
+          <label class="contact-form__field">
+            <span>{{ t.objectZip }}</span>
+            <input v-model="form.objectZip" type="text" name="objectZip" autocomplete="postal-code" maxlength="64">
+          </label>
+          <label class="contact-form__field">
+            <span>{{ t.objectDate }}</span>
+            <input v-model="form.objectDate" type="text" name="objectDate" maxlength="64" :placeholder="t.objectDateHint">
+          </label>
+        </div>
+      </fieldset>
+
       <label class="contact-form__field">
         <span>{{ t.message }}</span>
         <textarea v-model="form.message" name="message" rows="6" maxlength="5000" required />
+      </label>
+
+      <label class="contact-form__field">
+        <span>{{ t.referral }}</span>
+        <select v-model="form.referral" name="referral">
+          <option value="">{{ t.referralNone }}</option>
+          <option v-for="r in referrals" :key="r.value" :value="r.value">{{ r.label }}</option>
+        </select>
       </label>
 
       <!-- Honeypot: nicht ausfüllen! -->
@@ -185,13 +250,20 @@ async function submit() {
 .contact-form__field > span, .contact-form__topics legend {
   font-size: .78em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
 }
+.contact-form__object { border: 0; margin: 0; padding: 0; min-width: 0; }
+.contact-form__object legend {
+  margin-bottom: .55em; padding: 0; font-size: .78em; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted);
+}
+.contact-form__object .contact-form__field > span { font-size: .72em; letter-spacing: .04em; }
 .contact-form__field input,
+.contact-form__field select,
 .contact-form__field textarea {
   width: 100%; box-sizing: border-box; padding: .85em 1em; border: 1px solid var(--line); border-radius: 12px;
   background: var(--cream); color: var(--ink); font: inherit; font-size: .95em;
   transition: border-color .15s, box-shadow .15s, background .15s;
 }
 .contact-form__field input:focus,
+.contact-form__field select:focus,
 .contact-form__field textarea:focus {
   outline: none; background: #fff; border-color: var(--green); box-shadow: 0 0 0 4px rgba(47, 93, 64, .12);
 }

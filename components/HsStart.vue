@@ -72,6 +72,17 @@ const pressAll = computed(() => Object.values((isEn.value ? newsEn : news) as Re
   .filter((n: any) => n.archive === '8').sort((a: any, b: any) => Number(b.date) - Number(a.date)))
 const pressClips = computed(() => pressAll.value.filter((n: any) => n.image).slice(0, 5))
 
+// Vertrauens-Leiste direkt unter dem Hero (nur belegbare Fakten)
+const trust = computed(() => [
+  { icon: 'calendar', text: t('Seit 2011', 'Since 2011') },
+  { icon: 'clock', text: t('Staging an 1 Tag', 'Staging in 1 day') },
+  { icon: 'truck', text: t('Eigenes Lager & eigene Spedition', 'Own warehouse & transport') },
+  { icon: 'camera', text: t('Nur echte Fotos aus eigenen Projekten', 'Only real photos from our projects') },
+  ...(pressAll.value.length
+    ? [{ icon: 'file', text: t(`${pressAll.value.length} Medienberichte – Die Presse, Kurier & Co.`, `${pressAll.value.length} media reports – Die Presse, Kurier & more`), to: lp('/presse.html') }]
+    : [])
+])
+
 // Hero-Höhe, Reveal, Slideshow
 const root = ref<HTMLElement | null>(null)
 function syncHeaderHeight() {
@@ -122,12 +133,15 @@ function scrollToId(id: string, e?: Event) {
         <p class="hss__eyebrow">Home Staging · Furniture Leasing · Redesign</p>
         <h1 class="hss__h1">{{ h1 }}</h1>
         <p class="hss__lead">
-          {{ t('Wir inszenieren Immobilien, vermieten hochwertige Möbel und gestalten Wohnräume neu – seit 2011, mit eigener Spedition und viel Liebe zum Detail.',
-               'We stage properties, rent out high-quality furniture and redesign living spaces – since 2011, with our own transport service and great attention to detail.') }}
+          {{ t('Wir richten Ihre Immobilie an einem Tag mit echten Möbeln ein – damit sie sich schneller und besser verkauft.',
+               'We furnish your property with real furniture in one day – so it sells faster and for a better price.') }}
         </p>
-        <div class="hss__actions">
-          <NuxtLink :to="lp('/home-staging.html')" class="hss__btn hss__btn--primary">{{ t('Home Staging entdecken', 'Discover home staging') }}</NuxtLink>
-          <NuxtLink :to="lp('/kontakt.html')" class="hss__btn hss__btn--ghost">{{ t('Beratung anfragen', 'Request a consultation') }}</NuxtLink>
+        <!-- Einstiege nach Zielgruppe (Beratung steht bereits im Header) -->
+        <div class="hss__entries">
+          <span class="hss__entrylabel">{{ t('Ich bin …', 'I am …') }}</span>
+          <NuxtLink :to="lp('/fuer-makler.html')" class="hss__btn hss__btn--primary">{{ t('Makler/in', 'An estate agent') }}</NuxtLink>
+          <NuxtLink :to="lp('/fuer-bautraeger-2.html')" class="hss__btn hss__btn--primary">{{ t('Bauträger', 'A developer') }}</NuxtLink>
+          <NuxtLink :to="lp('/fuer-privatpersonen-2.html')" class="hss__btn hss__btn--ghost">{{ t('Privat', 'A private seller') }}</NuxtLink>
         </div>
         <div v-if="slides.length > 1" class="hss__dots" role="group" :aria-label="t('Bilder', 'Images')">
           <button v-for="(s, i) in slides" :key="s.src" type="button" :class="{ 'is-active': i === active }"
@@ -144,6 +158,19 @@ function scrollToId(id: string, e?: Event) {
         </a>
       </nav>
     </section>
+
+    <!-- ── Vertrauens-Leiste ────────────────────────── -->
+    <section class="hss__trust" :aria-label="t('Warum WOHNFEE', 'Why WOHNFEE')">
+      <ul class="hss__wrap hss__trustlist">
+        <li v-for="tr in trust" :key="tr.text">
+          <WfIcon :name="tr.icon" :size="18" />
+          <NuxtLink v-if="tr.to" :to="tr.to">{{ tr.text }}</NuxtLink>
+          <span v-else>{{ tr.text }}</span>
+        </li>
+      </ul>
+    </section>
+    <!-- Kunden-Logos aus dem Dashboard (nur sichtbar, wenn Referenzen freigeschaltet sind) -->
+    <HsReferences />
 
     <!-- ── 01 Home Staging ──────────────────────────── -->
     <!-- Kennzahlen aus dem Dashboard (nur wenn freigeschaltet) -->
@@ -277,9 +304,6 @@ function scrollToId(id: string, e?: Event) {
     </section>
 
     <!-- ── Presse ───────────────────────────────────── -->
-    <!-- Kunden-Logos aus dem Dashboard (nur sichtbar, wenn Referenzen freigeschaltet sind) -->
-    <HsReferences />
-
     <section v-if="pressClips.length" class="hss__press">
       <div class="hss__wrap hss__pressrow rv">
         <div>
@@ -367,6 +391,22 @@ function scrollToId(id: string, e?: Event) {
 .hss__btn--light:hover { background: var(--cream); color: var(--green-dark); }
 .hss__btn--outline { border: 1px solid rgba(255, 255, 255, .7); color: #fff; }
 .hss__btn--outline:hover { background: rgba(255, 255, 255, .12); color: #fff; }
+/* Einstiege nach Zielgruppe im Hero */
+.hss__entries { display: flex; flex-wrap: wrap; align-items: center; gap: .6em; max-width: 40rem !important; }
+.hss__entrylabel { font-size: .9em; font-weight: 600; color: var(--ink); margin-right: .2em; }
+
+/* Vertrauens-Leiste */
+.hss__trust { background: var(--green); color: #fff; }
+.hss__trustlist {
+  list-style: none; margin: 0 auto; padding-top: .95em; padding-bottom: .95em;
+  display: flex; flex-wrap: wrap; justify-content: center; gap: .6em 2em; font-size: .88em;
+}
+.hss__trustlist li { display: inline-flex; align-items: center; gap: .5em; margin: 0; padding: 0; }
+.hss__trustlist li::before { display: none; }
+.hss__trustlist svg { color: #cfe0d2; flex: none; }
+.hss__trustlist a { color: #fff; text-decoration: none; border-bottom: 1px solid rgba(255, 255, 255, .45); }
+.hss__trustlist a:hover { border-color: #fff; }
+
 .hss__more {
   display: inline-flex; align-items: center; gap: .5em; color: var(--green); font-weight: 600; text-decoration: none;
   border-bottom: 1px solid #b9c9bc; padding-bottom: 2px; white-space: nowrap;
@@ -429,7 +469,7 @@ function scrollToId(id: string, e?: Event) {
     padding: clamp(1em, 3.5vh, 3em) 1.5em clamp(.8em, 2vh, 2em); }
   /* altes Theme-CSS setzt bei h1 flex: 0 1 100% → Überschrift würde sich strecken */
   .hss__inside > * { flex: 0 0 auto; }
-  .hss__inside > .hss__h1 { max-width: 40rem; font-size: clamp(2em, min(4.4vw, 6.2vh), 3.8em) !important; margin-bottom: clamp(.25em, 1.8vh, .45em); }
+  .hss__inside > .hss__h1 { max-width: 40rem; font-size: clamp(2em, min(4.4vw, 6.2vh), 3.6em) !important; margin-bottom: clamp(.25em, 1.8vh, .45em); }
   .hss__inside > .hss__eyebrow { margin-bottom: clamp(.6em, 1.8vh, 1.3em); }
   .hss__inside > .hss__lead { font-size: clamp(.95em, 1.9vh, 1.05em); line-height: 1.6; margin-bottom: clamp(.9em, 2.6vh, 1.8em); }
   .hss__inside > .hss__dots { margin-top: clamp(.9em, 2.4vh, 2em); }
@@ -575,6 +615,8 @@ function scrollToId(id: string, e?: Event) {
   .hss__services { padding: 0 1em 2em; }
   .hss__wrap { padding: 0 1em; }
   .hss__facts { grid-template-columns: 1fr; }
+  .hss__entrylabel { flex-basis: 100%; }
+  .hss__trustlist { justify-content: flex-start; flex-direction: column; gap: .55em; }
   .hss__hs, .hss__fl, .hss__projects { padding: 3.5em 0; }
   .hss__benefits { padding: 1.6em 1.3em; }
   .hss__clips { height: 160px; }

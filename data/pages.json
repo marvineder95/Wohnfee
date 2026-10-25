@@ -4,7 +4,7 @@
   "title": "Start",
   "alias": "start",
   "pageTitle": "",
-  "description": "Home Staging . Redesign . Furniture Leasing - in Wien, NÖ und Steiermark",
+  "description": "Home Staging, Furniture Leasing und Redesign – in Wien, ganz Österreich und darüber hinaus. Staging an einem Tag, mit eigenem Lager und eigener Spedition.",
   "robots": "index,follow",
   "hide": true,
   "parent": "1",
@@ -81,7 +81,7 @@
     {
      "id": "16",
      "type": "headline",
-     "headline": "Erwecken Sie Ihre Immobilie aus dem Dornröschenschlaf.",
+     "headline": "Home Staging in Wien und ganz Österreich",
      "headlineUnit": "h1",
      "cssClass": "no-flex"
     },
@@ -217,7 +217,7 @@
   "title": "Home Staging",
   "alias": "home-staging",
   "pageTitle": "",
-  "description": "Wir inszenieren Ihre Immobilie optimal für den Verkauf oder die Vermietung an nur 1 Tag - in Wien, NÖ und der Steiermark",
+  "description": "Wir inszenieren Ihre Immobilie optimal für den Verkauf oder die Vermietung an nur 1 Tag – in Wien, ganz Österreich und darüber hinaus",
   "robots": "index,follow",
   "hide": false,
   "parent": "1",

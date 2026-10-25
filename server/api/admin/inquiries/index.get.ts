@@ -12,7 +12,7 @@ export default defineEventHandler(async (event) => {
     params.status = status
   }
   const inquiries = await query(
-    `SELECT id, name, email, phone, subject, status,
+    `SELECT id, name, email, phone, subject, status, customer_type AS customerType,
             LEFT(message, 160) AS messagePreview,
             created_at AS createdAt
      FROM contact_inquiries
@@ -26,5 +26,15 @@ export default defineEventHandler(async (event) => {
   )
   const countMap: Record<string, number> = { neu: 0, gelesen: 0, archiviert: 0 }
   for (const row of counts as any[]) countMap[row.status] = Number(row.n)
-  return { inquiries, counts: countMap }
+  // „Wie haben Sie uns gefunden?" – letzte 12 Monate (nur Anfragen mit Angabe)
+  const referrals = await query(
+    `SELECT referral AS value, COUNT(*) AS n FROM contact_inquiries
+     WHERE referral IS NOT NULL AND created_at > NOW() - INTERVAL 12 MONTH
+     GROUP BY referral ORDER BY n DESC`
+  )
+  return {
+    inquiries,
+    counts: countMap,
+    referrals: (referrals as any[]).map(r => ({ value: String(r.value), n: Number(r.n) }))
+  }
 })

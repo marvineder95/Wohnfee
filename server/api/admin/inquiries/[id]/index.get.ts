@@ -9,6 +9,8 @@ export default defineEventHandler(async (event) => {
   }
   const inquiry = await queryOne(
     `SELECT id, name, email, phone, subject, message, status, offer_id AS offerId, contact_id AS contactId,
+            customer_type AS customerType, object_size AS objectSize, object_zip AS objectZip,
+            object_date AS objectDate, referral,
             (SELECT number FROM offers o WHERE o.id = contact_inquiries.offer_id) AS offerNumber,
             created_at AS createdAt, updated_at AS updatedAt
      FROM contact_inquiries WHERE id = :id`,

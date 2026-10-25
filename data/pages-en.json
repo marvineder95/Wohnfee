@@ -4,7 +4,7 @@
   "title": "Home",
   "alias": "en/start",
   "pageTitle": "",
-  "description": "Home Staging . Redesign . Furniture Leasing - in Vienna, Lower Austria and Styria",
+  "description": "Home staging, furniture leasing and redesign – in Vienna, all of Austria and beyond. Staging in one day, with our own warehouse and transport.",
   "robots": "index,follow",
   "hide": true,
   "parent": "1",
@@ -81,7 +81,7 @@
     {
      "id": "16",
      "type": "headline",
-     "headline": "Wake your property from its Sleeping Beauty slumber.",
+     "headline": "Home staging in Vienna and all of Austria",
      "headlineUnit": "h1",
      "cssClass": "no-flex"
     },
@@ -218,7 +218,7 @@
   "title": "Home Staging",
   "alias": "en/home-staging",
   "pageTitle": "",
-  "description": "We stage your property optimally for sale or rental in just 1 day - in Vienna, Lower Austria and Styria",
+  "description": "We stage your property optimally for sale or rental in just 1 day – in Vienna, all of Austria and beyond",
   "robots": "index,follow",
   "hide": false,
   "parent": "1",

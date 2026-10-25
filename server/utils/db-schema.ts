@@ -705,6 +705,12 @@ export async function migrateSchema() {
   await addCol('inventory_items', 'internal_note', 'ADD COLUMN internal_note TEXT NULL AFTER description_en')
   // Immobilien-Anfragen: Verknüpfung zur Immobilie
   await addCol('contact_inquiries', 'property_id', 'ADD COLUMN property_id INT UNSIGNED NULL')
+  // Kontaktformular: Kundentyp, Objektdaten und Herkunft („Wie gefunden?", Messung ohne Tracking)
+  await addCol('contact_inquiries', 'customer_type', 'ADD COLUMN customer_type VARCHAR(16) NULL')
+  await addCol('contact_inquiries', 'object_size', 'ADD COLUMN object_size VARCHAR(32) NULL')
+  await addCol('contact_inquiries', 'object_zip', 'ADD COLUMN object_zip VARCHAR(64) NULL')
+  await addCol('contact_inquiries', 'object_date', 'ADD COLUMN object_date VARCHAR(64) NULL')
+  await addCol('contact_inquiries', 'referral', 'ADD COLUMN referral VARCHAR(32) NULL, ADD KEY idx_contact_inquiries_referral (referral)')
   // Benachrichtigungen im Dashboard (Glocke) – je Benutzer, zusätzlich als Push
   await db.query(`CREATE TABLE IF NOT EXISTS notifications (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
