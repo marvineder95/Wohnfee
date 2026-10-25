@@ -137,7 +137,6 @@ function scrollToId(id: string, e: Event) {
         </figure>
 
         <div class="hst__text">
-          <span class="hst__num">{{ String(i + 1).padStart(2, '0') }}</span>
           <h2 class="hst__name">{{ m.name }}</h2>
           <p class="hst__introtext">{{ m.intro }}</p>
 
@@ -301,7 +300,6 @@ function scrollToId(id: string, e: Event) {
 .hst__portrait figcaption strong { font-family: var(--serif); font-weight: 500; font-size: 1.1em; }
 .hst__portrait figcaption span { font-size: .72em; letter-spacing: .14em; text-transform: uppercase; color: var(--green); font-weight: 700; }
 
-.hst__num { display: block; font-family: var(--serif); font-size: 3.2em; line-height: 1; color: transparent; -webkit-text-stroke: 1px #b9c9bc; margin-bottom: .2em; }
 .hst__name { font-size: clamp(1.9em, 3.5vw, 2.6em) !important; line-height: 1.1; margin: 0 0 .5em; }
 .hst__introtext { font-family: var(--serif); font-size: 1.2em; line-height: 1.6; color: var(--ink); margin: 0 0 1.4em; }
 .hst__bio { line-height: 1.85; color: var(--muted); margin: 0 0 1.2em; }
