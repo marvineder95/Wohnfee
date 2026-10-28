@@ -30,6 +30,12 @@ export default defineEventHandler(async (event) => {
     }
     return { ok: true, locked: true }
   }
+  // Entwurf direkt als bezahlt/gesendet markieren (Rechnung wurde außerhalb des Systems verschickt) –
+  // nur der Status ändert sich, danach ist die Rechnung wie jede ausgestellte gesperrt.
+  if (body?.statusOnly && ['gesendet', 'bezahlt'].includes(body?.status)) {
+    await queryOne('UPDATE invoices SET status = :next WHERE id = :id', { next: body.status, id })
+    return { ok: true, locked: true }
+  }
   // Die Rechnungsnummer ist unveraenderbar: Nummernschema 261000WF, vergeben bei Erstellung
   const number = (invoice as any).number
   const customerName = invClean(body?.customer_name, 190)

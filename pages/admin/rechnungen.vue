@@ -280,9 +280,11 @@ function repickCustomer() {
 const locked = computed(() => !!editing.value && editing.value.status !== 'entwurf')
 
 async function setPaid(inv: InvoiceRow) {
+  // Entwurf (außerhalb des Systems verschickt): danach ist die Rechnung gesperrt → kurz bestätigen lassen
+  if (inv.status === 'entwurf' && !confirm(`Rechnung ${inv.number} als bezahlt markieren?\n\nDanach kann sie nicht mehr bearbeitet werden (Korrektur nur über Storno).`)) return
   error.value = ''
   try {
-    await $fetch(`/api/admin/invoices/${inv.id}`, { method: 'PUT', body: { status: 'bezahlt' } })
+    await $fetch(`/api/admin/invoices/${inv.id}`, { method: 'PUT', body: { status: 'bezahlt', statusOnly: true } })
     await load()
   } catch (e: any) {
     error.value = e?.data?.statusMessage || 'Status konnte nicht geändert werden.'
@@ -608,7 +610,7 @@ onMounted(async () => {
               class="wf-btn wf-btn--sm"
               @click="storno(i)"
             >Stornieren</button>
-            <button v-if="i.status === 'gesendet' && !i.storno_of" class="wf-btn wf-btn--sm" title="Als bezahlt markieren" @click="setPaid(i)"><WfIcon name="check" :size="13" /> Bezahlt</button>
+            <button v-if="(i.status === 'gesendet' || i.status === 'entwurf') && !i.storno_of" class="wf-btn wf-btn--sm" title="Als bezahlt markieren" @click="setPaid(i)"><WfIcon name="check" :size="13" /> Bezahlt</button>
             <button v-if="(i.days_overdue ?? 0) > 0 && (i.reminder_level || 0) < 3" class="wf-btn wf-btn--sm inv__remindbtn" @click="openRemind(i)">
               <WfIcon name="bell" :size="13" /> {{ REMINDER_LABELS[i.reminder_level || 0] }}
             </button>
