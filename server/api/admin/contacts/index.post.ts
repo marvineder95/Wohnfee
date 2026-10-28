@@ -20,10 +20,10 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Ungültige E-Mail-Adresse.' })
   }
   const result: any = await query(
-    `INSERT INTO contacts (type, name1, name2, street, zip, city, email, phone, notes, source)
-     VALUES (:type, :name1, :name2, :street, :zip, :city, :email, :phone, :notes, 'manual')`,
+    `INSERT INTO contacts (type, name1, name2, uid, street, zip, city, email, phone, notes, source)
+     VALUES (:type, :name1, :name2, :uid, :street, :zip, :city, :email, :phone, :notes, 'manual')`,
     {
-      type, name1, name2,
+      type, name1, name2, uid: type === 'firma' ? (clean(body?.uid, 32)?.replace(/\s+/g, '').toUpperCase() || null) : null,
       street: clean(body?.street), zip: clean(body?.zip, 16), city: clean(body?.city, 128),
       email, phone: clean(body?.phone, 64), notes: clean(body?.notes, 5000)
     }

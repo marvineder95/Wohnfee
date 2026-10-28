@@ -29,11 +29,11 @@ export default defineEventHandler(async (event) => {
   const status = body?.status === 'archiviert' ? 'archiviert' : 'aktiv'
 
   await query(
-    `UPDATE contacts SET type = :type, name1 = :name1, name2 = :name2, street = :street,
+    `UPDATE contacts SET type = :type, name1 = :name1, name2 = :name2, uid = :uid, street = :street,
        zip = :zip, city = :city, email = :email, phone = :phone, notes = :notes, status = :status
      WHERE id = :id`,
     {
-      id, type, name1, name2,
+      id, type, name1, name2, uid: type === 'firma' ? (clean(body?.uid, 32)?.replace(/\s+/g, '').toUpperCase() || null) : null,
       street: clean(body?.street), zip: clean(body?.zip, 16), city: clean(body?.city, 128),
       email, phone: clean(body?.phone, 64), notes: clean(body?.notes, 5000), status
     }

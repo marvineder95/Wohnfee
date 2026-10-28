@@ -38,7 +38,7 @@ const searchTimer = ref<any>(null)
 const editOpen = ref(false)
 const editing = ref<Contact | null>(null)
 const form = reactive({
-  type: 'person', name1: '', name2: '', street: '', zip: '', city: '',
+  type: 'person', name1: '', name2: '', uid: '', street: '', zip: '', city: '',
   email: '', phone: '', notes: '', tags: ''
 })
 const saving = ref(false)
@@ -79,6 +79,7 @@ function isOverdue(d: string | null) {
 }
 
 function displayName(c: Contact) {
+  if (c.type === 'firma') return [c.name2, c.name1].filter(Boolean).join(' – ') || '—'
   return [c.name1, c.name2].filter(Boolean).join(' ') || '—'
 }
 
@@ -123,7 +124,7 @@ function openNew() {
   editing.value = null
   documents.value = []
   docStats.value = null
-  Object.assign(form, { type: 'person', name1: '', name2: '', street: '', zip: '', city: '', email: '', phone: '', notes: '', tags: '' })
+  Object.assign(form, { type: 'person', name1: '', name2: '', uid: '', street: '', zip: '', city: '', email: '', phone: '', notes: '', tags: '' })
   saveError.value = ''
   editOpen.value = true
 }
@@ -136,7 +137,7 @@ async function openEdit(c: Contact) {
   try {
     const res = await $fetch<{ contact: any; tags: string[] }>(`/api/admin/contacts/${c.id}`)
     Object.assign(form, {
-      type: res.contact.type, name1: res.contact.name1 || '', name2: res.contact.name2 || '',
+      type: res.contact.type, name1: res.contact.name1 || '', name2: res.contact.name2 || '', uid: res.contact.uid || '',
       street: res.contact.street || '', zip: res.contact.zip || '', city: res.contact.city || '',
       email: res.contact.email || '', phone: res.contact.phone || '',
       notes: res.contact.notes || '', tags: res.tags.join(', ')
@@ -276,13 +277,32 @@ onMounted(() => {
               <option value="firma">Firma</option>
             </select>
           </label>
-          <label class="contacts__field">
-            <span>{{ form.type === 'firma' ? 'Firma' : 'Vorname' }}</span>
+          <!-- Firma: zuerst Firmenname (name2), dann UID; Person: Vorname (name1), Nachname (name2) -->
+          <template v-if="form.type === 'firma'">
+            <label class="contacts__field">
+              <span>Firmenname *</span>
+              <input v-model="form.name2" type="text">
+            </label>
+            <label class="contacts__field">
+              <span>UID-Nummer</span>
+              <input v-model="form.uid" type="text" placeholder="ATU…">
+            </label>
+          </template>
+          <template v-else>
+            <label class="contacts__field">
+              <span>Vorname</span>
+              <input v-model="form.name1" type="text">
+            </label>
+            <label class="contacts__field">
+              <span>Nachname *</span>
+              <input v-model="form.name2" type="text">
+            </label>
+          </template>
+        </div>
+        <div v-if="form.type === 'firma'" class="contacts__formrow">
+          <label class="contacts__field contacts__field--wide">
+            <span>Zusatz (optional, z. B. Abteilung oder „z. H.“)</span>
             <input v-model="form.name1" type="text">
-          </label>
-          <label class="contacts__field">
-            <span>{{ form.type === 'firma' ? 'Zusatz' : 'Nachname' }} *</span>
-            <input v-model="form.name2" type="text">
           </label>
         </div>
         <div class="contacts__formrow">

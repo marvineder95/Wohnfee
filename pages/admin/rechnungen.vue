@@ -205,11 +205,13 @@ async function pickCustomer(id: number) {
     const res = await $fetch<{ contact: any }>(`/api/admin/contacts/${id}`)
     const c = res.contact
     form.contact_id = c.id
-    form.customer_name = [c.name1, c.name2].filter(Boolean).join(' ')
+    // Firma: Firmenname (name2); Zusatz (name1) nicht vor den Namen stellen
+    form.customer_name = c.type === 'firma' ? (c.name2 || c.name1 || '') : [c.name1, c.name2].filter(Boolean).join(' ')
     form.customer_street = c.street || ''
     form.customer_zip = c.zip || ''
     form.customer_city = c.city || ''
     form.customer_country = c.country || ''
+    if (c.uid) form.customer_uid = c.uid
     custSearch.value = ''
     custResults.value = []
   } catch { /* manuelle Eingabe bleibt möglich */ }

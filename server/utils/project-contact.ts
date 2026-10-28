@@ -42,7 +42,7 @@ async function findContactId(text: string): Promise<number | null> {
 }
 
 export async function contactDetails(id: number): Promise<ProjectContact | null> {
-  const c: any = await queryOne('SELECT id, name1, name2, street, zip, city FROM contacts WHERE id = :id', { id })
+  const c: any = await queryOne('SELECT id, name1, name2, uid, street, zip, city FROM contacts WHERE id = :id', { id })
   if (!c) return null
   const inv: any = await queryOne(
     `SELECT customer_uid FROM invoices WHERE contact_id = :id AND customer_uid IS NOT NULL ORDER BY doc_date DESC LIMIT 1`, { id })
@@ -51,7 +51,7 @@ export async function contactDetails(id: number): Promise<ProjectContact | null>
      ORDER BY doc_date IS NULL, doc_date DESC LIMIT 1`, { id })
   const parts = String(doc?.customer_raw || '').split('|').map((s) => s.trim())
   const attn = parts.find((p) => /^z\.\s*h(d)?\.?\s/i.test(p)) || null
-  const uidRaw = inv?.customer_uid || parts.find((p) => /^ATU\s?\d{8}$/i.test(p.replace(/\s+/g, ''))) || null
+  const uidRaw = c.uid || inv?.customer_uid || parts.find((p) => /^ATU\s?\d{8}$/i.test(p.replace(/\s+/g, ''))) || null
   return {
     id: Number(c.id),
     name: [c.name1, c.name2].filter(Boolean).join(' '),

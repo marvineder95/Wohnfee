@@ -8,7 +8,7 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: 'Ungültige Kontakt-ID' })
   }
   const contact = await queryOne(
-    `SELECT id, type, name1, name2, street, zip, city, country, email, phone, notes, status, source
+    `SELECT id, type, name1, name2, uid, street, zip, city, country, email, phone, notes, status, source
      FROM contacts WHERE id = :id`, { id }
   )
   if (!contact) throw createError({ statusCode: 404, statusMessage: 'Kontakt nicht gefunden' })

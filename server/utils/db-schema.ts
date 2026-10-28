@@ -711,6 +711,10 @@ export async function migrateSchema() {
   await addCol('contact_inquiries', 'object_zip', 'ADD COLUMN object_zip VARCHAR(64) NULL')
   await addCol('contact_inquiries', 'object_date', 'ADD COLUMN object_date VARCHAR(64) NULL')
   await addCol('contact_inquiries', 'referral', 'ADD COLUMN referral VARCHAR(32) NULL, ADD KEY idx_contact_inquiries_referral (referral)')
+  // Kontakte: eigene UID-Nummer für Firmen (vorher teils im Feld name1 eingetragen → einmalig umziehen)
+  await addCol('contacts', 'uid', 'ADD COLUMN uid VARCHAR(32) NULL AFTER name2')
+  await db.query(`UPDATE contacts SET uid = REPLACE(UPPER(TRIM(name1)), ' ', ''), name1 = NULL
+                  WHERE type = 'firma' AND uid IS NULL AND REPLACE(UPPER(TRIM(name1)), ' ', '') REGEXP '^ATU[0-9]{8}$'`)
   // Benachrichtigungen im Dashboard (Glocke) – je Benutzer, zusätzlich als Push
   await db.query(`CREATE TABLE IF NOT EXISTS notifications (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
