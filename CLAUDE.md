@@ -167,8 +167,10 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   im Dashboard prüfen. 
 - Checkout: Mietdauer im Formular (1/3 Monate) ist unabhängig von der Mietdauer je Artikel
   im Warenkorb – vereinheitlichen?
-- Datenschutz (neu, Seite 11 in pages(-en).json, Layout HsLegal): gelb markierte Lücken ausfüllen
-  (Hosting-Anbieter + Log-Löschfrist, SMTP-Anbieter, OSRM-Betreiber).
+- Datenschutz (Seite 11 in pages(-en).json, Layout HsLegal), Stand Nov. 2026: IONOS (Hosting, EU), World4You (Mail),
+  Nominatim/OSRM, Google Drive (verschlüsselte Sicherung). Zusage „Fehlerprotokolle spätestens nach 14 Tagen gelöscht“ →
+  `deploy/purge-logs.sh` wöchentlich per Cron (So 04:50). AV-Verträge mit IONOS, World4You (und Google) muss der Kunde abschließen.
+  Bei neuen Diensten/Datenflüssen die Erklärung anpassen.
 - Fernabsatz/Widerruf (FAGG): Text nach gesetzlichem Muster in `shared/withdrawal.ts` (Seite
   /widerrufsbelehrung.html, Angebotsseite, Mails). Annahme fragt Privat/Firma; Privat + Mietbeginn ≤ 14 Tage →
   zwei Pflicht-Häkchen. „Vertrag widerrufen" (§ 13a) 14 Tage ab Annahme → `withdrawOffer()`.
