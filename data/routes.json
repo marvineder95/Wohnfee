@@ -1027,6 +1027,14 @@
   "type": "news",
   "id": "127"
  },
+ "/agb.html": {
+  "type": "page",
+  "id": "agb"
+ },
+ "/en/agb.html": {
+  "type": "page",
+  "id": "agb"
+ },
  "/widerrufsbelehrung.html": {
   "type": "page",
   "id": "widerruf"

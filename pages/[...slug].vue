@@ -318,6 +318,9 @@ const regularMain = computed(() =>
   </div>
 
   <!-- Datenschutz: gleiche Rechtstext-Karten -->
+  <div v-else-if="pageRoute === '/agb.html'" class="page-content" :data-route="pageData.route">
+    <HsLegal :page="pageData" :eyebrow="isEn ? 'Legal' : 'Rechtliches'" />
+  </div>
   <div v-else-if="pageRoute === '/datenschutz.html'" class="page-content" :data-route="pageData.route">
     <HsLegal :page="pageData" :eyebrow="isEn ? 'Legal' : 'Rechtliches'" />
   </div>

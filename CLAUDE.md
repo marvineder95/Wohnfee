@@ -153,8 +153,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Graue Unterleiste (`AppSubmenu`) ist auf allen neu gestalteten Seiten ausgeblendet.
 
 ## Offene Punkte (vom Kunden zu klären)
-- Handelsrechtliche Geschäftsführung fürs Impressum (bisher nur gewerberechtl. GF Marvin Eder).
-- Gewerbe im Impressum: nur Handel + Kleintransport aufgeführt (IT, Eisenbahn weggelassen)?
+- Gewerbe im Impressum: nur Handel + Kleintransport; „Vermietung von beweglichen Sachen“ (Furniture Leasing) klären/anmelden.
 - Widersprüche: „80–150 Teile“ vs. alte FAQ „100–200“; Leihdauer „mind. 2 Monate“ vs. „3 Monate“.
 - Datenschutzerklärung inhaltlich auf Eder & Steiner GmbH prüfen (nur Adresse ersetzt).
 - Mail-Design: `server/utils/mail-layout.ts` (Logo `public/mail/wohnfee-logo.png`, Fuß mit Firmendaten, `mailButton`, `mailFacts`,
@@ -174,7 +173,9 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Fernabsatz/Widerruf (FAGG): Text nach gesetzlichem Muster in `shared/withdrawal.ts` (Seite
   /widerrufsbelehrung.html, Angebotsseite, Mails). Annahme fragt Privat/Firma; Privat + Mietbeginn ≤ 14 Tage →
   zwei Pflicht-Häkchen. „Vertrag widerrufen" (§ 13a) 14 Tage ab Annahme → `withdrawOffer()`.
-  ⚠ Vom WKO-Rechtsservice prüfen lassen. AGB/Mietbedingungen fehlen noch (Footer-Link „AGB" tot).
+  ⚠ Vom WKO-Rechtsservice prüfen lassen.
+- AGB (Nov. 2026): Seite `agb` in pages(-en).json, Route /agb.html, Layout HsLegal; Footer verlinkt, Angebotsannahme verweist darauf.
+  Kaution nach Vereinbarung, Storno-Staffel 14/3 Tage. ⚠ Ebenfalls vom WKO-Rechtsservice prüfen lassen.
 - Kein Tracking, kein Cookie-Banner (Google Analytics + Cookiebar im Okt. 2026 entfernt). Videos (CeVideo)
   laden erst nach Klick. Neue externe Dienste nur nach Rücksprache – sonst braucht es wieder ein Banner.
 - Noch nicht im neuen Design: Furniture Leasing unterhalb des Heros, EN-Startseite

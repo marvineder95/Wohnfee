@@ -44,6 +44,7 @@ const earlyAck = ref(false)
 const early = computed(() => earlyStartTexts(en.value ? 'en' : 'de'))
 const needsEarly = computed(() => customerType.value === 'privat' && !!data.value?.fagg?.earlyStartNeeded)
 const withdrawUrl = computed(() => (en.value ? '/en' : '') + '/widerrufsbelehrung.html')
+const termsUrl = computed(() => (en.value ? '/en' : '') + '/agb.html')
 const wOpen = ref(false)
 const wName = ref('')
 const wEmail = ref(data.value?.fagg?.email || '')
@@ -233,7 +234,10 @@ async function respond(action: 'accept' | 'decline') {
                 </template>
                 <label class="ofr__check">
                   <input v-model="confirmed" type="checkbox" @change="mode = 'accept'">
-                  <span>{{ t(`Ich nehme das Angebot ${data.number} verbindlich an.`, `I accept offer ${data.number} as binding.`) }}</span>
+                  <span>
+                    {{ t(`Ich nehme das Angebot ${data.number} verbindlich an. Es gelten die`, `I accept offer ${data.number} as binding. Our`) }}
+                    <a :href="termsUrl" target="_blank" rel="noopener">{{ t('AGB', 'terms and conditions') }}</a>{{ t('.', ' apply.') }}
+                  </span>
                 </label>
                 <button class="ofr__btn ofr__btn--yes" :disabled="busy" @click="respond('accept')">
                   {{ busy && mode === 'accept' ? t('Wird gesendet …', 'Sending …') : t('Angebot annehmen', 'Accept offer') }}

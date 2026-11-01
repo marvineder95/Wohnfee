@@ -75,7 +75,7 @@ const columns = computed(() => ([
     items: [
       { label: isEn.value ? 'Legal Notice' : 'Impressum', route: '/impressum.html' },
       { label: isEn.value ? 'Privacy Policy' : 'Datenschutzerklärung', route: '/datenschutz.html' },
-      { label: 'AGB', route: '' },
+      { label: isEn.value ? 'Terms & Conditions' : 'AGB', route: '/agb.html' },
       { label: isEn.value ? 'Right of Withdrawal' : 'Widerrufsbelehrung', route: '/widerrufsbelehrung.html' }
     ]
   }
@@ -208,7 +208,7 @@ const year = new Date().getFullYear()
         <nav class="wffoot__barlinks" :aria-label="t.legal">
           <NuxtLink :to="linkFor('/impressum.html')">{{ isEn ? 'Legal Notice' : 'Impressum' }}</NuxtLink>
           <NuxtLink :to="linkFor('/datenschutz.html')">{{ isEn ? 'Privacy Policy' : 'Datenschutzerklärung' }}</NuxtLink>
-          <span class="dead">AGB</span>
+          <NuxtLink :to="linkFor('/agb.html')">{{ isEn ? 'Terms & Conditions' : 'AGB' }}</NuxtLink>
           <NuxtLink :to="linkFor('/widerrufsbelehrung.html')">{{ isEn ? 'Right of Withdrawal' : 'Widerrufsbelehrung' }}</NuxtLink>
         </nav>
         <div class="wffoot__end">
