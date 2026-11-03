@@ -81,6 +81,9 @@ export default defineNuxtConfig({
       '/index.php': { redirect: { to: '/start.html', statusCode: 301 } },
       '/en': { redirect: { to: '/en/start.html', statusCode: 301 } },
       '/en/': { redirect: { to: '/en/start.html', statusCode: 301 } },
+      // Artikel offline (Fotorechte), alte Links → Redesign
+      '/projekt/gestaltung-eines-ferien-apartments.html': { redirect: { to: '/redesign.html', statusCode: 301 } },
+      '/en/projekt/gestaltung-eines-ferien-apartments.html': { redirect: { to: '/en/redesign.html', statusCode: 301 } },
       // live statt vorgerendert (Dashboard-Artikel), auch falls der Link-Crawler aktiv ist
       '/trends-tipps.html': { prerender: false },
       '/aktuelles.html': { prerender: false },

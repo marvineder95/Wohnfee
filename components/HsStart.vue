@@ -265,7 +265,7 @@ function scrollToId(id: string, e?: Event) {
     <section id="redesign" class="hss__rd">
       <div class="hss__wrap">
         <div class="hss__rdbox rv">
-          <HsImg src="/files/wohnfee/bilder/redesign/Ferienapartment-0010.jpg" alt="" class="hss__rdimg"
+          <HsImg src="/files/wohnfee/bilder/redesign/Redesign3_Essen 0052.jpg" :alt="t('Essbereich nach einem WOHNFEE Redesign', 'Dining area after a WOHNFEE redesign')" class="hss__rdimg"
                  sizes="xs:100vw sm:100vw md:50vw lg:560px xl:560px xxl:560px 2xl:560px" />
           <div class="hss__rdtext">
             <p class="hss__label hss__label--light">{{ t('Für Ihr Zuhause', 'For your home') }}</p>

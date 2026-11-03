@@ -168,6 +168,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Mail (seit 21.10.2026 bei world4you, MX mail.wohnfee.at): SMTP smtp.world4you.com:587 STARTTLS, Benutzer office@wohnfee.at.
   Passwort setzt der Kunde selbst: `bash /opt/wohnfee/deploy/set-smtp-password.sh`, Test: `deploy/test-mail.sh [empfänger]`.
 - Mietkatalog: Möbel ohne Fotos; danach Live-Produktvorschau auf der Startseite möglich.
+- Ferien-Apartment-Fotoserie (fremde Rechte) entfernt Nov. 2026: Startseite nutzt `Redesign3_Essen 0052.jpg`, Artikel 76 offline (301 → /redesign.html). Nicht wieder verwenden.
 - Tippfehler im Pflegetext: Redesign „entseht“, Preise Paket 1/3 (Komma/€ am Ende).
 - Konditionen: Stundensatz (Platzhalter 45 €/Std.), Aufbau-/Abbauzeiten und Kilometergeld
   im Dashboard prüfen. 
