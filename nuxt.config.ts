@@ -77,6 +77,10 @@ export default defineNuxtConfig({
   nitro: {
     routeRules: {
       '/': { redirect: { to: '/start.html', statusCode: 302 } },
+      // alte Einstiege (Contao) → Startseiten
+      '/index.php': { redirect: { to: '/start.html', statusCode: 301 } },
+      '/en': { redirect: { to: '/en/start.html', statusCode: 301 } },
+      '/en/': { redirect: { to: '/en/start.html', statusCode: 301 } },
       // live statt vorgerendert (Dashboard-Artikel), auch falls der Link-Crawler aktiv ist
       '/trends-tipps.html': { prerender: false },
       '/aktuelles.html': { prerender: false },

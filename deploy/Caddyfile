@@ -13,3 +13,9 @@
 	}
 	reverse_proxy app:3000
 }
+
+# Weiterleitungen auf die Hauptdomain, z. B. REDIRECT_DOMAINS="wohnfee.at, neu.wohnfee.at" → https://www.wohnfee.at
+# (alte Links aus Mails/Angeboten mit neu.wohnfee.at funktionieren weiter). Ohne Eintrag: Platzhalter, nur intern.
+{$REDIRECT_DOMAINS} {
+	redir https://{$PRIMARY_DOMAIN}{uri} 308
+}

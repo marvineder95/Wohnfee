@@ -87,3 +87,21 @@ wohnfee$ (crontab -l; echo '*/5 * * * * /opt/wohnfee/deploy/auto-update.sh >> /o
 - Datenbank ist nicht von außen erreichbar; nur Caddy (80/443) ist offen.
 - Hochgeladene Bilder liegen im Docker-Volume `wohnfee_uploads`, die DB in `wohnfee_dbdata` – beides sichert `backup.sh`.
 - Sicherheitsupdates installiert Ubuntu automatisch; Docker-Images aktualisieren: `docker compose pull && docker compose up -d --build`.
+
+## Umstellung auf www.wohnfee.at (Domain-Umzug)
+
+Hauptdomain wird **www.wohnfee.at** (Canonical, Sitemap und robots.txt zeigen schon darauf).
+`wohnfee.at` und `neu.wohnfee.at` leiten per 308 dorthin weiter – alte Links aus Mails/Angeboten bleiben gültig.
+
+1. Am Server in `/opt/wohnfee/deploy/.env` setzen:
+   ```
+   SITE_DOMAINS=www.wohnfee.at
+   REDIRECT_DOMAINS=wohnfee.at, neu.wohnfee.at
+   PRIMARY_DOMAIN=www.wohnfee.at
+   NUXT_SITE_URL=https://www.wohnfee.at
+   ```
+   dann `docker compose up -d app caddy` (Caddy holt die Zertifikate, sobald der DNS zeigt; bis dahin versucht er es erneut).
+2. DNS bei World4You: A-Record `wohnfee.at` → `87.106.27.101` (`www` ist ein CNAME auf `wohnfee.at` und folgt mit).
+   **MX, `mail.wohnfee.at`, DKIM, SPF, DMARC nicht anfassen** – E-Mail läuft unabhängig weiter.
+3. Prüfen: https://www.wohnfee.at, https://wohnfee.at → www, https://neu.wohnfee.at → www, Mail-Test (`deploy/test-mail.sh`),
+   Angebotslink. In der Google Search Console die Sitemap neu einreichen.

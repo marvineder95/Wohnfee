@@ -42,6 +42,8 @@ services:
       - "443:443"
     environment:
       SITE_DOMAINS: ${SITE_DOMAINS}
+      REDIRECT_DOMAINS: ${REDIRECT_DOMAINS:-http://redirect.localhost}
+      PRIMARY_DOMAIN: ${PRIMARY_DOMAIN:-www.wohnfee.at}
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
