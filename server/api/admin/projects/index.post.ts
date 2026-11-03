@@ -1,5 +1,6 @@
 import { requireAdmin } from '../../../utils/admin-auth'
 import { query } from '../../../utils/db'
+import { isProjectStatus } from '../../../../shared/project-status'
 
 const CATEGORIES = ['staging', 'leasing', 'showroom']
 
@@ -17,14 +18,16 @@ export default defineEventHandler(async (event) => {
   }
   const result: any = await query(
     `INSERT INTO projects
-       (category, section, customer, contact_id, title, art, team, status_info, deadline_text, deadline_date,
+       (category, section, status, customer, contact_id, title, art, team, status_info, deadline_text, deadline_date,
         note, next_step, who, date_info, source)
      VALUES
-       (:category, :section, :customer, :contact_id, :title, :art, :team, :status_info, :deadline_text, :deadline_date,
+       (:category, :section, :status, :customer, :contact_id, :title, :art, :team, :status_info, :deadline_text, :deadline_date,
         :note, :next_step, :who, :date_info, 'manual')`,
     {
       category,
       section: clean(body?.section, 64),
+      // neue Projekte starten als Entwurf (Möbel nur reserviert)
+      status: isProjectStatus(body?.status) ? body.status : 'entwurf',
       customer: clean(body?.customer),
       contact_id: Number(body?.contactId) > 0 ? Number(body.contactId) : null,
       title: clean(body?.title),

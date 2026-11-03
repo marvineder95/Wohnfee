@@ -1,5 +1,7 @@
 import { requireAdmin } from '../../../../utils/admin-auth'
 import { query, queryOne } from '../../../../utils/db'
+import { syncItemStatus } from '../../../../utils/inventory-sync'
+import { isProjectStatus } from '../../../../../shared/project-status'
 
 const CATEGORIES = ['staging', 'leasing', 'showroom']
 
@@ -14,7 +16,7 @@ export default defineEventHandler(async (event) => {
   if (!Number.isInteger(id) || id < 1) {
     throw createError({ statusCode: 400, statusMessage: 'Ungültige Projekt-ID' })
   }
-  const existing = await queryOne('SELECT id FROM projects WHERE id = :id', { id })
+  const existing: any = await queryOne('SELECT id, status FROM projects WHERE id = :id', { id })
   if (!existing) throw createError({ statusCode: 404, statusMessage: 'Projekt nicht gefunden' })
 
   const body = await readBody(event)
@@ -24,7 +26,7 @@ export default defineEventHandler(async (event) => {
   }
   await query(
     `UPDATE projects SET
-       category = :category, section = :section, customer = :customer, contact_id = :contact_id, title = :title,
+       category = :category, section = :section, status = :status, customer = :customer, contact_id = :contact_id, title = :title,
        art = :art, team = :team, status_info = :status_info, deadline_text = :deadline_text,
        deadline_date = :deadline_date, note = :note, next_step = :next_step,
        who = :who, date_info = :date_info
@@ -32,6 +34,7 @@ export default defineEventHandler(async (event) => {
     {
       id, category,
       section: clean(body?.section, 64),
+      status: isProjectStatus(body?.status) ? body.status : existing.status,
       customer: clean(body?.customer),
       contact_id: Number(body?.contactId) > 0 ? Number(body.contactId) : null,
       title: clean(body?.title),
@@ -46,5 +49,16 @@ export default defineEventHandler(async (event) => {
       date_info: clean(body?.dateInfo, 64)
     }
   )
-  return { ok: true }
+  // Statuswechsel → Möbel nachziehen: abgelehnt = freigeben, sonst reserviert ↔ vermietet
+  const newStatus = isProjectStatus(body?.status) ? body.status : existing.status
+  let released = 0
+  if (newStatus !== existing.status) {
+    const items: any[] = await query('SELECT item_id FROM project_items WHERE project_id = :id', { id })
+    if (newStatus === 'abgelehnt') {
+      await query('DELETE FROM project_items WHERE project_id = :id', { id })
+      released = items.length
+    }
+    for (const it of items) await syncItemStatus(Number(it.item_id))
+  }
+  return { ok: true, released }
 })

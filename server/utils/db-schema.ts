@@ -711,6 +711,9 @@ export async function migrateSchema() {
   await addCol('contact_inquiries', 'object_zip', 'ADD COLUMN object_zip VARCHAR(64) NULL')
   await addCol('contact_inquiries', 'object_date', 'ADD COLUMN object_date VARCHAR(64) NULL')
   await addCol('contact_inquiries', 'referral', 'ADD COLUMN referral VARCHAR(32) NULL, ADD KEY idx_contact_inquiries_referral (referral)')
+  // Projekte: Status (entwurf/angebot = Möbel nur reserviert, angenommen = im Einsatz, abgelehnt = Möbel frei).
+  // Bestehende Projekte sind laufende Aufträge → Standard 'angenommen'.
+  await addCol('projects', 'status', "ADD COLUMN status VARCHAR(16) NOT NULL DEFAULT 'angenommen' AFTER section")
   // Kontakte: eigene UID-Nummer für Firmen (vorher teils im Feld name1 eingetragen → einmalig umziehen)
   await addCol('contacts', 'uid', 'ADD COLUMN uid VARCHAR(32) NULL AFTER name2')
   await db.query(`UPDATE contacts SET uid = REPLACE(UPPER(TRIM(name1)), ' ', ''), name1 = NULL

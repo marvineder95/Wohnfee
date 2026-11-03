@@ -24,8 +24,11 @@ export default defineEventHandler(async (event) => {
   if (!Number.isInteger(itemId) || itemId < 1) {
     throw createError({ statusCode: 400, statusMessage: 'Bitte ein Inventarobjekt wählen.' })
   }
-  const project = await queryOne('SELECT id FROM projects WHERE id = :id', { id })
+  const project: any = await queryOne('SELECT id, status FROM projects WHERE id = :id', { id })
   if (!project) throw createError({ statusCode: 404, statusMessage: 'Projekt nicht gefunden' })
+  if (project.status === 'abgelehnt') {
+    throw createError({ statusCode: 409, statusMessage: 'Das Projekt ist abgelehnt – bitte zuerst den Status ändern.' })
+  }
   const item = await queryOne('SELECT id, quantity FROM inventory_items WHERE id = :itemId', { itemId })
   if (!item) throw createError({ statusCode: 404, statusMessage: 'Inventarobjekt nicht gefunden' })
 
@@ -46,15 +49,16 @@ export default defineEventHandler(async (event) => {
   }
   if (qty > free) {
     const where: any[] = await query(
-      `SELECT COALESCE(p.customer, p.title) AS label FROM project_items pi JOIN projects p ON p.id = pi.project_id
+      `SELECT CONCAT(COALESCE(p.customer, p.title), IF(p.status IN ('entwurf', 'angebot'), ' – reserviert', '')) AS label
+       FROM project_items pi JOIN projects p ON p.id = pi.project_id
        WHERE pi.item_id = :itemId AND pi.project_id <> :id LIMIT 3`, { itemId, id }
     )
     const names = where.map((w) => w.label).filter(Boolean).join(', ')
     throw createError({
       statusCode: 409,
       statusMessage: free === 0
-        ? `Dieses Objekt ist bereits vollständig im Einsatz${names ? ` (${names})` : ''}.`
-        : `Nur noch ${free} Stück frei – der Rest ist im Einsatz${names ? ` (${names})` : ''}.`
+        ? `Dieses Objekt ist bereits vollständig vergeben${names ? ` (${names})` : ''}.`
+        : `Nur noch ${free} Stück frei – der Rest ist vergeben${names ? ` (${names})` : ''}.`
     })
   }
   await query(

@@ -74,6 +74,9 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Inventar: `description` (+ `description_en`) = Text im Mietshop; `internal_note` = interne Notiz, nur Dashboard (nie in Katalog-API/Angeboten).
 - Möbel ↔ Projekte: `server/utils/inventory-sync.ts` verhindert Doppelbelegung und setzt
   Lagerstatus (lager/vermietet); Shop zeigt nur freien Bestand.
+  Projekt-Status (`projects.status`, `shared/project-status.ts`): Entwurf / Angebot versendet = Möbel nur reserviert
+  (nicht im Shop, für andere Projekte gesperrt, Lagerstatus bleibt „lager“), Auftrag angenommen = „vermietet“,
+  Abgelehnt = Zuweisungen werden gelöscht → frei. Neue Projekte starten als Entwurf; „Projekt anlegen & Möbel hinzufügen“.
 - Projekt ↔ Kontakt: `projects.contact_id` (Feld „Rechnungskontakt" im Projekt). Verlängerungs-Angebot nutzt `server/utils/project-contact.ts` (Kontakt, sonst Wortsuche im Kundentext + alte Dokumente; „z. H." und UID aus letzter Rechnung/Dokument).
 - Anfrage → Angebot: `server/utils/offer-create.ts` (Miet- und Kontaktanfragen), Angebote
   öffnen per `/admin/angebote?open=ID`. Projekt → „Mietverlängerung" (`extension-offer.post.ts`): eine Pauschal-Position „Verlängerung …“ mit Preis 0 zum Selbst-Eintragen (Preis richtet sich nicht nach den Möbeln).

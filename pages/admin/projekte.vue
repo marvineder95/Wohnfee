@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { categoryLabel } from '~~/shared/inventory-categories'
+import { PROJECT_STATUSES, projectStatusLabel, isReservingStatus } from '~~/shared/project-status'
 
 definePageMeta({ layout: 'admin' })
 
@@ -10,6 +11,7 @@ interface Project {
   id: number
   category: 'staging' | 'leasing' | 'showroom'
   section: string | null
+  status: string
   customer: string | null
   contactId: number | null
   contactName: string | null
@@ -52,7 +54,7 @@ const searchTimer = ref<any>(null)
 const editOpen = ref(false)
 const editing = ref<Project | null>(null)
 const form = reactive({
-  category: 'staging', section: '', customer: '', title: '', art: '', team: '',
+  category: 'staging', section: '', status: 'entwurf', customer: '', title: '', art: '', team: '',
   statusInfo: '', deadlineText: '', deadlineDate: '', note: '',
   nextStep: '', who: '', dateInfo: '', contactId: null as number | null, contactName: ''
 })
@@ -270,7 +272,7 @@ function openNew() {
   itemResults.value = []
   itemPick.value = null
   Object.assign(form, {
-    category: tab.value, section: '', customer: '', title: '', art: tab.value === 'staging' ? 'HS' : '',
+    category: tab.value, section: '', status: 'entwurf', customer: '', title: '', art: tab.value === 'staging' ? 'HS' : '',
     team: '', statusInfo: '', deadlineText: '', deadlineDate: '', note: '',
     nextStep: '', who: '', dateInfo: '', contactId: null, contactName: ''
   })
@@ -286,7 +288,7 @@ function openNew() {
 function openEdit(p: Project) {
   editing.value = p
   Object.assign(form, {
-    category: p.category, section: p.section || '', customer: p.customer || '',
+    category: p.category, section: p.section || '', status: p.status || 'angenommen', customer: p.customer || '',
     title: p.title || '', art: p.art || '', team: p.team || '',
     statusInfo: p.statusInfo || '', deadlineText: p.deadlineText || '',
     deadlineDate: p.deadlineDate ? String(p.deadlineDate).slice(0, 10) : '', note: p.note || '',
@@ -304,14 +306,21 @@ function openEdit(p: Project) {
   loadProjectItems(p.id)
 }
 
-async function save() {
+// keepOpen: neues Projekt anlegen und gleich Möbel hinzufügen (Dialog bleibt offen)
+async function save(keepOpen = false) {
   saving.value = true
   saveError.value = ''
   try {
     if (editing.value) {
-      await $fetch(`/api/admin/projects/${editing.value.id}`, { method: 'PUT', body: form })
+      const res = await $fetch<{ released?: number }>(`/api/admin/projects/${editing.value.id}`, { method: 'PUT', body: form })
+      if (res?.released) error.value = `${res.released} Möbelstück(e) wurden freigegeben (Projekt abgelehnt).`
     } else {
-      await $fetch('/api/admin/projects', { method: 'POST', body: form })
+      const res = await $fetch<{ id: number }>('/api/admin/projects', { method: 'POST', body: form })
+      if (keepOpen) {
+        await load()
+        const created = projects.value.find(x => x.id === Number(res.id))
+        if (created) { openEdit(created); showAddItem.value = true; return }
+      }
     }
     editOpen.value = false
     await load()
@@ -392,6 +401,7 @@ onMounted(async () => {
               <div class="proj__main">
                 <div class="proj__line1">
                   <strong>{{ p.customer || '—' }}</strong>
+                  <span class="proj__status" :data-status="p.status">{{ projectStatusLabel(p.status) }}</span>
                   <span v-if="p.art" class="proj__art">{{ artLabel(p.art) }}</span>
                   <span v-if="p.team" class="proj__team">{{ p.team }}</span>
                   <span v-if="p.who" class="proj__team">{{ p.who }}</span>
@@ -431,7 +441,7 @@ onMounted(async () => {
           <button class="proj__edclose" aria-label="Schließen" @click="editOpen = false">×</button>
         </header>
 
-        <div class="proj__edgrid" :class="{ 'proj__edgrid--solo': !editing }">
+        <div class="proj__edgrid">
           <!-- Links: Projektdaten -->
           <fieldset class="proj__edleft proj__fs" :disabled="!canEditP">
             <section class="proj__edsect">
@@ -443,14 +453,10 @@ onMounted(async () => {
                     <option v-for="t in TABS" :key="t.value" :value="t.value">{{ t.label }}</option>
                   </select>
                 </label>
-                <label v-if="form.category === 'staging'" class="proj__field">
-                  <span>Abschnitt</span>
-                  <select v-model="form.section">
-                    <option value="">—</option>
-                    <option>HOME STAGING</option>
-                    <option>RE-DESIGN</option>
-                    <option>FURNITURE LEASING</option>
-                    <option>NEBENSCHAU PLÄTZE</option>
+                <label class="proj__field">
+                  <span>Status</span>
+                  <select v-model="form.status">
+                    <option v-for="st in PROJECT_STATUSES" :key="st.value" :value="st.value">{{ st.label }}</option>
                   </select>
                 </label>
               </div>
@@ -547,13 +553,28 @@ onMounted(async () => {
             </section>
           </fieldset>
 
-          <!-- Rechts: Möbel im Einsatz -->
+          <!-- Rechts (neues Projekt): erst anlegen, dann Möbel reservieren -->
+          <div v-if="!editing && canEditP" class="proj__edright">
+            <section class="proj__posbox proj__posbox--new">
+              <h3 class="proj__posh">Möbel reservieren</h3>
+              <p class="proj__possub">Lege das Projekt an und füge danach die Möbel hinzu. Solange das Projekt ein Entwurf ist oder das Angebot versendet wurde, sind die Möbel reserviert: nicht im Shop und für andere Projekte gesperrt, aber noch im Lager.</p>
+              <button class="wf-btn wf-btn--primary" :disabled="saving" @click="save(true)">
+                <WfIcon name="plus" :size="14" /> {{ saving ? 'Speichert …' : 'Projekt anlegen & Möbel hinzufügen' }}
+              </button>
+            </section>
+          </div>
+
+          <!-- Rechts: Möbel im Einsatz bzw. reserviert -->
           <div v-if="editing" class="proj__edright">
             <section class="proj__posbox">
               <div class="proj__poshead">
                 <div>
-                  <h3 class="proj__posh">Möbel im Einsatz</h3>
-                  <p class="proj__possub">Alle diesem Projekt zugeordneten Möbel und Accessoires.</p>
+                  <h3 class="proj__posh">{{ isReservingStatus(form.status) ? 'Reservierte Möbel' : 'Möbel im Einsatz' }}</h3>
+                  <p class="proj__possub">
+                    <template v-if="isReservingStatus(form.status)">Für dieses Projekt reserviert – nicht im Shop, für andere Projekte gesperrt, noch im Lager. Mit „Auftrag angenommen“ gelten sie als vermietet.</template>
+                    <template v-else-if="form.status === 'abgelehnt'">Projekt abgelehnt – beim Speichern werden alle Möbel wieder freigegeben.</template>
+                    <template v-else>Alle diesem Projekt zugeordneten Möbel und Accessoires.</template>
+                  </p>
                 </div>
                 <span class="proj__posbtns">
                   <NuxtLink v-if="projectItems.length" :to="`/admin/packliste/${editing.id}`" class="wf-btn wf-btn--sm" title="Druckbare Packliste">
@@ -621,7 +642,7 @@ onMounted(async () => {
         <p v-if="saveError" class="proj__error" role="alert">{{ saveError }}</p>
         <footer class="proj__edfoot">
           <button class="wf-btn" @click="editOpen = false">{{ canEditP ? 'Abbrechen' : 'Schließen' }}</button>
-          <button v-if="canEditP" class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
+          <button v-if="canEditP" class="wf-btn wf-btn--primary" :disabled="saving" @click="save()">
             {{ saving ? 'Speichere …' : 'Speichern' }}
           </button>
         </footer>
@@ -654,6 +675,12 @@ onMounted(async () => {
 }
 .proj__search:focus { border-color: var(--wf-green); }
 .proj__group { margin-bottom: 1.4em; }
+.proj__status { font-size: .68em; font-weight: 700; letter-spacing: .02em; padding: .15em .6em; border-radius: 999px; background: #eef3ee; color: var(--wf-green); white-space: nowrap; }
+.proj__status[data-status="entwurf"] { background: #f1eee6; color: #6e6858; }
+.proj__status[data-status="angebot"] { background: #fdf3df; color: #8a5a12; }
+.proj__status[data-status="abgelehnt"] { background: #fbeaea; color: var(--wf-red); }
+.proj__posbox--new { display: grid; gap: .8em; align-content: start; }
+.proj__posbox--new .wf-btn { justify-self: start; }
 .proj__section {
   font-family: var(--wf-serif); font-weight: 400;
   font-size: 1.02em; color: var(--wf-muted);

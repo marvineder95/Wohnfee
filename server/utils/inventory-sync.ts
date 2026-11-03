@@ -15,16 +15,26 @@ export async function assignedQuantity(itemId: number, exceptProjectId?: number)
   return Number(row?.n || 0)
 }
 
+/** Anzahl bei angenommenen Aufträgen (physisch beim Kunden) – Entwurf/Angebot zählt nur als Reservierung */
+async function activeQuantity(itemId: number): Promise<number> {
+  const row: any = await queryOne(
+    `SELECT COALESCE(SUM(pi.quantity), 0) AS n FROM project_items pi JOIN projects p ON p.id = pi.project_id
+     WHERE pi.item_id = :itemId AND p.status NOT IN ('entwurf', 'angebot', 'abgelehnt')`, { itemId }
+  )
+  return Number(row?.n || 0)
+}
+
 export async function syncItemStatus(itemId: number) {
   const item: any = await queryOne('SELECT id, quantity, status FROM inventory_items WHERE id = :itemId', { itemId })
   if (!item || !['lager', 'vermietet'].includes(item.status)) return
-  const assigned = await assignedQuantity(itemId)
+  // reservierte Stücke (Projekt im Entwurf / Angebot versendet) bleiben im Lager
+  const assigned = await activeQuantity(itemId)
   const stock = Math.max(1, Number(item.quantity) || 1)
   if (assigned >= stock && item.status === 'lager') {
     // Einsatzort: Kunde bzw. Projekt der jüngsten Zuweisung
     const p: any = await queryOne(
       `SELECT p.customer, p.title FROM project_items pi JOIN projects p ON p.id = pi.project_id
-       WHERE pi.item_id = :itemId ORDER BY pi.assigned_at DESC LIMIT 1`, { itemId }
+       WHERE pi.item_id = :itemId AND p.status NOT IN ('entwurf', 'angebot', 'abgelehnt') ORDER BY pi.assigned_at DESC LIMIT 1`, { itemId }
     )
     const loc = [p?.customer, p?.title].filter(Boolean).join(' – ').slice(0, 190) || null
     await query(`UPDATE inventory_items SET status = 'vermietet', customer_location = :loc WHERE id = :itemId`, { loc, itemId })
