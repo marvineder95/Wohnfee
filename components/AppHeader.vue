@@ -163,6 +163,8 @@ const isNew = (item: any) => NEW_ROUTES.includes(item.route)
 // Mietshop noch nicht öffentlich → „Bald“ statt „Neuer Shop“
 const shopStatus = useShopStatus()
 onMounted(() => { shopStatus.load() })
+// Immobilien nur im Menü, wenn im Dashboard freigeschaltet (Schalter unter Immobilien)
+const mainNav = computed(() => (nav as any).main.filter((i: any) => i.route !== '/immobilien.html' || shopStatus.properties.value))
 const newLabel = computed(() => shopStatus.closed.value
   ? (currentLang.value === 'en' ? '✦ Soon' : '✦ Bald')
   : (currentLang.value === 'en' ? '✦ New shop' : '✦ Neuer Shop'))
@@ -204,7 +206,7 @@ onBeforeUnmount(() => {
       <nav class="mod_navigation block wfh-nav" :aria-label="currentLang === 'en' ? 'Main navigation' : 'Hauptnavigation'">
         <a href="#skipNavigation1" class="invisible">Navigation überspringen</a>
         <ul class="level_1">
-          <li v-for="item in (nav as any).main" :key="item.route"
+          <li v-for="item in mainNav" :key="item.route"
               :class="[liClass(item, false), item.children?.length ? 'has-drop' : '']">
             <strong v-if="item.route === dePath(route.path)" :class="liClass(item, false)">
               {{ titleFor(item) }}
@@ -277,7 +279,7 @@ onBeforeUnmount(() => {
 
         <div class="wfm__body">
           <div class="wfm__nav" role="navigation" :aria-label="currentLang === 'en' ? 'Main navigation' : 'Hauptnavigation'">
-            <div v-for="(item, i) in (nav as any).main" :key="item.route" class="wfm__item"
+            <div v-for="(item, i) in mainNav" :key="item.route" class="wfm__item"
                  :class="{ 'is-active': isActive(item), 'is-expanded': expanded === item.route }"
                  :style="{ '--i': i }">
               <div class="wfm__row">

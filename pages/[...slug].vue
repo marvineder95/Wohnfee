@@ -154,7 +154,7 @@ let property: any = null
 const propMatch = !entry.value ? slug.value.match(/^(?:\/en)?\/immobilien\/([a-z0-9-]+)\.html$/) : null
 if (propMatch) {
   const { data } = await useAsyncData(`property-${slug.value}`,
-    () => $fetch<any>(`/api/properties/${propMatch[1]}`).catch(() => null))
+    () => useRequestFetch()<any>(`/api/properties/${propMatch[1]}`).catch(() => null))
   property = data.value?.slug ? data.value : null
 }
 
@@ -165,6 +165,13 @@ if (entry.value && pageRoute.value === '/partner.html') {
     () => $fetch<any>('/api/partners').catch(() => ({ partners: [] })))
   partnerList = data.value?.partners || []
   if (!partnerList.length) throw createError({ statusCode: 404, statusMessage: 'Seite nicht gefunden' })
+}
+
+// Immobilien-Übersicht nur, wenn der Bereich öffentlich ist (oder eingeloggt als Vorschau)
+if (entry.value && pageRoute.value === '/immobilien.html') {
+  const { data: propsOk } = await useAsyncData(`props-access-${slug.value}`,
+    () => useRequestFetch()('/api/properties').then(() => true).catch(() => false))
+  if (!propsOk.value) throw createError({ statusCode: 404, statusMessage: 'Seite nicht gefunden' })
 }
 
 // 404 for unknown routes

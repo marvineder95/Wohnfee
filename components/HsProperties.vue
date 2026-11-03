@@ -4,7 +4,7 @@
 import { PROPERTY_CATEGORIES, PROPERTY_STATUS, categoryLabel } from '~~/shared/properties'
 
 const { isEn, t, lp, lang } = useLang()
-const { data } = await useAsyncData('properties-list', () => $fetch<{ items: any[] }>('/api/properties').catch(() => ({ items: [] })))
+const { data } = await useAsyncData('properties-list', () => useRequestFetch()<{ items: any[] }>('/api/properties').catch(() => ({ items: [] })))
 const all = computed(() => data.value?.items || [])
 
 const type = ref<'alle' | 'miete' | 'kauf'>('alle')

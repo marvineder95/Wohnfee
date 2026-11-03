@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto'
+import { requirePropertiesAccess } from '../../../utils/shop-status'
 import { query, queryOne } from '../../../utils/db'
 import { sendMail } from '../../../utils/mailer'
 import { clientIp, assertNotLimited, countAttempt } from '../../../utils/rate-limit'
@@ -6,6 +7,7 @@ import { publicOrigin } from '../../../utils/site'
 
 // POST /api/properties/:slug/inquiry – Besichtigung/Infos anfragen → landet in „Anfragen" (mit Immobilie verknüpft)
 export default defineEventHandler(async (event) => {
+  await requirePropertiesAccess(event)
   const body = await readBody(event)
   if (String(body?.website || '')) return { ok: true } // Honeypot
   const en = body?.lang === 'en'

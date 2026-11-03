@@ -106,6 +106,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   (Shop / Reinigung-Reparatur = Status `pflege` / defekt).
   Annahme → `server/utils/offer-invoices.ts`: Entwurf „Monat 1" (Positionen mit Einheit „Mon."),
   Entwurf „Einmalige Leistungen" (Transport, Deko) und Abo für Monat 2…N (Vorlage = Monat 1).
+- Immobilien öffentlich ja/nein (Setting `properties_public`, Schalter oben auf /admin/immobilien, Standard AUS seit 03.11.2026):
+  aus = kein Menüpunkt, /immobilien.html + Detailseiten 404, nicht in der Sitemap, `/api/properties*` 404 (Admins: Vorschau).
 - Immobilien (Menüpunkt „Immobilien", Dashboard /admin/immobilien, Tabelle `properties`, Listen in
   `shared/properties.ts`): Website /immobilien.html + /immobilien/<slug>.html (live), Anfrage → contact_inquiries
   (property_id). willhaben: OpenImmo-XML (`server/utils/openimmo.ts`), Feed /api/feeds/openimmo?key=… (Setting

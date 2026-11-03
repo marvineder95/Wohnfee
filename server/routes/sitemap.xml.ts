@@ -1,3 +1,4 @@
+import { propertiesPublic } from '../utils/shop-status'
 import routes from '~/data/routes.json'
 import news from '~/data/news.json'
 import site from '~/data/site.json'
@@ -9,10 +10,12 @@ export default defineEventHandler(async (event) => {
   const entries: string[] = []
 
   // Partner-Seite nur listen, wenn es sichtbare Partner gibt
+  const propsOn = await propertiesPublic()
   const hasPartners = !!(await query<any>(`SELECT id FROM partners WHERE visible = 1 AND kind = 'partner' LIMIT 1`).catch(() => [])).length
 
   for (const [path, info] of Object.entries(routes as Record<string, { type: string, id: string }>)) {
     if (info.id === 'partner' && !hasPartners) continue
+    if (info.id === 'immobilien' && !propsOn) continue
     if (info.type === 'news') {
       const n = (news as Record<string, any>)[info.id]
       // press items link to external sources; live sitemap excludes them
@@ -38,8 +41,8 @@ export default defineEventHandler(async (event) => {
     entries.push(`  <url>\n    <loc>${base}${articleRoute(p.section, p.slug)}</loc>\n    <lastmod>${lastmod}</lastmod>\n  </url>`)
   }
 
-  // Immobilien aus dem Dashboard (verfügbar/reserviert)
-  const props = await query<any>(`SELECT slug, updated_at FROM properties WHERE status IN ('aktiv','reserviert')`).catch(() => [])
+  // Immobilien aus dem Dashboard (verfügbar/reserviert) – nur wenn der Bereich öffentlich ist
+  const props = propsOn ? await query<any>(`SELECT slug, updated_at FROM properties WHERE status IN ('aktiv','reserviert')`).catch(() => []) : []
   for (const p of props) {
     entries.push(`  <url>\n    <loc>${base}/immobilien/${p.slug}.html</loc>\n    <lastmod>${new Date(p.updated_at).toISOString().slice(0, 10)}</lastmod>\n  </url>`)
   }

@@ -21,6 +21,20 @@ async function load() {
     loading.value = false
   }
 }
+// Immobilien auf der Website öffentlich ja/nein (Menüpunkt, Seiten, Sitemap)
+const propsPublic = ref<boolean | null>(null)
+const propsBusy = ref(false)
+onMounted(async () => {
+  try { propsPublic.value = (await $fetch<{ properties: boolean }>('/api/shop-status')).properties } catch { propsPublic.value = null }
+})
+async function togglePublic() {
+  if (propsPublic.value === null) return
+  propsBusy.value = true
+  try {
+    propsPublic.value = (await $fetch<{ public: boolean }>('/api/admin/properties/public', { method: 'PUT', body: { public: !propsPublic.value } })).public
+  } catch { /* bleibt */ } finally { propsBusy.value = false }
+}
+
 onMounted(async () => {
   await load()
   const open = Number(route.query.open)
@@ -67,6 +81,17 @@ async function copyFeed() {
         <button v-if="settings" class="wf-btn wf-btn--sm" @click="showSettings = !showSettings"><WfIcon name="settings" :size="14" /> willhaben-Schnittstelle</button>
         <NuxtLink v-if="perms.canEdit('immobilien')" to="/admin/immobilien/neu" class="wf-btn wf-btn--sm wf-btn--primary"><WfIcon name="plus" :size="14" /> Neue Immobilie</NuxtLink>
       </div>
+    </section>
+
+    <section v-if="propsPublic !== null" class="imo__public wf-card" :class="{ 'is-on': propsPublic }">
+      <div>
+        <strong><WfIcon name="globe" :size="15" /> Immobilien auf der Website</strong>
+        <p v-if="propsPublic">Sichtbar: Menüpunkt „Immobilien“, Übersicht und Detailseiten sind öffentlich.</p>
+        <p v-else>Ausgeblendet: kein Menüpunkt, Seiten sind nicht erreichbar und nicht bei Google. Eingeloggt seht ihr sie weiter als Vorschau.</p>
+      </div>
+      <button type="button" class="imo__switch" role="switch" :aria-checked="propsPublic" :disabled="!perms.canEdit('immobilien') || propsBusy" @click="togglePublic">
+        <span class="imo__knob" />{{ propsPublic ? 'Öffentlich' : 'Ausgeblendet' }}
+      </button>
     </section>
 
     <section v-if="showSettings && settings" class="imo__settings wf-card">
@@ -130,6 +155,17 @@ async function copyFeed() {
 </template>
 
 <style scoped>
+.imo__public { display: flex; justify-content: space-between; align-items: center; gap: 1em; flex-wrap: wrap; padding: 1em 1.3em; margin-bottom: 1.2em; border-left: 4px solid #e0a82e; }
+.imo__public.is-on { border-left-color: var(--wf-green); }
+.imo__public strong { display: inline-flex; align-items: center; gap: .4em; }
+.imo__public p { margin: .25em 0 0; font-size: .85em; color: var(--wf-muted); }
+.imo__switch { display: inline-flex; align-items: center; gap: .6em; border: 1px solid var(--wf-line); background: #fff; border-radius: 999px; padding: .35em .9em .35em .35em; font: inherit; font-size: .88em; font-weight: 600; cursor: pointer; color: var(--wf-ink); }
+.imo__switch:disabled { opacity: .6; cursor: default; }
+.imo__knob { width: 2.6em; height: 1.5em; border-radius: 999px; background: #d9d3c4; position: relative; transition: background .2s; }
+.imo__knob::after { content: ''; position: absolute; top: .15em; left: .15em; width: 1.2em; height: 1.2em; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s; }
+.imo__switch[aria-checked="true"] .imo__knob { background: var(--wf-green); }
+.imo__switch[aria-checked="true"] .imo__knob::after { transform: translateX(1.1em); }
+
 .imo__head { display: flex; justify-content: space-between; align-items: flex-end; gap: 1em; flex-wrap: wrap; padding: 1.6em 1.8em; margin-bottom: 1em; }
 .imo__head .wf-subtitle a { color: var(--wf-green); }
 .imo__head .wf-title { text-align: left; margin: 0; }
