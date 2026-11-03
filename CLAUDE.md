@@ -71,6 +71,10 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   alle angezeigten Rechnungen als PDF + `Uebersicht.csv` (Netto/USt/Brutto, Semikolon, für Excel/Buchhaltung).
 - Kontakte: Firma = `name2` Firmenname, `uid` UID-Nummer (eigene Spalte, wird in Rechnung/Angebot übernommen), `name1` Zusatz;
   Person = `name1` Vorname, `name2` Nachname.
+- Kontakt-Dokumente (Tabelle `documents`, alte Rechnungen/Angebote aus Nextcloud): Augen-Button → PDF im Popup über
+  `/api/admin/documents/:id/file` (Recht „rechnungen“). PDFs liegen geschützt in `public/uploads/documents/<file_path>`
+  (Upload-Route liefert nur Bilder), Quelle am Mac: `~/Documents/kimi/tasks/2026-10-03/…/nc_docs`. „dashboard/…“-Einträge
+  → bestehende Rechnungs-/Angebots-PDFs. Nicht in der täglichen Sicherung (statisches Archiv, `--exclude=./documents`).
 - Inventar: `description` (+ `description_en`) = Text im Mietshop; `internal_note` = interne Notiz, nur Dashboard (nie in Katalog-API/Angeboten).
 - Möbel ↔ Projekte: `server/utils/inventory-sync.ts` verhindert Doppelbelegung und setzt
   Lagerstatus (lager/vermietet); Shop zeigt nur freien Bestand.

@@ -56,6 +56,9 @@ interface Document {
   file_path: string
 }
 const documents = ref<Document[]>([])
+// PDF-Vorschau eines Dokuments im Popup (geschützter Abruf über /api/admin/documents/:id/file)
+const docPreview = ref<Document | null>(null)
+const docUrl = (d: Document) => `/api/admin/documents/${d.id}/file`
 const docStats = ref<{ rechnungen: number; angebote: number; gesamtsumme: number | null } | null>(null)
 const docsLoading = ref(false)
 
@@ -354,6 +357,9 @@ onMounted(() => {
                 <span class="contacts__docnum">{{ doc.number || doc.file_path.split('/').pop() }}</span>
                 <span class="contacts__docdate">{{ fmtDate(doc.doc_date) }}</span>
                 <span class="contacts__doctotal">{{ fmtEuro(doc.total) }}</span>
+                <button type="button" class="contacts__docview" title="Ansehen" :aria-label="`${kindLabel(doc.kind)} ${doc.number || ''} ansehen`" @click="docPreview = doc">
+                  <WfIcon name="eye" :size="15" />
+                </button>
                 <span v-if="doc.return_date" class="contacts__docret" :class="{ 'is-overdue': isOverdue(doc.return_date) }">
                   Miete bis {{ fmtDate(doc.return_date) }}
                 </span>
@@ -369,6 +375,19 @@ onMounted(() => {
             {{ saving ? 'Speichere …' : 'Speichern' }}
           </button>
         </div>
+      </div>
+    </div>
+    <!-- PDF-Vorschau eines Dokuments -->
+    <div v-if="docPreview" class="wf-modal-overlay contacts__pdfoverlay" @click.self="docPreview = null">
+      <div class="wf-modal contacts__pdfmodal">
+        <div class="contacts__pdfhead">
+          <h2>{{ kindLabel(docPreview.kind) }} {{ docPreview.number || '' }}<small v-if="docPreview.doc_date"> · {{ fmtDate(docPreview.doc_date) }}</small></h2>
+          <div class="contacts__pdfactions">
+            <a class="wf-btn wf-btn--sm" :href="docUrl(docPreview)" target="_blank" rel="noopener"><WfIcon name="download" :size="14" /> In neuem Tab</a>
+            <button type="button" class="contacts__pdfclose" title="Schließen" @click="docPreview = null">×</button>
+          </div>
+        </div>
+        <iframe class="contacts__pdfview" :src="docUrl(docPreview)" :title="`Vorschau ${docPreview.number || ''}`" />
       </div>
     </div>
   </div>
@@ -414,6 +433,16 @@ onMounted(() => {
 .contacts__docsh { font-family: var(--wf-serif); font-weight: 400; font-size: 1.1em; margin: 0 0 .5em; }
 .contacts__docstats { font-size: .82em; color: var(--wf-muted); margin: 0 0 .6em; }
 .contacts__doclist { list-style: none; margin: 0; padding: 0; max-height: 16em; overflow-y: auto; }
+.contacts__docview { margin-left: auto; border: 1px solid var(--wf-line); background: #fff; color: var(--wf-green); border-radius: 8px; width: 2em; height: 2em; display: inline-grid; place-items: center; cursor: pointer; align-self: center; }
+.contacts__docview:hover { background: var(--wf-green); color: #fff; border-color: var(--wf-green); }
+.contacts__pdfoverlay { z-index: 120; }
+.contacts__pdfmodal { max-width: 70em; width: 100%; height: 90vh; display: flex; flex-direction: column; gap: .8em; padding: 1em 1.2em; }
+.contacts__pdfhead { display: flex; justify-content: space-between; align-items: center; gap: 1em; flex-wrap: wrap; }
+.contacts__pdfhead h2 { margin: 0; font-size: 1.05em; text-align: left; }
+.contacts__pdfhead small { color: var(--wf-muted); font-size: .85em; font-weight: 400; }
+.contacts__pdfactions { display: flex; align-items: center; gap: .5em; }
+.contacts__pdfclose { border: 0; background: #f4efe6; width: 2em; height: 2em; border-radius: 50%; font-size: 1.2em; line-height: 1; cursor: pointer; color: #6e6858; }
+.contacts__pdfview { flex: 1; width: 100%; border: 0; border-radius: 10px; background: #525659; }
 .contacts__doc { display: flex; flex-wrap: wrap; align-items: baseline; gap: .5em; padding: .45em .5em; border-bottom: 1px solid #f4efe6; font-size: .86em; }
 .contacts__dockind { flex: 0 0 6.5em; font-size: .75em; font-weight: 600; padding: .18em .5em; border-radius: 999px; background: var(--wf-blue-soft); color: var(--wf-blue); text-align: center; }
 .contacts__dockind[data-kind="rechnung"] { background: var(--wf-red-soft); color: var(--wf-red); }

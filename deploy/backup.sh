@@ -13,7 +13,7 @@ docker compose exec -T db sh -c 'exec mysqldump --single-transaction --routines 
 gzip -t "$DIR/db-$STAMP.sql.gz"   # Archiv lesbar?
 [ "$(zcat "$DIR/db-$STAMP.sql.gz" | grep -c 'CREATE TABLE')" -gt 5 ] || { echo "Backup unvollständig!"; exit 1; }
 
-docker run --rm -v wohnfee_uploads:/u:ro -v "$PWD/$DIR":/b alpine tar czf "/b/uploads-$STAMP.tar.gz" -C /u .
+docker run --rm -v wohnfee_uploads:/u:ro -v "$PWD/$DIR":/b alpine tar czf "/b/uploads-$STAMP.tar.gz" --exclude=./documents -C /u .  # alte Dokument-PDFs (Archiv, ändern sich nie) nicht täglich mitsichern
 
 find "$DIR" -name 'db-*.sql.gz' -mtime +14 -delete
 find "$DIR" -name 'uploads-*.tar.gz' -mtime +14 -delete
