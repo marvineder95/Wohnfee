@@ -130,6 +130,12 @@ onMounted(async () => {
 const catalog = useRentalCatalog()
 // Mietdauer im Formular = Mietdauer des Warenkorbs (Preise rechnen sich danach)
 onMounted(async () => { if (await catalog.load()) store.refresh() })
+// Mietshop „Coming Soon“ → Checkout nicht erreichbar, zurück zur Shop-Seite (dort Hinweis + Anfrageformular)
+const shopStatus = useShopStatus()
+onMounted(async () => {
+  await shopStatus.load()
+  if (shopStatus.closed.value) await navigateTo(props.lang === 'en' ? '/en/furniture-leasing.html' : '/furniture-leasing.html', { replace: true })
+})
 
 // Hinweis: Wird ab 3 Monaten der Gratis-Transport erreicht, darauf aufmerksam machen
 const hint = computed<null | { kind: 'perk'; text: string; action: string }>(() => {

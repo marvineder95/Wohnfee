@@ -128,6 +128,8 @@ const CAT_EN: Record<string, string> = {
 
 // Katalog & Warenkorb werden seitenweit geteilt (useRentalCatalog / useRentalCart)
 const catalog = useRentalCatalog()
+const shop = useShopStatus()
+onMounted(() => { shop.load() })
 const cartStore = useRentalCart()
 const items = computed<RentalItem[]>(() => catalog.items.value as RentalItem[])
 const loading = ref(true)
@@ -479,7 +481,8 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
         <p class="fl__headline">{{ t.headline }}</p>
         <p class="fl__sub">{{ t.sub }}</p>
         <div class="fl__heroactions">
-          <button type="button" class="fl__cta" @click="scrollToProducts">{{ t.cta }} <span aria-hidden="true">→</span></button>
+          <button v-if="!shop.closed.value" type="button" class="fl__cta" @click="scrollToProducts">{{ t.cta }} <span aria-hidden="true">→</span></button>
+          <NuxtLink v-else :to="(isEn ? '/en' : '') + '/kontakt.html?thema=leasing'" class="fl__cta">{{ isEn ? 'Request furniture' : 'Möbel anfragen' }} <span aria-hidden="true">→</span></NuxtLink>
           <button type="button" class="fl__cta fl__cta--ghost" @click="scrollToHowItWorks">{{ t.howItWorks }}</button>
         </div>
         <ul class="fl__usps">
@@ -489,7 +492,7 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
           </li>
         </ul>
       </div>
-      <button type="button" class="fl__cue" @click="scrollToProducts">
+      <button v-if="!shop.closed.value" type="button" class="fl__cue" @click="scrollToProducts">
         {{ t.toProducts }}
         <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span>
       </button>
@@ -497,7 +500,8 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 
     <!-- ── SHOP: SIDEBAR + PRODUKTGRID ──────────────────── -->
     <!-- (Kategorie-Schnellwahl wurde entfernt – Auswahl läuft über die Filter-Sidebar) -->
-    <section id="fl-produkte" class="fl__shop">
+    <section v-if="shop.open.value" id="fl-produkte" class="fl__shop">
+      <p v-if="shop.preview.value" class="fl__previewnote">{{ isEn ? 'Preview – the shop is hidden for visitors (switch under Conditions in the dashboard).' : 'Vorschau – für Besucher ausgeblendet („Coming Soon“). Freischalten im Dashboard unter Konditionen.' }}</p>
       <div class="fl__layout">
         <!-- Filter-Sidebar (Desktop: Spalte, Mobil: Drawer) -->
         <aside class="fl__side" :class="{ 'is-open': sideOpen }" :aria-label="t.filter">
@@ -679,6 +683,20 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
               </div>
             </article>
           </div>
+        </div>
+      </div>
+    </section>
+    <!-- „Coming Soon“: Mietshop noch nicht öffentlich (Schalter unter Konditionen) -->
+    <section v-else-if="shop.closed.value" id="fl-produkte" class="fl__soon">
+      <div class="fl__soonbox">
+        <p class="fl__soonkicker">{{ isEn ? 'Coming soon' : 'Bald verfügbar' }}</p>
+        <h2 class="fl__soonh">{{ isEn ? 'Our rental shop opens shortly' : 'Unser Mietshop startet in Kürze' }}</h2>
+        <p class="fl__soontext">{{ isEn
+          ? 'We are photographing and pricing our furniture for you right now. Until then, simply tell us what you need – we will put together a non-binding offer for you.'
+          : 'Wir fotografieren und bepreisen gerade unsere Möbel für Sie. Bis dahin sagen Sie uns einfach, was Sie brauchen – wir stellen Ihnen ein unverbindliches Angebot zusammen.' }}</p>
+        <div class="fl__soonactions">
+          <NuxtLink :to="(isEn ? '/en' : '') + '/kontakt.html?thema=leasing'" class="fl__cta">{{ isEn ? 'Request furniture' : 'Möbel anfragen' }} <span aria-hidden="true">→</span></NuxtLink>
+          <a href="tel:+436769202236" class="fl__cta fl__cta--ghost">+43 676 9202236</a>
         </div>
       </div>
     </section>
@@ -876,6 +894,14 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 @media (prefers-reduced-motion: reduce) { .fl__cue svg { animation: none; } }
 
 /* Shop-Layout: Sidebar + Inhalt */
+.fl__previewnote { margin: 0 0 1em; padding: .6em 1em; border-radius: 12px; background: #fdf3df; color: #8a5a12; font-size: .85em; font-weight: 600; }
+.fl__soon { max-width: 1240px; margin: 0 auto; padding: 3.5em 1.5em 4em; }
+.fl__soonbox { max-width: 760px; margin: 0 auto; text-align: center; background: #fff; border: 1px solid var(--line); border-radius: 26px; padding: 3em 2em; box-shadow: 0 18px 50px rgba(60, 50, 30, .08); }
+.fl__soonkicker { margin: 0 0 .6em; font-size: .75em; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; color: var(--green); }
+.fl__soonh { margin: 0 0 .6em; font-family: var(--font-family-02, Georgia, serif); font-weight: 500; font-size: clamp(1.6em, 3.5vw, 2.3em); line-height: 1.2; color: var(--ink); text-align: center; }
+.fl__soontext { margin: 0 auto 1.6em; max-width: 52ch; color: var(--muted); line-height: 1.7; }
+.fl__soonactions { display: flex; flex-wrap: wrap; gap: .7em; justify-content: center; }
+.fl__soonactions .fl__cta--ghost { color: var(--green); border-color: var(--green); }
 .fl__shop { max-width: 1240px; margin: 0 auto; padding: 2em 1.5em 3em; }
 .fl__shoptitle {
   font-family: Georgia, serif; font-weight: 500; font-size: 1.7em;

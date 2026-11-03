@@ -160,7 +160,12 @@ const { navAllowed } = usePartners()
 // Kleines Abzeichen am Mietshop (Furniture Leasing). Später einfach aus NEW_ROUTES entfernen.
 const NEW_ROUTES = ['/furniture-leasing.html']
 const isNew = (item: any) => NEW_ROUTES.includes(item.route)
-const newLabel = computed(() => (currentLang.value === 'en' ? '✦ New shop' : '✦ Neuer Shop'))
+// Mietshop noch nicht öffentlich → „Bald“ statt „Neuer Shop“
+const shopStatus = useShopStatus()
+onMounted(() => { shopStatus.load() })
+const newLabel = computed(() => shopStatus.closed.value
+  ? (currentLang.value === 'en' ? '✦ Soon' : '✦ Bald')
+  : (currentLang.value === 'en' ? '✦ New shop' : '✦ Neuer Shop'))
 
 // ---------- Sprach-Dropdown ----------
 // Klick öffnet/schließt (auch Touch), Hover öffnet am Desktop (CSS); schließt bei

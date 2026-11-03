@@ -82,7 +82,7 @@ export function requirementForApi(path: string, method: string): { area: Area; n
   if (p === 'transport/quote') return { area: 'konditionen', need: 'view' }
   const map: Record<string, Area> = {
     dashboard: 'dashboard', inquiries: 'anfragen', 'rental-inquiries': 'mietanfragen', projects: 'projekte',
-    logistics: 'touren', calendar: 'kalender', inventory: 'inventar', contacts: 'kontakte', offers: 'angebote', documents: 'rechnungen',
+    logistics: 'touren', calendar: 'kalender', inventory: 'inventar', contacts: 'kontakte', offers: 'angebote', documents: 'rechnungen', 'shop-status': 'konditionen',
     invoices: 'rechnungen', recurring: 'rechnungen', blog: 'artikel', newsletter: 'newsletter',
     transport: 'konditionen', users: 'users', properties: 'immobilien', partners: 'partner',
     'rental-pricing': 'konditionen', packages: 'inventar', testimonials: 'partner', 'site-content': 'partner'

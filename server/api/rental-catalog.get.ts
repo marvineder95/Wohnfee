@@ -3,6 +3,7 @@ import { RESERVED_SQL } from '../utils/reservations'
 import { getTiers } from '../utils/rental-pricing'
 import { loadPackages } from '../utils/rental-packages'
 import { basePrice } from '../../shared/rental-pricing'
+import { shopAccess } from '../utils/shop-status'
 
 // GET /api/rental-catalog — öffentlicher Katalog der vermietbaren Möbel (kein Admin-Login nötig).
 // Liefert nur öffentliche Felder — keine Einkaufspreise, EANs, Lagerdetails o. Ä.
@@ -10,7 +11,10 @@ import { basePrice } from '../../shared/rental-pricing'
 // für eine offene Mietanfrage reserviert sind).
 // price = Grundpreis (Monatsmiete bei 1 Monat); Rabatt je Mietdauer über `tiers` (shared/rental-pricing.ts).
 // packages = sichtbare Möbelpakete mit Paket-Grundpreis und Verfügbarkeit.
-export default defineEventHandler(async () => {
+export default defineEventHandler(async (event) => {
+  // „Coming Soon“: Besucher bekommen keine Produkte (Admins sehen die Vorschau)
+  const access = await shopAccess(event)
+  if (!access.public && !access.preview) return { items: [], packages: [], tiers: await getTiers(), closed: true }
   const items = await query(
     `SELECT id, title, title_en AS titleEn, category, image_path AS imagePath,
             description, description_en AS descriptionEn,

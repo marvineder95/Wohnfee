@@ -67,6 +67,26 @@ async function save() {
 }
 onMounted(load)
 
+// Mietshop öffentlich ja/nein („Coming Soon“) – wirkt sofort, ohne Speichern-Button
+const shopPublic = ref<boolean | null>(null)
+const shopBusy = ref(false)
+const shopMsg = ref('')
+onMounted(async () => {
+  try { shopPublic.value = (await $fetch<{ public: boolean }>('/api/shop-status')).public } catch { shopPublic.value = null }
+})
+async function toggleShop() {
+  if (shopPublic.value === null) return
+  shopBusy.value = true
+  shopMsg.value = ''
+  try {
+    const res = await $fetch<{ public: boolean }>('/api/admin/shop-status', { method: 'PUT', body: { public: !shopPublic.value } })
+    shopPublic.value = res.public
+    shopMsg.value = res.public ? 'Mietshop ist jetzt für alle sichtbar.' : 'Mietshop ausgeblendet – Besucher sehen „Coming Soon“.'
+  } catch (e: any) {
+    shopMsg.value = e?.data?.statusMessage || 'Konnte nicht umgestellt werden.'
+  } finally { shopBusy.value = false }
+}
+
 const crew = computed(() => (Number(form.drivers) || 0) + (Number(form.designers) || 0))
 const mapUrl = computed(() => form.depotLat !== null
   ? `https://www.openstreetmap.org/?mlat=${form.depotLat}&mlon=${form.depotLon}#map=16/${form.depotLat}/${form.depotLon}` : '')
@@ -107,6 +127,21 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
         <span>+ Kilometergeld für jeden km über {{ num(form.freeKm) }} km (einfache Strecke) × 4 Strecken</span>
         <span>− Gratis-Transport Wien bzw. −50 % (Transportvorteile laut Warenkorb)</span>
       </div>
+    </section>
+
+    <section v-if="shopPublic !== null" class="kond__shop wf-card" :class="{ 'is-on': shopPublic }">
+      <div>
+        <h2 class="kond__h2"><WfIcon name="bag" :size="16" /> Mietshop öffentlich</h2>
+        <p class="kond__shoptext">
+          <template v-if="shopPublic">Besucher sehen Produkte, Warenkorb und können online Mietanfragen senden.</template>
+          <template v-else>Aus: Besucher sehen „Unser Mietshop startet in Kürze“ und ein Anfrage-Formular. Eingeloggt seht ihr den Shop weiter als Vorschau.</template>
+        </p>
+        <p v-if="shopMsg" class="kond__shopmsg">{{ shopMsg }}</p>
+      </div>
+      <button type="button" class="kond__switch" role="switch" :aria-checked="shopPublic" :disabled="!canEditK || shopBusy" @click="toggleShop">
+        <span class="kond__knob" />
+        <span class="kond__switchlabel">{{ shopPublic ? 'Öffentlich' : 'Coming Soon' }}</span>
+      </button>
     </section>
 
     <p v-if="loading" class="kond__muted">Wird geladen …</p>
@@ -263,6 +298,17 @@ const num = (v: number) => Number(v || 0).toLocaleString('de-AT')
 </template>
 
 <style scoped>
+.kond__shop { display: flex; justify-content: space-between; align-items: center; gap: 1.2em; flex-wrap: wrap; padding: 1.1em 1.4em; margin-bottom: 1.2em; border-left: 4px solid #e0a82e; }
+.kond__shop.is-on { border-left-color: var(--wf-green); }
+.kond__shop .kond__h2 { margin: 0 0 .25em; }
+.kond__shoptext { margin: 0; font-size: .86em; color: var(--wf-muted); max-width: 60ch; }
+.kond__shopmsg { margin: .4em 0 0; font-size: .82em; font-weight: 600; color: var(--wf-green); }
+.kond__switch { display: inline-flex; align-items: center; gap: .6em; border: 1px solid var(--wf-line); background: #fff; border-radius: 999px; padding: .35em .9em .35em .35em; font: inherit; font-size: .88em; font-weight: 600; cursor: pointer; color: var(--wf-ink); }
+.kond__switch:disabled { opacity: .6; cursor: default; }
+.kond__knob { width: 2.6em; height: 1.5em; border-radius: 999px; background: #d9d3c4; position: relative; transition: background .2s; }
+.kond__knob::after { content: ''; position: absolute; top: .15em; left: .15em; width: 1.2em; height: 1.2em; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,.2); transition: transform .2s; }
+.kond__switch[aria-checked="true"] .kond__knob { background: var(--wf-green); }
+.kond__switch[aria-checked="true"] .kond__knob::after { transform: translateX(1.1em); }
 .kond__head { display: flex; justify-content: space-between; gap: 1.5em; flex-wrap: wrap; padding: 1.6em 1.8em; margin-bottom: 1.2em; }
 .kond__head > div:first-child { flex: 1 1 26em; }
 .kond__formula { flex: 1 1 22em; display: flex; flex-direction: column; gap: .35em; padding: 1em 1.2em; border-radius: 14px; background: var(--wf-green-soft); font-size: .84em; color: var(--wf-ink); }

@@ -1,4 +1,5 @@
 import { query, queryOne } from '../utils/db'
+import { shopAccess } from '../utils/shop-status'
 import { clientIp, assertNotLimited, countAttempt } from '../utils/rate-limit'
 import { assignedQuantity } from '../utils/inventory-sync'
 import { reservedQuantity, startReservation } from '../utils/reservations'
@@ -19,6 +20,11 @@ function dateOk(v: any): boolean {
 // Öffentlicher Endpunkt (kein Login), aber nur öffentliche Inventardaten werden gelesen
 // und die monatlichen Preise werden SERVERSEITIG aus der Datenbank neu berechnet.
 export default defineEventHandler(async (event) => {
+  // Mietshop noch nicht öffentlich („Coming Soon“) → keine Online-Mietanfragen (Admin-Vorschau ausgenommen)
+  const access = await shopAccess(event)
+  if (!access.public && !access.preview) {
+    throw createError({ statusCode: 403, statusMessage: 'Unser Mietshop startet in Kürze – bitte nutzen Sie bis dahin das Kontaktformular.' })
+  }
   // Spam-Schutz: max. 5 Mietanfragen je IP und Stunde
   const limitKey = `rental:${clientIp(event)}`
   assertNotLimited(limitKey, 5, 60 * 60 * 1000)

@@ -17,11 +17,14 @@ const refresh = () => {
   } catch { count.value = 0 }
 }
 // Im Checkout und auf der Angebotsseite stört der Button nur
-const hidden = computed(() => /\/checkout|^\/angebot\//.test(route.path))
+// … und solange der Mietshop „Coming Soon“ ist
+const shop = useShopStatus()
+const hidden = computed(() => !shop.open.value || /\/checkout|^\/angebot\//.test(route.path))
 const en = computed(() => lang.value === 'en')
 const openCart = () => window.dispatchEvent(new CustomEvent('wf:open-cart'))
 
 onMounted(() => {
+  shop.load()
   refresh()
   window.addEventListener('wf:cart-changed', refresh)
   window.addEventListener('storage', refresh)
