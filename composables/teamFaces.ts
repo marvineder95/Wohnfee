@@ -2,7 +2,9 @@
 // Die Team-Fotos sind Ganzkörperbilder; im quadratischen Ausschnitt (oben bündig) wird
 // per Zoom auf das Gesicht gezoomt. focus = Gesichtsposition im Quadrat, zoom = Vergrößerung.
 const FACES: Record<string, { focus: string; zoom: number }> = {
-  'Marvin_Eder_Raum.jpg': { focus: '59% 60%', zoom: 2.7 }, // Marvin (freigestellt vor WOHNFEE-Projekt „Liam“)
+  // Marvin – Platzhalter mit Initialen („Bin gerade beim Fotografen …“), DE und EN
+  'Marvin_Eder_Platzhalter.jpg': { focus: '50% 49%', zoom: 1.9 },
+  'Marvin_Eder_Platzhalter_en.jpg': { focus: '50% 49%', zoom: 1.9 },
   'WohnFee_Brandingfotos_23-6.jpg': { focus: '55% 50%', zoom: 2.6 } // Sandra Berte (sitzend)
 }
 
