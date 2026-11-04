@@ -292,7 +292,7 @@
      "headline": "",
      "headlineUnit": "h3",
      "cssClass": "icon_list icon_timeframe",
-     "html": "<h3>5. Vermarktungszeitraum</h3>\n<p><strong>(Holen Sie die Möbel gleich nach den Fotos wieder ab?)</strong></p>\n<p>Die Möbel, Accessoires und Beleuchtung bleiben über den gesamten Vermarktungszeitraum in der Immobilie – mindestens 2 Monate. Das ist auch der Vorteil eines echten HOME STAGINGS im Vergleich zu einem virtuellen Staging, wo der Interessent zwar wunderschöne Bilder sieht, aber die Besichtigung in einer leeren Immobilie stattfindet.</p>"
+     "html": "<h3>5. Vermarktungszeitraum</h3>\n<p><strong>(Holen Sie die Möbel gleich nach den Fotos wieder ab?)</strong></p>\n<p>Die Möbel, Accessoires und Beleuchtung bleiben über den gesamten Vermarktungszeitraum in der Immobilie – so lange, wie Sie sie brauchen. Das ist auch der Vorteil eines echten HOME STAGINGS im Vergleich zu einem virtuellen Staging, wo der Interessent zwar wunderschöne Bilder sieht, aber die Besichtigung in einer leeren Immobilie stattfindet.</p>"
     },
     {
      "id": "138",
@@ -404,7 +404,7 @@
      "headline": "Redesign von den WOHNFEE-Profis",
      "headlineUnit": "h2",
      "cssClass": "",
-     "html": "<p>Die <span class=\"wohnfee-light\">WOHNFEE</span> analysiert die Gegebenheiten Ihrer Wohnräume und klärt in einem persönlichen Gespräch die Wünsche, Vorstellungen und Bedürfnisse aller Bewohner. Daraus entseht ein individuelles Gestaltungskonzept mit Farben, Materialien, Beleuchtung, Möbeln und Accessoires.</p>\n<h3><strong>Umsetzung aus einer Hand - Feenservice eben.</strong></h3>\n<p>Das Angebot umfasst das gesamte Redesign der Innenräume. Wir planen und organisieren alle erforderlichen Dinge. Sofern auch Umbauten erforderlich sind, arbeiten wir mit ausgesuchten Architekturbüros zusammen.</p>\n<p>Immobilien <strong>in jeder Größe</strong> werden – nach Budgetvorgaben und Kostenvoranschlag – für Sie so verändert wie Sie es sich erträumen. Kein Standardpaket, sondern etwas Besonderes.</p>\n<p> </p>"
+     "html": "<p>Die <span class=\"wohnfee-light\">WOHNFEE</span> analysiert die Gegebenheiten Ihrer Wohnräume und klärt in einem persönlichen Gespräch die Wünsche, Vorstellungen und Bedürfnisse aller Bewohner. Daraus entsteht ein individuelles Gestaltungskonzept mit Farben, Materialien, Beleuchtung, Möbeln und Accessoires.</p>\n<h3><strong>Umsetzung aus einer Hand - Feenservice eben.</strong></h3>\n<p>Das Angebot umfasst das gesamte Redesign der Innenräume. Wir planen und organisieren alle erforderlichen Dinge. Sofern auch Umbauten erforderlich sind, arbeiten wir mit ausgesuchten Architekturbüros zusammen.</p>\n<p>Immobilien <strong>in jeder Größe</strong> werden – nach Budgetvorgaben und Kostenvoranschlag – für Sie so verändert wie Sie es sich erträumen. Kein Standardpaket, sondern etwas Besonderes.</p>\n<p> </p>"
     },
     {
      "id": "354",
@@ -582,7 +582,7 @@
   "title": "Furniture Leasing",
   "alias": "furniture-leasing",
   "pageTitle": "",
-  "description": "Leihmöbel für Expats - ob Wohnung oder Haus - von 3 Monaten bis zu 4 Jahren - individuelle Auswahl - rasche Lieferung und persönlicher Service",
+  "description": "Leihmöbel für Expats - ob Wohnung oder Haus - flexibel ab 1 Monat - individuelle Auswahl - rasche Lieferung und persönlicher Service",
   "robots": "index,follow",
   "hide": false,
   "parent": "1",
@@ -652,7 +652,7 @@
      "headline": "",
      "headlineUnit": "h2",
      "cssClass": "icon_list_small icon_timeframe",
-     "html": "<p>Mietdauer: von 6 Monaten bis zu 4 Jahren (bei längerer Miete günstigere Konditionen)</p>"
+     "html": "<p>Mietdauer: flexibel ab 1 Monat – je länger, desto günstiger</p>"
     },
     {
      "id": "334",
@@ -1455,7 +1455,7 @@
        "headlineUnit": "h3",
        "cssClass": "",
        "category": "Ablauf & Dauer",
-       "html": "<p>Die Möbel, Leuchten und Accessoires bleiben während des gesamten Vermarktungszeitraums im Objekt. Unsere Paketpreise sind auf eine <strong>Leihdauer von 3 Monaten</strong> ausgelegt. Das ist der große Unterschied zu einer Visualisierung – das Wohngefühl ist bei jeder Besichtigung live erlebbar.</p>"
+       "html": "<p>Die Möbel, Leuchten und Accessoires bleiben während des gesamten Vermarktungszeitraums im Objekt. Unsere Paketpreise sind auf eine <strong>Leihdauer von 3 Monaten</strong> ausgelegt – kürzere oder längere Zeiträume, auch nur 1 Monat, sind nach Vereinbarung möglich. Das ist der große Unterschied zu einer Visualisierung – das Wohngefühl ist bei jeder Besichtigung live erlebbar.</p>"
       },
       {
        "id": "faq-10",
@@ -1767,7 +1767,7 @@
   "title": "Furniture Leasing",
   "alias": "furniture-leasing-2",
   "pageTitle": "",
-  "description": "Furniture for rent - from 3 months to 4 years - individual selection - sustainable and great quality - fast delivery - Vienna",
+  "description": "Furniture for rent - flexible from 1 month - individual selection - sustainable and great quality - fast delivery - Vienna",
   "robots": "index,follow",
   "hide": true,
   "parent": "5",
@@ -1984,7 +1984,7 @@
      "headline": "Preispakete WOHNFEE",
      "headlineUnit": "h1",
      "cssClass": "no-flex",
-     "html": "<p><strong>Allgemein:</strong></p>\n<ul>\n<li>Leihdauer 3 Monate</li>\n<li>50% Anzahlung, Restzahlung nach dem Staging</li>\n<li>Alle Preise zzgl. 20% USt.</li>\n<li>Alle Preise ohne Lampenmontage</li>\n</ul>\n<p><strong>Die Montage der Lampen ist von dem/der Auftraggebenden selbst durchzuführen bzw. </strong><strong>individuell zu vereinbaren.</strong></p>\n<p><strong>Die Einrichtung kann nach Verfügbarkeit und individuellen Wünschen variieren.</strong></p>"
+     "html": "<p><strong>Allgemein:</strong></p>\n<ul>\n<li>Paketpreise für 3 Monate Leihdauer – kürzer (ab 1 Monat) oder länger nach Vereinbarung</li>\n<li>50% Anzahlung, Restzahlung nach dem Staging</li>\n<li>Alle Preise zzgl. 20% USt.</li>\n<li>Alle Preise ohne Lampenmontage</li>\n</ul>\n<p><strong>Die Montage der Lampen ist von dem/der Auftraggebenden selbst durchzuführen bzw. </strong><strong>individuell zu vereinbaren.</strong></p>\n<p><strong>Die Einrichtung kann nach Verfügbarkeit und individuellen Wünschen variieren.</strong></p>"
     },
     {
      "id": "906",
@@ -1992,7 +1992,7 @@
      "headline": "PAKET 1",
      "headlineUnit": "h2",
      "cssClass": "no-flex paket",
-     "html": "<h3>Staging des Wohn-Essbereiches , Küche und Vorzimmer bis max. 50 qm,</h3>"
+     "html": "<h3>Staging des Wohn-Essbereiches, Küche und Vorzimmer bis max. 50 qm,</h3>"
     },
     {
      "id": "907",
@@ -2078,7 +2078,7 @@
      "headline": "PAKET 3",
      "headlineUnit": "h2",
      "cssClass": "no-flex paket",
-     "html": "<h3>Komplettstaging einer Wohneinheit bis max. 100 qm €</h3>"
+     "html": "<h3>Komplettstaging einer Wohneinheit bis max. 100 qm</h3>"
     },
     {
      "id": "931",

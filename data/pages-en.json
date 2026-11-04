@@ -293,7 +293,7 @@
      "headline": "",
      "headlineUnit": "h3",
      "cssClass": "icon_list icon_timeframe",
-     "html": "<h3>5. Marketing period</h3>\n<p><strong>(Will you collect the furniture right after the photos?)</strong></p>\n<p>The furniture, accessories and lighting remain in the property for the entire marketing period – at least 2 months. This is also the advantage of a real HOME STAGING compared to virtual staging, where the prospective buyer sees beautiful pictures but the viewing takes place in an empty property.</p>"
+     "html": "<h3>5. Marketing period</h3>\n<p><strong>(Will you collect the furniture right after the photos?)</strong></p>\n<p>The furniture, accessories and lighting remain in the property for the entire marketing period – for as long as you need it. This is also the advantage of a real HOME STAGING compared to virtual staging, where the prospective buyer sees beautiful pictures but the viewing takes place in an empty property.</p>"
     },
     {
      "id": "138",
@@ -1159,7 +1159,7 @@
        "headlineUnit": "h3",
        "cssClass": "",
        "category": "Process & timing",
-       "html": "<p>The furniture, lamps and accessories remain in the property for the entire marketing period. Our package prices are based on a <strong>rental period of 3 months</strong>. That is the big difference to a visualisation – the feeling of living there can be experienced at every viewing.</p>"
+       "html": "<p>The furniture, lamps and accessories remain in the property for the entire marketing period. Our package prices are based on a <strong>rental period of 3 months</strong> – shorter or longer periods, even just 1 month, are possible by arrangement. That is the big difference to a visualisation – the feeling of living there can be experienced at every viewing.</p>"
       },
       {
        "id": "faq-10",
@@ -1489,7 +1489,7 @@
      "headline": "WOHNFEE Price Packages",
      "headlineUnit": "h1",
      "cssClass": "no-flex",
-     "html": "<p><strong>General:</strong></p>\n<ul>\n<li>Rental period 3 months</li>\n<li>50% deposit, remainder after the staging</li>\n<li>All prices plus 20% VAT.</li>\n<li>All prices without lamp installation</li>\n</ul>\n<p><strong>The installation of the lamps is to be carried out by the client themselves or </strong><strong>to be agreed individually.</strong></p>\n<p><strong>The furnishings may vary depending on availability and individual wishes.</strong></p>"
+     "html": "<p><strong>General:</strong></p>\n<ul>\n<li>Package prices for a 3-month rental – shorter (from 1 month) or longer by arrangement</li>\n<li>50% deposit, remainder after the staging</li>\n<li>All prices plus 20% VAT.</li>\n<li>All prices without lamp installation</li>\n</ul>\n<p><strong>The installation of the lamps is to be carried out by the client themselves or </strong><strong>to be agreed individually.</strong></p>\n<p><strong>The furnishings may vary depending on availability and individual wishes.</strong></p>"
     },
     {
      "id": "906",

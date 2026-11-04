@@ -166,7 +166,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 
 ## Offene Punkte (vom Kunden zu klären)
 - Gewerbe im Impressum: nur Handel + Kleintransport; „Vermietung von beweglichen Sachen“ (Furniture Leasing) klären/anmelden.
-- Widersprüche: „80–150 Teile“ vs. alte FAQ „100–200“; Leihdauer „mind. 2 Monate“ vs. „3 Monate“.
+- Texte (Nov. 2026): „80–150 Teile“ gilt; KEINE Mindestmietdauer (auch 1 Monat möglich) – Paketpreise gelten für 3 Monate,
+  kürzer/länger nach Vereinbarung.
 - Datenschutzerklärung inhaltlich auf Eder & Steiner GmbH prüfen (nur Adresse ersetzt).
 - Mail-Design: `server/utils/mail-layout.ts` (Logo `public/mail/wohnfee-logo.png`, Fuß mit Firmendaten, `mailButton`, `mailFacts`,
   `mailSignature`). `sendMail()` legt das Layout automatisch um jede Mail ohne `data-wf-mail`; Vorlagen liefern nur den Inhalt.
@@ -174,7 +175,6 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Passwort setzt der Kunde selbst: `bash /opt/wohnfee/deploy/set-smtp-password.sh`, Test: `deploy/test-mail.sh [empfänger]`.
 - Mietkatalog: Möbel ohne Fotos; danach Live-Produktvorschau auf der Startseite möglich.
 - Ferien-Apartment-Fotoserie (fremde Rechte) entfernt Nov. 2026: Startseite nutzt `Redesign3_Essen 0052.jpg`, Artikel 76 offline (301 → /redesign.html). Nicht wieder verwenden.
-- Tippfehler im Pflegetext: Redesign „entseht“, Preise Paket 1/3 (Komma/€ am Ende).
 - Konditionen: Stundensatz (Platzhalter 45 €/Std.), Aufbau-/Abbauzeiten und Kilometergeld
   im Dashboard prüfen. 
 - Checkout: Mietdauer im Formular (1/3 Monate) ist unabhängig von der Mietdauer je Artikel
