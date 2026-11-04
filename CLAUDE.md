@@ -11,7 +11,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Deployment: `Dockerfile` + `deploy/` (Compose: App, MySQL 8.4, Caddy/HTTPS; Backup/Restore-Skripte;
   Anleitung `deploy/README.md`). Läuft seit 12.10.2026 auf IONOS-VPS 87.106.27.101 unter https://neu.wohnfee.at (Benutzer `wohnfee`, SSH nur per Schlüssel,
   Code in /opt/wohnfee, Backup täglich 03:15). Seit 03.11.2026 LIVE auf **www.wohnfee.at** (A-Record wohnfee.at → 87.106.27.101 bei World4You; wohnfee.at und
-  neu.wohnfee.at leiten per 308 auf www weiter, `.env`: SITE_DOMAINS/REDIRECT_DOMAINS/PRIMARY_DOMAIN/NUXT_SITE_URL). Alte es-gmbh.at-Container (es_web/es_api/es_db) gestoppt, DB-Sicherung /opt/wohnfee/es_gmbh-db-backup.sql.gz.
+  neu.wohnfee.at leiten per 308 auf www weiter, `.env`: SITE_DOMAINS/REDIRECT_DOMAINS/PRIMARY_DOMAIN/NUXT_SITE_URL). Alte es-gmbh.at-Reste am Server am 04.11.2026 gelöscht (DB-Sicherung am Mac: ~/Documents/Wohnfee/Archiv/).
   Updates automatisch: Server holt alle 5 Min. den Zweig `live` (deploy/auto-update.sh, Rollback + Push-Meldung).
   Live stellen = `git push origin redesign-website:live` – NUR auf ausdrücklichen Wunsch. Dateinamen/Daten in
   Unicode-NFC halten (Linux-Build findet sonst „Küche.jpg" nicht).
