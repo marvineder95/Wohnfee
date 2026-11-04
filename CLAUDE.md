@@ -191,5 +191,3 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Kaution nach Vereinbarung, Storno-Staffel 14/3 Tage. ⚠ Ebenfalls vom WKO-Rechtsservice prüfen lassen.
 - Kein Tracking, kein Cookie-Banner (Google Analytics + Cookiebar im Okt. 2026 entfernt). Videos (CeVideo)
   laden erst nach Klick. Neue externe Dienste nur nach Rücksprache – sonst braucht es wieder ein Banner.
-- Noch nicht im neuen Design: Furniture Leasing unterhalb des Heros, EN-Startseite
-  hat englische Daten nur teilweise (Zielgruppen-Elemente ungenutzt).
