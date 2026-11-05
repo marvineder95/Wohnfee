@@ -191,7 +191,7 @@ function printPlan() {
                   @click="rangeDays = r.days">{{ r.label }}</button>
         </div>
         <button class="wf-btn wf-btn--sm" @click="printPlan"><WfIcon name="print" :size="14" /> Drucken</button>
-        <NuxtLink to="/admin/kalender?new=1" class="wf-btn wf-btn--sm wf-btn--primary"><WfIcon name="plus" :size="14" /> Termin</NuxtLink>
+        <NuxtLink v-if="perms.canEdit('kalender')" to="/admin/kalender?new=1" class="wf-btn wf-btn--sm wf-btn--primary"><WfIcon name="plus" :size="14" /> Termin</NuxtLink>
       </div>
     </section>
 

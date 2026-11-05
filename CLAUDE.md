@@ -158,9 +158,16 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Urlaubskonto (`vacationAccount` in shared/employees.ts): Anspruch je Kalenderjahr aliquot ab Eintritt/bis Austritt (½ Tage aufgerundet),
   Rest wandert ins Folgejahr (Verbrauch ältester Rest zuerst, verjährt 2 J. nach Urlaubsjahr). Start = Eintrittsjahr, frühestens 2026;
   davor offener Rest über `vacation_opening_year`/`_days` (Feld „Resturlaub zum 1.1.“).
+  Selbst-Meldung (`components/admin/MyAbsences.vue` in Kalender + Übersicht, API `/api/admin/me/absences`, `server/utils/absences.ts`):
+  Urlaub beantragen → `status = 'beantragt'`, Chef genehmigt/lehnt ab (Kalender oben bzw. Mitarbeiter-Reiter, `/api/admin/absences/:id/review`);
+  Krankenstand melden → sofort gültig, Krankmeldung (Foto/PDF) optional → `employee_documents.absence_id`, Kategorie `krankmeldung`;
+  verlängern + weitere Krankmeldung über `/me/absences/:id/files`. Ohne Krankmeldung Erinnerung nach 3 Tagen (dann alle 3 Tage,
+  Plugin `server/plugins/absences.ts`, erste Erinnerung auch an den Chef). Nur genehmigte Einträge zählen. Kalender zeigt Abwesenheiten
+  allen; Krankenstand sieht das Team nur als „Abwesend“.
 - Rollen & Rechte: `shared/permissions.ts` (eine Tabelle für Server + UI). Admin (superadmin),
   Designerin (designer: alles außer Mitarbeiter; Rechnungen + Konditionen nur ansehen, auch keine Rechnung aus Angebot), Spediteur (driver: nur
-  ansehen, eigene Kalendertermine; keine Angebote/Rechnungen/Konditionen/Newsletter/Blog/Immobilien).
+  ansehen – Übersicht = Kalender + To-Dos + Meine Abwesenheiten; keine Anfragen/Mietanfragen/Angebote/Rechnungen/Konditionen/
+  Newsletter/Blog/Immobilien, keine eigenen Termine, kein „Abholung erledigt“).
   Server: `server/middleware/admin-permissions.ts`; UI: `usePermissions()`, Menü + Seitenschutz
   im Layout, Bearbeiten-Elemente per `canEdit(area)` bzw. `<fieldset :disabled>`.
 - Sicherheit: Login max. 10 Fehlversuche/15 min je IP, „Passwort vergessen" 5/h,

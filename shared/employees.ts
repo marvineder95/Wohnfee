@@ -26,6 +26,7 @@ export const DOC_CATEGORIES = [
   { value: 'fuehrerschein', label: 'Führerschein' },
   { value: 'zeugnis', label: 'Zeugnis / Nachweis' },
   { value: 'lohn', label: 'Lohnzettel' },
+  { value: 'krankmeldung', label: 'Krankmeldung' },
   { value: 'sonstiges', label: 'Sonstiges' }
 ] as const
 
@@ -35,6 +36,15 @@ export const ABSENCE_TYPES = [
   { value: 'zeitausgleich', label: 'Zeitausgleich' },
   { value: 'sonstiges', label: 'Sonstiges' }
 ] as const
+
+/** Status einer Abwesenheit: vom Admin eingetragen = genehmigt; Urlaubsantrag vom Mitarbeiter = beantragt. */
+export const ABSENCE_STATUS: Record<string, { label: string; tone: string }> = {
+  beantragt: { label: 'Beantragt', tone: 'amber' },
+  genehmigt: { label: 'Genehmigt', tone: 'green' },
+  abgelehnt: { label: 'Abgelehnt', tone: 'red' }
+}
+/** Erinnerung an die Krankmeldung, wenn nach so vielen Tagen noch keine hochgeladen ist (danach im selben Abstand). */
+export const SICK_NOTE_REMINDER_DAYS = 3
 
 const find = (list: readonly { value: string; label: string }[], v: string | null | undefined) =>
   list.find(x => x.value === v)?.label || ''

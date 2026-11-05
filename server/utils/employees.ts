@@ -1,4 +1,7 @@
+import { mkdir, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
+import { randomBytes } from 'node:crypto'
+import { MAX_UPLOAD_BYTES } from './image-optimize'
 import { query, queryOne } from './db'
 import { todayVienna } from './site'
 import { EMPLOYMENT_TYPES, SALARY_TYPES, isValue, vacationAccount } from '../../shared/employees'
@@ -7,6 +10,28 @@ import { EMPLOYMENT_TYPES, SALARY_TYPES, isValue, vacationAccount } from '../../
 // Sensible Daten (SV-Nr., Bank, Gehalt) verlassen das Dashboard nie.
 
 export const EMPLOYEE_FILES_ROOT = join(process.cwd(), 'public', 'uploads', 'private', 'employees')
+
+const FILE_EXT: Record<string, string> = {
+  'application/pdf': '.pdf', 'image/jpeg': '.jpg', 'image/png': '.png', 'image/webp': '.webp'
+}
+
+/** Datei geschützt ablegen (public/uploads/private/employees/<id>/…) und als Mitarbeiter-Dokument eintragen. */
+export async function saveEmployeeFile(employeeId: number, file: { data: Buffer; type?: string },
+  meta: { category: string; title: string; validUntil?: string | null; by: string; absenceId?: number | null }) {
+  const ext = FILE_EXT[file.type || '']
+  if (!ext) throw createError({ statusCode: 415, statusMessage: 'Nur PDF, JPEG, PNG oder WebP erlaubt' })
+  if (file.data.length > MAX_UPLOAD_BYTES) throw createError({ statusCode: 413, statusMessage: 'Datei zu groß (max. 25 MB)' })
+  const dir = join(EMPLOYEE_FILES_ROOT, String(employeeId))
+  await mkdir(dir, { recursive: true })
+  const fname = `${Date.now()}-${randomBytes(6).toString('hex')}${ext}`
+  await writeFile(join(dir, fname), file.data)
+  await query(
+    `INSERT INTO employee_documents (employee_id, absence_id, category, title, file_path, mime, size, valid_until, uploaded_by_name)
+     VALUES (:id, :absenceId, :category, :title, :path, :mime, :size, :validUntil, :by)`,
+    { id: employeeId, absenceId: meta.absenceId || null, category: meta.category, title: meta.title.slice(0, 190),
+      path: `${employeeId}/${fname}`, mime: file.type, size: file.data.length, validUntil: meta.validUntil || null, by: meta.by }
+  )
+}
 
 const TEXT_FIELDS = [
   'title', 'first_name', 'last_name', 'position', 'email', 'private_email', 'phone', 'street', 'zip', 'city',
@@ -63,18 +88,23 @@ export async function listEmployees() {
             e.employment_type, e.entry_date, e.exit_date, e.probation_until, e.vacation_days, e.vacation_opening_year, e.vacation_opening_days, e.weekly_hours,
             u.id AS user_id, u.username, u.role, u.status AS user_status, u.avatar_path,
             (SELECT a.type FROM employee_absences a
-              WHERE a.employee_id = e.id AND :today BETWEEN a.date_from AND a.date_to LIMIT 1) AS absent_today,
+              WHERE a.employee_id = e.id AND a.status = 'genehmigt' AND :today BETWEEN a.date_from AND a.date_to LIMIT 1) AS absent_today,
+            (SELECT COALESCE(SUM(a.days), 0) FROM employee_absences a
+              WHERE a.employee_id = e.id AND a.type = 'krankenstand' AND a.status = 'genehmigt' AND YEAR(a.date_from) = :year) AS sick_days,
+            (SELECT COUNT(*) FROM employee_absences a WHERE a.employee_id = e.id AND a.status = 'beantragt') AS pending_requests,
+            (SELECT COUNT(*) FROM employee_absences a WHERE a.employee_id = e.id AND a.type = 'krankenstand'
+              AND a.requested_by IS NOT NULL AND NOT EXISTS (SELECT 1 FROM employee_documents d WHERE d.absence_id = a.id)) AS missing_sick_notes,
             (SELECT COUNT(*) FROM employee_documents d WHERE d.employee_id = e.id) AS doc_count,
             (SELECT MIN(d.valid_until) FROM employee_documents d
               WHERE d.employee_id = e.id AND d.valid_until IS NOT NULL AND d.valid_until >= :today) AS next_doc_expiry
      FROM employees e
      LEFT JOIN admin_users u ON u.id = e.user_id
      ORDER BY (e.exit_date IS NOT NULL AND e.exit_date < :today), e.last_name, e.first_name`,
-    { today }
+    { today, year: Number(year) }
   )
   const used = await query<{ employee_id: number; y: number; days: number }>(
     `SELECT employee_id, YEAR(date_from) AS y, SUM(days) AS days FROM employee_absences
-     WHERE type = 'urlaub' GROUP BY employee_id, YEAR(date_from)`
+     WHERE type = 'urlaub' AND status = 'genehmigt' GROUP BY employee_id, YEAR(date_from)`
   )
   for (const e of rows) {
     const usedByYear: Record<number, number> = {}
@@ -90,10 +120,13 @@ export async function listEmployees() {
 export async function employeeDetail(id: number) {
   const emp = await requireEmployee(id)
   const [documents, absences, user] = await Promise.all([
-    query(`SELECT id, category, title, mime, size, valid_until, uploaded_by_name, created_at
+    query(`SELECT id, absence_id, category, title, mime, size, valid_until, uploaded_by_name, created_at
            FROM employee_documents WHERE employee_id = :id ORDER BY created_at DESC`, { id }),
-    query(`SELECT id, type, date_from, date_to, days, note FROM employee_absences
-           WHERE employee_id = :id ORDER BY date_from DESC`, { id }),
+    query(`SELECT a.id, a.type, a.date_from, a.date_to, a.days, a.note, a.status, a.requested_by, a.review_note, a.reviewed_by_name,
+                  u.display_name AS requested_by_name,
+                  (SELECT COUNT(*) FROM employee_documents d WHERE d.absence_id = a.id) AS file_count
+           FROM employee_absences a LEFT JOIN admin_users u ON u.id = a.requested_by
+           WHERE a.employee_id = :id ORDER BY a.date_from DESC`, { id }),
     emp.user_id
       ? queryOne(`SELECT u.id, u.username, u.email, u.role, u.status, u.created_at AS createdAt,
                          u.invite_expires_at AS inviteExpiresAt, u.avatar_path, i.username AS invitedByUsername

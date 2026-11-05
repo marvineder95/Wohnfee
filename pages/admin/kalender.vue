@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { absenceLabel, ABSENCE_STATUS } from '~~/shared/employees'
 definePageMeta({ layout: 'admin' })
 
 useHead({
@@ -8,6 +9,10 @@ useHead({
 
 const { user } = useAdminAuth()
 const newParam = useNewParam()
+const perms = usePermissions()
+const ask = useConfirm()
+// Spediteur: nur ansehen – statt „Neuer Termin“ gibt es Urlaub beantragen / Krankenstand melden
+const canAdd = computed(() => perms.canEdit('kalender'))
 
 interface CalEvent {
   id: number
@@ -30,6 +35,10 @@ interface CalEvent {
   reviewedByName: string | null
 }
 interface PendingEv { id: number; title: string; type: string; eventDate: string; startTime: string | null; allDay: number; createdByName: string | null }
+interface Absence {
+  id: number; type: string; status: string; dateFrom: string; dateTo: string; name: string; own: boolean
+  days: number; note: string | null; employeeId: number | null; fileCount: number | null
+}
 interface ProjectOpt { id: number; label: string; category: string }
 
 const TYPE_META: Record<string, { label: string; tone: string }> = {
@@ -101,7 +110,7 @@ async function load() {
   loading.value = true
   try {
     const [cal, proj, log] = await Promise.all([
-      $fetch<{ events: CalEvent[]; pending: PendingEv[] }>('/api/admin/calendar', {
+      $fetch<{ events: CalEvent[]; pending: PendingEv[]; absences: Absence[] }>('/api/admin/calendar', {
         query: { from: range.value.from, to: range.value.to }
       }),
       $fetch<{ projects: any[] }>('/api/admin/projects'),
@@ -111,6 +120,7 @@ async function load() {
     ])
     events.value = cal.events
     pending.value = cal.pending || []
+    absences.value = cal.absences || []
     autoEntries.value = [
       ...log.deadlines.map((d: any) => ({ ...d, kind: 'deadline' as const })),
       ...log.returns.map((r: any) => ({ ...r, kind: 'rueckgabe' as const }))
@@ -129,7 +139,7 @@ async function load() {
 watch([viewYear, viewMonth], load)
 onMounted(async () => {
   await load()
-  newParam.consume(() => openNew())
+  if (canAdd.value) newParam.consume(() => openNew())
   // Link aus einer Benachrichtigung: Termin hervorheben
   if (focusEvent) {
     highlightId.value = focusEvent
@@ -173,6 +183,34 @@ function jumpTo(p: PendingEv) {
   selectedDate.value = p.eventDate
   highlightId.value = p.id
   setTimeout(() => document.getElementById(`cal-ev-${p.id}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' }), 400)
+}
+
+// ---------- Abwesenheiten (Urlaub / Krankenstand) ----------
+const absences = ref<Absence[]>([])
+const absFocus = Number(route.query.abwesenheit) || null
+const absPending = computed(() => absences.value.filter(a => a.status === 'beantragt' && isChef.value))
+function dayAbsences(iso: string) {
+  return absences.value.filter(a => a.dateFrom <= iso && a.dateTo >= iso)
+}
+const absName = (a: Absence) => a.type === 'abwesend' ? 'Abwesend' : absenceLabel(a.type)
+const absRange = (a: Absence) => a.dateFrom === a.dateTo ? fmtDate(a.dateFrom) : `${fmtDate(a.dateFrom)} – ${fmtDate(a.dateTo)}`
+const absNote = ref<Record<number, string>>({})
+async function reviewAbsence(a: Absence, status: 'genehmigt' | 'abgelehnt') {
+  if (status === 'abgelehnt' && !await ask({ title: 'Urlaubsantrag ablehnen?', message: `${a.name}: ${absRange(a)}`, confirmText: 'Ablehnen', danger: true })) return
+  reviewBusy.value = -a.id
+  try {
+    await $fetch(`/api/admin/absences/${a.id}/review`, { method: 'POST', body: { status, note: absNote.value[a.id] || '' } })
+    absNote.value[a.id] = ''
+    await load()
+  } catch (e: any) {
+    loadError.value = e?.data?.statusMessage || 'Rückmeldung konnte nicht gespeichert werden.'
+  } finally { reviewBusy.value = null }
+}
+function jumpToAbsence(a: Absence) {
+  const d = new Date(a.dateFrom + 'T12:00:00')
+  viewYear.value = d.getFullYear()
+  viewMonth.value = d.getMonth()
+  selectedDate.value = a.dateFrom
 }
 
 // Automatische Einträge aus Projekten (Abholung fällig / Rückgaben) – nicht editierbar
@@ -249,7 +287,7 @@ async function save() {
 }
 
 async function remove(ev: CalEvent) {
-  if (!confirm(`Termin „${ev.title}“ wirklich löschen?`)) return
+  if (!await ask({ title: 'Termin löschen?', message: ev.title, confirmText: 'Löschen', danger: true })) return
   try {
     await $fetch(`/api/admin/calendar/${ev.id}`, { method: 'DELETE' })
     await load()
@@ -258,9 +296,9 @@ async function remove(ev: CalEvent) {
   }
 }
 
-// Admin & Designerin verwalten alle Termine, Spediteure nur ihre eigenen
-function canManage(ev: CalEvent) {
-  return user.value?.role !== 'driver' || (!!ev.createdBy && ev.createdBy === user.value?.id)
+// Admin & Designerin verwalten alle Termine, Spediteure nur ansehen
+function canManage(_ev: CalEvent) {
+  return canAdd.value
 }
 
 function fmtDate(iso: string) {
@@ -302,6 +340,25 @@ function timeLabel(ev: CalEvent) {
       </ul>
     </section>
 
+    <section v-if="absPending.length" class="cal-pending cal-pending--abs wf-card">
+      <h2><span class="cal-pending__n">{{ absPending.length }}</span> {{ absPending.length === 1 ? 'Urlaubsantrag wartet' : 'Urlaubsanträge warten' }} auf deine Genehmigung</h2>
+      <ul class="cal-absreq">
+        <li v-for="a in absPending" :key="a.id" :class="{ 'is-highlight': absFocus === a.id }">
+          <button type="button" class="cal-absreq__info" @click="jumpToAbsence(a)">
+            <strong>{{ a.name }} · {{ absRange(a) }}</strong>
+            <small>{{ Number(a.days) }} {{ Number(a.days) === 1 ? 'Arbeitstag' : 'Arbeitstage' }}<template v-if="a.note"> · {{ a.note }}</template></small>
+          </button>
+          <input v-model="absNote[a.id]" class="wf-input" maxlength="500" :placeholder="`Nachricht an ${a.name.split(' ')[0]} (optional)`">
+          <span class="cal-review__btns">
+            <button type="button" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="reviewBusy === -a.id" @click="reviewAbsence(a, 'genehmigt')"><WfIcon name="check" :size="13" /> Genehmigen</button>
+            <button type="button" class="wf-btn wf-btn--sm" :disabled="reviewBusy === -a.id" @click="reviewAbsence(a, 'abgelehnt')">Ablehnen</button>
+          </span>
+        </li>
+      </ul>
+    </section>
+
+    <AdminMyAbsences v-if="!isChef" :highlight="absFocus" @changed="load" />
+
     <div class="cal-layout">
       <!-- ── Monatskalender ─────────────────────────────── -->
       <section class="cal-card wf-card">
@@ -316,7 +373,7 @@ function timeLabel(ev: CalEvent) {
             </button>
             <button class="wf-btn wf-btn--sm cal-nav__today" @click="goToday">Heute</button>
           </div>
-          <button class="wf-btn wf-btn--primary" @click="openNew()">
+          <button v-if="canAdd" class="wf-btn wf-btn--primary" @click="openNew()">
             <WfIcon name="plus" :size="14" /> Neuer Termin
           </button>
         </header>
@@ -333,6 +390,10 @@ function timeLabel(ev: CalEvent) {
                   @click="selectedDate = d.iso">
             <span class="cal-day__num">{{ d.day }}</span>
             <span class="cal-day__events">
+              <span v-for="a in dayAbsences(d.iso).slice(0, 2)" :key="'abs' + a.id" class="cal-chip cal-chip--abs"
+                    :class="{ 'is-pending': a.status === 'beantragt' }" :data-type="a.type" :title="`${absName(a)}: ${a.name}`">
+                {{ a.name.split(' ')[0] }} · {{ absName(a) }}
+              </span>
               <span v-for="ev in dayEvents(d.iso).slice(0, 2)" :key="ev.id"
                     class="cal-chip" :class="{ 'is-pending': ev.reviewStatus === 'offen' }" :data-tone="ev.type" :title="ev.title">
                 <template v-if="!ev.allDay && ev.startTime">{{ ev.startTime.slice(0, 5) }} </template>{{ ev.title }}
@@ -355,10 +416,25 @@ function timeLabel(ev: CalEvent) {
             <h2>{{ weekdayLabel(selectedDate) }}, {{ fmtDate(selectedDate) }}</h2>
             <p v-if="selectedDate === todayIso" class="cal-side__today">Heute</p>
           </div>
-          <button class="wf-btn wf-btn--sm" @click="openNew(selectedDate)">
+          <button v-if="canAdd" class="wf-btn wf-btn--sm" @click="openNew(selectedDate)">
             <WfIcon name="plus" :size="13" /> Termin
           </button>
         </header>
+
+        <ul v-if="dayAbsences(selectedDate).length" class="cal-abslist">
+          <li v-for="a in dayAbsences(selectedDate)" :key="a.id" :data-type="a.type">
+            <span class="cal-abslist__type">{{ absName(a) }}</span>
+            <span class="cal-abslist__main">
+              <strong>{{ a.name }}</strong>
+              <small>
+                {{ absRange(a) }}
+                <template v-if="a.status === 'beantragt'"> · {{ ABSENCE_STATUS.beantragt.label }}</template>
+                <template v-if="a.type === 'krankenstand' && a.fileCount !== null"> · {{ a.fileCount ? 'Krankmeldung ✓' : 'Krankmeldung fehlt' }}</template>
+              </small>
+            </span>
+            <NuxtLink v-if="isChef && a.employeeId" :to="`/admin/mitarbeiter?open=${a.employeeId}&tab=abwesenheit`" class="wf-btn wf-btn--sm">Mitarbeiter</NuxtLink>
+          </li>
+        </ul>
 
         <ul v-if="dayAuto(selectedDate).length" class="cal-autolist">
           <li v-for="a in dayAuto(selectedDate)" :key="a.kind + a.projectId">
@@ -372,8 +448,8 @@ function timeLabel(ev: CalEvent) {
           </li>
         </ul>
 
-        <p v-if="!selectedEvents.length && !dayAuto(selectedDate).length" class="cal-side__empty">
-          Keine Termine an diesem Tag.<br>Lege einen neuen Termin an.
+        <p v-if="!selectedEvents.length && !dayAuto(selectedDate).length && !dayAbsences(selectedDate).length" class="cal-side__empty">
+          Keine Termine an diesem Tag.<template v-if="canAdd"><br>Lege einen neuen Termin an.</template>
         </p>
         <ul v-else class="cal-list">
           <li v-for="ev in selectedEvents" :id="`cal-ev-${ev.id}`" :key="ev.id" class="cal-ev" :class="{ 'is-highlight': highlightId === ev.id }" :data-tone="ev.type">
@@ -499,6 +575,23 @@ function timeLabel(ev: CalEvent) {
 </template>
 
 <style scoped>
+/* Abwesenheiten */
+.cal-chip--abs { background: #e8eef6 !important; color: #3a5f8a !important; }
+.cal-chip--abs[data-type="krankenstand"], .cal-chip--abs[data-type="abwesend"] { background: #f3eeee !important; color: #8a4a44 !important; }
+.cal-absreq { display: grid !important; gap: .6em; }
+.cal-absreq li { display: grid; grid-template-columns: minmax(12em, 1.2fr) minmax(10em, 1fr) auto; gap: .6em; align-items: center; padding: .55em .7em; border: 1px solid var(--wf-line); border-radius: 12px; background: #fff; }
+.cal-absreq li.is-highlight { box-shadow: 0 0 0 2px var(--wf-green); }
+.cal-absreq .cal-absreq__info { border: 0 !important; padding: 0 !important; background: none !important; }
+.cal-abslist { list-style: none; margin: 0 0 .8em; padding: 0; display: grid; gap: .45em; }
+.cal-abslist li { display: flex; align-items: center; gap: .6em; padding: .55em .7em; border-radius: 12px; background: #eef2f8; }
+.cal-abslist li[data-type="krankenstand"], .cal-abslist li[data-type="abwesend"] { background: #f7f0ef; }
+.cal-abslist__type { font-size: .7em; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: #3a5f8a; }
+.cal-abslist li[data-type="krankenstand"] .cal-abslist__type, .cal-abslist li[data-type="abwesend"] .cal-abslist__type { color: #8a4a44; }
+.cal-abslist__main { flex: 1; display: grid; }
+.cal-abslist__main strong { font-size: .88em; }
+.cal-abslist__main small { font-size: .76em; color: var(--wf-muted); }
+@media (max-width: 760px) { .cal-absreq li { grid-template-columns: 1fr; } }
+
 /* Bestätigungen */
 .cal-pending { padding: 1em 1.2em; margin-bottom: 1.2em; border-left: 4px solid #e0a82e; }
 .cal-pending h2 { display: flex; align-items: center; gap: .5em; margin: 0 0 .6em; font-size: 1em; text-align: left; }

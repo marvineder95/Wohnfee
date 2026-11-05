@@ -16,7 +16,7 @@ export type Area =
 export const ROLES: Array<{ value: Role; label: string; text: string }> = [
   { value: 'superadmin', label: 'Admin', text: 'Voller Zugriff inkl. Benutzerverwaltung und Konditionen.' },
   { value: 'designer', label: 'Designerin', text: 'Kann alles bearbeiten – Rechnungen und Konditionen nur ansehen, keine Mitarbeiter-Verwaltung.' },
-  { value: 'driver', label: 'Spediteur', text: 'Sieht Anfragen, Projekte, Touren, Inventar, Kontakte und To-Dos (nur ansehen); trägt eigene Termine im Kalender ein. Keine Angebote, Rechnungen, Konditionen oder Immobilien.' }
+  { value: 'driver', label: 'Spediteur', text: 'Sieht Kalender, To-Dos, Touren, Projekte, Inventar und Kontakte (nur ansehen); beantragt Urlaub und meldet Krankenstand. Keine Anfragen, Angebote, Rechnungen, Konditionen oder Immobilien.' }
 ]
 
 export const roleLabel = (r?: string | null) => ROLES.find(x => x.value === r)?.label || 'Unbekannt'
@@ -34,8 +34,8 @@ const MATRIX: Record<Role, Partial<Record<Area, Access>>> = {
     aufgaben: 'view' // To-Do: sehen + „erledigt“ melden, anlegen/prüfen nur Admin
   },
   driver: {
-    dashboard: 'view', anfragen: 'view', mietanfragen: 'view', projekte: 'view', touren: 'view',
-    kalender: 'edit', // nur eigene Termine – Besitz prüft die Kalender-API
+    // Übersicht zeigt nur Kalender + To-Dos; Urlaub/Krankenstand meldet er über /api/admin/me/absences
+    dashboard: 'view', projekte: 'view', touren: 'view', kalender: 'view',
     inventar: 'view', kontakte: 'view', aufgaben: 'view'
   }
 }

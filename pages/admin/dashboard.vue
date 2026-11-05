@@ -70,7 +70,26 @@ const localIso = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).pad
 const todayIso = localIso(new Date())
 const monthKey = todayIso.slice(0, 7)
 
+// Spediteur: Übersicht nur mit Kalender (Termine + Abwesenheiten) und To-Dos
+const teamView = computed(() => user.value?.role === 'driver')
+const myTasks = ref<any[]>([])
+const teamAbsences = ref<any[]>([])
+async function loadTeamView() {
+  const [cal, tasks] = await Promise.all([
+    $fetch<{ events: CalendarEvent[]; absences: any[] }>(`/api/admin/calendar?from=${todayIso}&to=${localIso(new Date(Date.now() + 30 * 86400000))}`),
+    $fetch<{ tasks: any[] }>('/api/admin/tasks').catch(() => ({ tasks: [] }))
+  ])
+  upcomingEvents.value = (cal.events || []).slice(0, 8)
+  teamAbsences.value = (cal.absences || []).filter(a => a.status === 'genehmigt' || a.own).slice(0, 6)
+  myTasks.value = tasks.tasks.slice(0, 8)
+}
+const ABS_LABELS: Record<string, string> = { urlaub: 'Urlaub', krankenstand: 'Krankenstand', zeitausgleich: 'Zeitausgleich', sonstiges: 'Abwesend', abwesend: 'Abwesend' }
+
 onMounted(async () => {
+  if (teamView.value) {
+    try { await loadTeamView() } catch (e: any) { loadError.value = e?.data?.statusMessage || 'Daten konnten nicht geladen werden.' } finally { loading.value = false }
+    return
+  }
   try {
     const [inq, proj, inv, exp, cal, rent] = await Promise.all([
       $fetch<{ inquiries: Inq[]; counts: any }>('/api/admin/inquiries'),
@@ -156,7 +175,7 @@ const quickActions = [
       <div class="dash-hero__text">
         <p class="wf-eyebrow">{{ greeting }}</p>
         <h1 class="wf-title">Willkommen{{ displayName ? `, ${displayName}` : '' }}</h1>
-        <p class="wf-subtitle">Hier ist deine Übersicht über alle aktuellen Aktivitäten der Wohnfee.</p>
+        <p class="wf-subtitle">{{ teamView ? 'Deine Termine und Aufgaben auf einen Blick.' : 'Hier ist deine Übersicht über alle aktuellen Aktivitäten der Wohnfee.' }}</p>
       </div>
       <div class="dash-hero__img">
         <img src="/img/admin-hero-dashboard.jpg" alt="Home-staged Wohnzimmer in warmen Tönen">
@@ -170,6 +189,65 @@ const quickActions = [
     <p v-if="loadError" class="dash-error">{{ loadError }}</p>
     <p v-if="loading" class="dash-loading">Daten werden geladen …</p>
 
+    <template v-if="teamView">
+      <AdminMyAbsences @changed="loadTeamView" />
+      <section class="dash-cols dash-cols--two">
+        <article class="dash-card wf-card">
+          <header class="dash-card__head">
+            <h2>Kalender</h2>
+            <NuxtLink to="/admin/kalender" class="dash-card__all">Kalender öffnen <WfIcon name="chevron" :size="13" /></NuxtLink>
+          </header>
+          <p v-if="!loading && !upcomingEvents.length && !teamAbsences.length" class="dash-empty">Keine Termine in den nächsten 30 Tagen.</p>
+          <ul v-else class="dash-list">
+            <li v-for="e in upcomingEvents" :key="e.id">
+              <NuxtLink :to="`/admin/kalender?focus=${e.eventDate}`" class="dash-row">
+                <span class="wf-thumb"><WfIcon name="calendar" :size="18" /></span>
+                <span class="dash-row__main">
+                  <strong>{{ e.title }}</strong>
+                  <small>{{ EVT_LABELS[e.type] || e.type }} · {{ fmtDate(e.eventDate) }}<template v-if="!e.allDay && e.startTime">, {{ e.startTime.slice(0, 5) }} Uhr</template><template v-if="e.location"> · {{ e.location }}</template></small>
+                </span>
+                <span class="wf-pill" :class="daysUntil(e.eventDate) === 0 ? 'wf-pill--green' : daysUntil(e.eventDate) <= 3 ? 'wf-pill--amber' : ''">
+                  {{ daysUntil(e.eventDate) === 0 ? 'Heute' : daysUntil(e.eventDate) === 1 ? 'Morgen' : 'in ' + daysUntil(e.eventDate) + ' Tagen' }}
+                </span>
+              </NuxtLink>
+            </li>
+            <li v-for="a in teamAbsences" :key="'abs' + a.id">
+              <NuxtLink :to="`/admin/kalender?focus=${a.dateFrom}`" class="dash-row">
+                <span class="wf-thumb"><WfIcon name="users" :size="18" /></span>
+                <span class="dash-row__main">
+                  <strong>{{ a.name }} – {{ ABS_LABELS[a.type] || 'Abwesend' }}</strong>
+                  <small>{{ fmtDate(a.dateFrom) }}<template v-if="a.dateTo !== a.dateFrom"> – {{ fmtDate(a.dateTo) }}</template><template v-if="a.status === 'beantragt'"> · beantragt</template></small>
+                </span>
+              </NuxtLink>
+            </li>
+          </ul>
+        </article>
+        <article class="dash-card wf-card">
+          <header class="dash-card__head">
+            <h2>To-Dos</h2>
+            <NuxtLink to="/admin/aufgaben" class="dash-card__all">Alle anzeigen <WfIcon name="chevron" :size="13" /></NuxtLink>
+          </header>
+          <p v-if="!loading && !myTasks.length" class="dash-empty">Keine offenen Aufgaben – alles erledigt.</p>
+          <ul v-else class="dash-list">
+            <li v-for="t in myTasks" :key="t.id">
+              <NuxtLink :to="`/admin/aufgaben?task=${t.id}`" class="dash-row">
+                <span class="wf-thumb"><WfIcon name="check" :size="18" /></span>
+                <span class="dash-row__main">
+                  <strong>{{ t.title }}</strong>
+                  <small><template v-if="t.due_date">bis {{ fmtDate(t.due_date) }}</template><template v-else>ohne Termin</template><template v-if="t.priority === 'hoch'"> · wichtig</template></small>
+                </span>
+                <span v-if="t.status === 'gemeldet'" class="wf-pill wf-pill--blue">Gemeldet</span>
+                <span v-else-if="t.due_date" class="wf-pill" :class="daysUntil(t.due_date) < 0 ? 'wf-pill--red' : daysUntil(t.due_date) <= 2 ? 'wf-pill--amber' : ''">
+                  {{ daysUntil(t.due_date) < 0 ? 'Überfällig' : daysUntil(t.due_date) === 0 ? 'Heute' : 'in ' + daysUntil(t.due_date) + ' Tagen' }}
+                </span>
+              </NuxtLink>
+            </li>
+          </ul>
+        </article>
+      </section>
+    </template>
+
+    <template v-else>
     <!-- Statistik-Karten -->
     <section class="dash-stats">
       <NuxtLink v-for="s in stats" :key="s.label" :to="s.to" class="dash-stat wf-card" :data-tone="s.tone">
@@ -276,6 +354,7 @@ const quickActions = [
         </NuxtLink>
       </div>
     </section>
+    </template>
   </div>
 </template>
 

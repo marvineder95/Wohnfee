@@ -843,6 +843,22 @@ export async function migrateSchema() {
     )
     if (Number(c?.n) === 0) await db.query(`ALTER TABLE employees ${ddl}`)
   }
+  // Selbst-Meldungen (Urlaubsantrag / Krankenstand) + Krankmeldung als Dokument
+  for (const [table, col, ddl] of [
+    ['employee_absences', 'status', "ADD COLUMN status VARCHAR(12) NOT NULL DEFAULT 'genehmigt' AFTER note"],
+    ['employee_absences', 'requested_by', 'ADD COLUMN requested_by INT UNSIGNED NULL AFTER status'],
+    ['employee_absences', 'review_note', 'ADD COLUMN review_note VARCHAR(500) NULL AFTER requested_by'],
+    ['employee_absences', 'reviewed_by_name', 'ADD COLUMN reviewed_by_name VARCHAR(128) NULL AFTER review_note'],
+    ['employee_absences', 'reminder_at', 'ADD COLUMN reminder_at TIMESTAMP NULL AFTER reviewed_by_name'],
+    ['employee_documents', 'absence_id', 'ADD COLUMN absence_id INT UNSIGNED NULL AFTER employee_id']
+  ]) {
+    const c = await queryOne<{ n: number }>(
+      `SELECT COUNT(*) AS n FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = :db AND TABLE_NAME = :table AND COLUMN_NAME = :col`,
+      { db: useRuntimeConfig().dbName, table, col }
+    )
+    if (Number(c?.n) === 0) await db.query(`ALTER TABLE ${table} ${ddl}`)
+  }
   // Bestehende Dashboard-Benutzer bekommen einmalig einen Mitarbeiter-Eintrag
   await db.query(`INSERT INTO employees (user_id, first_name, last_name, email, phone, position, photo_path, vacation_days)
     SELECT u.id,

@@ -2,7 +2,7 @@
 import { ROLES, roleLabel, type Role } from '~~/shared/permissions'
 import {
   EMPLOYMENT_TYPES, SALARY_TYPES, DOC_CATEGORIES, ABSENCE_TYPES,
-  employmentLabel, docCategoryLabel, absenceLabel, workdaysBetween, isFormer, initials, vacationAccount
+  employmentLabel, docCategoryLabel, absenceLabel, workdaysBetween, isFormer, initials, vacationAccount, ABSENCE_STATUS
 } from '~~/shared/employees'
 definePageMeta({ layout: 'admin' })
 
@@ -257,7 +257,7 @@ const year = computed(() => today.value.slice(0, 4))
 const vacation = computed(() => {
   const usedByYear: Record<number, number> = {}
   for (const a of detail.value?.absences || []) {
-    if (a.type !== 'urlaub') continue
+    if (a.type !== 'urlaub' || (a.status && a.status !== 'genehmigt')) continue
     const y = Number(String(a.date_from).slice(0, 4))
     usedByYear[y] = (usedByYear[y] || 0) + Number(a.days || 0)
   }
@@ -268,7 +268,7 @@ const vacation = computed(() => {
   })
   const { total, used } = acc
   const sick = (detail.value?.absences || [])
-    .filter(a => a.type === 'krankenstand' && String(a.date_from).startsWith(year.value))
+    .filter(a => a.type === 'krankenstand' && (!a.status || a.status === 'genehmigt') && String(a.date_from).startsWith(year.value))
     .reduce((s, a) => s + Number(a.days || 0), 0)
   return { ...acc, annual: Number(emp.value?.vacation_days || 0), sick, pct: total > 0 ? Math.min(100, (used / total) * 100) : 0 }
 })
@@ -293,6 +293,19 @@ async function removeAbsence(a: any) {
     saveError.value = e?.data?.statusMessage || 'Löschen fehlgeschlagen'
   }
 }
+
+async function reviewAbsence(a: any, status: 'genehmigt' | 'abgelehnt') {
+  if (status === 'abgelehnt' && !await ask({ title: 'Urlaubsantrag ablehnen?', message: `${fmtDate(a.date_from)} – ${fmtDate(a.date_to)}`, confirmText: 'Ablehnen', danger: true })) return
+  try {
+    await $fetch(`/api/admin/absences/${a.id}/review`, { method: 'POST', body: { status } })
+    await openEmployee(emp.value.id, 'abwesenheit')
+    await load()
+  } catch (e: any) {
+    saveError.value = e?.data?.statusMessage || 'Speichern fehlgeschlagen'
+  }
+}
+const absenceFiles = (a: any) => (detail.value?.documents || []).filter((d: any) => d.absence_id === a.id)
+const missingSickNote = (a: any) => a.type === 'krankenstand' && a.requested_by && !Number(a.file_count)
 
 // ---------- Dashboard-Zugang ----------
 const inviteRole = ref<Role>('designer')
@@ -383,6 +396,10 @@ onMounted(() => {
   window.addEventListener('keydown', onKey)
   if (user.value?.role !== 'superadmin') { error.value = 'Nur für Admins sichtbar.'; list.value = []; return }
   load()
+  // Link aus Kalender/Benachrichtigung: ?open=<Mitarbeiter-ID>&tab=abwesenheit
+  const q = useRoute().query
+  const openId = Number(q.open)
+  if (openId) openEmployee(openId, (TABS.some(t => t.key === q.tab) ? q.tab : 'person') as Tab)
 })
 onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 </script>
@@ -471,6 +488,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
             <span v-if="!former(e) && e.vacation" class="mit__vac" :title="`Urlaub ${year}: ${fmtNum(e.vacation.used)} von ${fmtNum(e.vacation.total)} Tagen verbraucht (Anspruch ${fmtNum(e.vacation.entitlement)}${e.vacation.carryover ? ` + Übertrag ${fmtNum(e.vacation.carryover)}` : ''})`">
               <WfIcon name="calendar" :size="13" /> {{ fmtNum(e.vacation.left) }} Tage frei
             </span>
+            <span v-if="Number(e.sick_days)" class="mit__vac" :title="`Krankenstandstage ${year}`"><WfIcon name="alert" :size="13" /> {{ fmtNum(e.sick_days) }} Tage krank</span>
+            <span v-if="Number(e.pending_requests)" class="wf-pill wf-pill--amber">Urlaubsantrag offen</span>
+            <span v-if="Number(e.missing_sick_notes)" class="wf-pill wf-pill--red">Krankmeldung fehlt</span>
           </div>
         </button>
         <button v-if="filter !== 'ehemalige'" class="mit__card mit__card--add" @click="openNew">
@@ -670,9 +690,22 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
               <span class="mit__abstype" :data-type="a.type">{{ absenceLabel(a.type) }}</span>
               <span class="mit__rowmain">
                 <strong>{{ fmtDate(a.date_from) }}<template v-if="a.date_to !== a.date_from"> – {{ fmtDate(a.date_to) }}</template></strong>
-                <small>{{ fmtNum(a.days) }} {{ Number(a.days) === 1 ? 'Tag' : 'Tage' }}<template v-if="a.note"> · {{ a.note }}</template></small>
+                <small>
+                  {{ fmtNum(a.days) }} {{ Number(a.days) === 1 ? 'Tag' : 'Tage' }}<template v-if="a.note"> · {{ a.note }}</template>
+                  <template v-if="a.requested_by_name"> · {{ a.type === 'urlaub' ? 'beantragt' : 'gemeldet' }} von {{ a.requested_by_name }}</template>
+                  <template v-if="a.review_note"> · „{{ a.review_note }}“</template>
+                </small>
+                <span v-if="absenceFiles(a).length" class="mit__absfiles">
+                  <button v-for="d in absenceFiles(a)" :key="d.id" type="button" class="mit__absfile" @click="docPreview = d"><WfIcon name="file" :size="12" /> {{ d.title }}</button>
+                </span>
               </span>
+              <span v-if="a.status && a.status !== 'genehmigt'" class="wf-pill" :class="`wf-pill--${ABSENCE_STATUS[a.status]?.tone}`">{{ ABSENCE_STATUS[a.status]?.label }}</span>
+              <span v-if="missingSickNote(a)" class="wf-pill wf-pill--red">Krankmeldung fehlt</span>
               <span v-if="today >= String(a.date_from).slice(0, 10) && today <= String(a.date_to).slice(0, 10)" class="wf-pill wf-pill--amber">heute</span>
+              <span v-if="a.status === 'beantragt'" class="mit__absreview">
+                <button type="button" class="wf-btn wf-btn--sm wf-btn--primary" @click="reviewAbsence(a, 'genehmigt')"><WfIcon name="check" :size="13" /> Genehmigen</button>
+                <button type="button" class="wf-btn wf-btn--sm" @click="reviewAbsence(a, 'abgelehnt')">Ablehnen</button>
+              </span>
               <span class="mit__rowact">
                 <button type="button" class="mit__iconbtn mit__iconbtn--danger" title="Löschen" @click="removeAbsence(a)"><WfIcon name="trash" :size="15" /></button>
               </span>
@@ -915,6 +948,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .mit__vacbar { height: 6px; border-radius: 99px; background: rgba(47, 93, 64, .14); margin-top: .9em; overflow: hidden; }
 .mit__vacbar i { display: block; height: 100%; background: var(--wf-green); border-radius: inherit; transition: width .3s; }
 .mit__vacbox small { display: block; margin-top: .6em; color: var(--wf-muted); }
+.mit__absfiles { display: flex; flex-wrap: wrap; gap: .3em; margin-top: .3em; }
+.mit__absfile { display: inline-flex; align-items: center; gap: .3em; font: inherit; font-size: .74em; padding: .2em .55em; border: 1px solid var(--wf-line); border-radius: 999px; background: #fff; color: var(--wf-green); cursor: pointer; }
+.mit__absreview { display: inline-flex; gap: .35em; }
 .mit__vacmath { margin: .7em 0 0; font-size: .82em; color: var(--wf-muted); text-align: left; }
 .mit__vacmath strong { color: var(--wf-text, inherit); font-weight: 600; }
 .mit__vacwarn { color: #a3541b; font-weight: 600; }
