@@ -139,6 +139,12 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   `public/wf-admin-sw.js` (im Dev mit ?dev=1 ohne Caching). iOS: nur als installierte App.
 - Achtung: Die Kimi-App startet eine ALTE Projektkopie auf Port 7100 (gleiche DB) – nicht
   mit diesem Projekt verwechseln.
+- Mitarbeiter (`/admin/mitarbeiter`, alte Adresse `/admin/users` leitet weiter; nur Admin): Tabelle `employees` (Person,
+  Anstellung, Lohn & Bank, Notfallkontakt, Ausstattung), `employee_documents` (Dateien geschützt unter
+  `public/uploads/private/employees/<id>/`, die Upload-Route sperrt `private/`; Ansehen über `/api/admin/employees/:id/documents/:docId`),
+  `employee_absences` (Urlaub/Krankenstand/ZA, Arbeitstage Mo–Fr automatisch). Dashboard-Zugang = Reiter, `employees.user_id` →
+  `admin_users`; Einladung (`users/invite`, `employeeId`) verknüpft bzw. legt Mitarbeiter an, Zugang entfernen lässt den Mitarbeiter stehen.
+  Listen/Helfer `shared/employees.ts`, Server `server/utils/employees.ts`.
 - Rollen & Rechte: `shared/permissions.ts` (eine Tabelle für Server + UI). Admin (superadmin),
   Designerin (designer: alles außer Benutzer; Konditionen nur ansehen), Spediteur (driver: nur
   ansehen, eigene Kalendertermine; keine Angebote/Rechnungen/Konditionen/Newsletter/Blog).

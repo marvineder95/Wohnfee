@@ -94,7 +94,7 @@ const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
   ] },
   { label: 'Verwaltung', items: [
     { to: '/admin/konditionen', label: 'Konditionen', icon: 'euro', exact: false, area: 'konditionen' },
-    { to: '/admin/users', label: 'Benutzer', icon: 'users', exact: false, area: 'users' },
+    { to: '/admin/mitarbeiter', label: 'Mitarbeiter', icon: 'users', exact: false, area: 'users' },
     { to: '/admin/profil', label: 'Mein Profil', icon: 'settings', exact: false }
   ] }
 ]

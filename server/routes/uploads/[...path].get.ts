@@ -15,6 +15,8 @@ export default defineEventHandler(async (event) => {
   const file = normalize(join(root, rel))
   const type = TYPES[extname(file).toLowerCase()]
   if (!type || !file.startsWith(root + sep)) throw createError({ statusCode: 404 })
+  // private/ (z. B. Mitarbeiter-Dokumente) nur über geschützte Admin-API
+  if (file.startsWith(join(root, 'private') + sep)) throw createError({ statusCode: 404 })
 
   const info = await stat(file).catch(() => null)
   if (!info?.isFile()) throw createError({ statusCode: 404 })

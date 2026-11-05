@@ -21,5 +21,7 @@ export default defineEventHandler(async (event) => {
   }
 
   await query('DELETE FROM admin_users WHERE id = :id', { id })
+  // Mitarbeiter bleibt erhalten – nur der Dashboard-Zugang ist weg
+  await query('UPDATE employees SET user_id = NULL WHERE user_id = :id', { id })
   return { ok: true }
 })

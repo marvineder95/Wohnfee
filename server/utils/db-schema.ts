@@ -736,4 +736,80 @@ export async function migrateSchema() {
   await addCol('calendar_events', 'reviewed_at', 'ADD COLUMN reviewed_at DATETIME NULL')
   // Jeder Abonnent braucht einen persönlichen Abmelde-Token (für den Link in jeder Mail)
   await db.query("UPDATE newsletter_subscribers SET unsub_token = LOWER(HEX(RANDOM_BYTES(16))) WHERE unsub_token IS NULL")
+  // Mitarbeiter (/admin/mitarbeiter): alle Daten zur Person; Dashboard-Zugang optional über user_id
+  await db.query(`CREATE TABLE IF NOT EXISTS employees (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    user_id INT UNSIGNED NULL,
+    title VARCHAR(64) NULL,
+    first_name VARCHAR(128) NULL,
+    last_name VARCHAR(128) NULL,
+    position VARCHAR(128) NULL,
+    photo_path VARCHAR(190) NULL,
+    email VARCHAR(190) NULL,
+    private_email VARCHAR(190) NULL,
+    phone VARCHAR(64) NULL,
+    street VARCHAR(190) NULL,
+    zip VARCHAR(16) NULL,
+    city VARCHAR(128) NULL,
+    birth_date DATE NULL,
+    nationality VARCHAR(64) NULL,
+    svnr VARCHAR(32) NULL,
+    employment_type VARCHAR(24) NULL,
+    entry_date DATE NULL,
+    exit_date DATE NULL,
+    probation_until DATE NULL,
+    weekly_hours DECIMAL(5,2) NULL,
+    work_days VARCHAR(64) NULL,
+    salary_type VARCHAR(16) NULL,
+    salary DECIMAL(10,2) NULL,
+    collective_agreement VARCHAR(190) NULL,
+    vacation_days DECIMAL(5,1) NULL,
+    iban VARCHAR(42) NULL,
+    bic VARCHAR(16) NULL,
+    account_holder VARCHAR(190) NULL,
+    emergency_name VARCHAR(190) NULL,
+    emergency_relation VARCHAR(64) NULL,
+    emergency_phone VARCHAR(64) NULL,
+    driving_license VARCHAR(64) NULL,
+    clothing_size VARCHAR(32) NULL,
+    equipment VARCHAR(500) NULL,
+    notes TEXT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_employees_user (user_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`)
+  // Dateien liegen NICHT öffentlich: public/uploads/private/employees/<id>/… (Upload-Route sperrt private/)
+  await db.query(`CREATE TABLE IF NOT EXISTS employee_documents (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT UNSIGNED NOT NULL,
+    category VARCHAR(32) NOT NULL DEFAULT 'sonstiges',
+    title VARCHAR(190) NOT NULL,
+    file_path VARCHAR(255) NOT NULL,
+    mime VARCHAR(64) NOT NULL,
+    size INT UNSIGNED NOT NULL DEFAULT 0,
+    valid_until DATE NULL,
+    uploaded_by_name VARCHAR(128) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_employee_documents_emp (employee_id)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`)
+  await db.query(`CREATE TABLE IF NOT EXISTS employee_absences (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT UNSIGNED NOT NULL,
+    type VARCHAR(16) NOT NULL DEFAULT 'urlaub',
+    date_from DATE NOT NULL,
+    date_to DATE NOT NULL,
+    days DECIMAL(4,1) NOT NULL DEFAULT 0,
+    note VARCHAR(255) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_employee_absences_emp (employee_id, date_from)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`)
+  // Bestehende Dashboard-Benutzer bekommen einmalig einen Mitarbeiter-Eintrag
+  await db.query(`INSERT INTO employees (user_id, first_name, last_name, email, phone, position, photo_path, vacation_days)
+    SELECT u.id,
+           NULLIF(TRIM(SUBSTRING_INDEX(COALESCE(u.display_name, u.username, ''), ' ', 1)), ''),
+           NULLIF(TRIM(SUBSTRING(COALESCE(u.display_name, ''), LENGTH(SUBSTRING_INDEX(COALESCE(u.display_name, ''), ' ', 1)) + 1)), ''),
+           u.email, u.phone, u.position, u.avatar_path, 25
+    FROM admin_users u
+    LEFT JOIN employees e ON e.user_id = u.id
+    WHERE e.id IS NULL`)
 }

@@ -8,10 +8,11 @@ const INVITE_VALID_HOURS = 48
 
 export default defineEventHandler(async (event) => {
   const inviter = await requireSuperadmin(event)
-  const { email, displayName, role } = await readBody(event).catch(() => ({} as any)) as {
+  const { email, displayName, role, employeeId } = await readBody(event).catch(() => ({} as any)) as {
     email?: string
     displayName?: string
     role?: string
+    employeeId?: number
   }
 
   const cleanEmail = String(email || '').trim().toLowerCase()
@@ -42,6 +43,17 @@ export default defineEventHandler(async (event) => {
     { email: cleanEmail, name: cleanName, role: inviteRole, tokenHash, invitedBy: inviter.id }
   )
   const insertId = (res as any).insertId
+
+  // Dashboard-Zugang gehört immer zu einem Mitarbeiter (/admin/mitarbeiter): verknüpfen oder neu anlegen
+  const empId = Number(employeeId)
+  if (Number.isInteger(empId) && empId > 0) {
+    await query('UPDATE employees SET user_id = :uid, email = COALESCE(email, :email) WHERE id = :id AND user_id IS NULL',
+      { uid: insertId, email: cleanEmail, id: empId })
+  } else {
+    const [first, ...rest] = cleanName.split(/\s+/)
+    await query(`INSERT INTO employees (user_id, first_name, last_name, email, vacation_days) VALUES (:uid, :first, :last, :email, 25)`,
+      { uid: insertId, first, last: rest.join(' ') || null, email: cleanEmail })
+  }
 
   const origin = publicOrigin(event)
   const inviteUrl = `${origin}/admin/einladung?token=${token}`
