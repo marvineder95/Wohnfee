@@ -160,7 +160,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   davor offener Rest über `vacation_opening_year`/`_days` (Feld „Resturlaub zum 1.1.“).
 - Rollen & Rechte: `shared/permissions.ts` (eine Tabelle für Server + UI). Admin (superadmin),
   Designerin (designer: alles außer Mitarbeiter; Rechnungen + Konditionen nur ansehen, auch keine Rechnung aus Angebot), Spediteur (driver: nur
-  ansehen, eigene Kalendertermine; keine Angebote/Rechnungen/Konditionen/Newsletter/Blog).
+  ansehen, eigene Kalendertermine; keine Angebote/Rechnungen/Konditionen/Newsletter/Blog/Immobilien).
   Server: `server/middleware/admin-permissions.ts`; UI: `usePermissions()`, Menü + Seitenschutz
   im Layout, Bearbeiten-Elemente per `canEdit(area)` bzw. `<fieldset :disabled>`.
 - Sicherheit: Login max. 10 Fehlversuche/15 min je IP, „Passwort vergessen" 5/h,

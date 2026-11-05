@@ -16,7 +16,7 @@ export type Area =
 export const ROLES: Array<{ value: Role; label: string; text: string }> = [
   { value: 'superadmin', label: 'Admin', text: 'Voller Zugriff inkl. Benutzerverwaltung und Konditionen.' },
   { value: 'designer', label: 'Designerin', text: 'Kann alles bearbeiten – Rechnungen und Konditionen nur ansehen, keine Mitarbeiter-Verwaltung.' },
-  { value: 'driver', label: 'Spediteur', text: 'Sieht Anfragen, Projekte, Touren, Inventar und Kontakte; trägt eigene Termine im Kalender ein und meldet erledigte Abholungen. Keine Angebote, Rechnungen oder Konditionen.' }
+  { value: 'driver', label: 'Spediteur', text: 'Sieht Anfragen, Projekte, Touren, Inventar, Kontakte und To-Dos (nur ansehen); trägt eigene Termine im Kalender ein. Keine Angebote, Rechnungen, Konditionen oder Immobilien.' }
 ]
 
 export const roleLabel = (r?: string | null) => ROLES.find(x => x.value === r)?.label || 'Unbekannt'
@@ -36,7 +36,7 @@ const MATRIX: Record<Role, Partial<Record<Area, Access>>> = {
   driver: {
     dashboard: 'view', anfragen: 'view', mietanfragen: 'view', projekte: 'view', touren: 'view',
     kalender: 'edit', // nur eigene Termine – Besitz prüft die Kalender-API
-    inventar: 'view', kontakte: 'view', immobilien: 'view', aufgaben: 'view'
+    inventar: 'view', kontakte: 'view', aufgaben: 'view'
   }
 }
 
