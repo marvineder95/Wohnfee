@@ -146,7 +146,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   `admin_users`; Einladung (`users/invite`, `employeeId`) verknüpft bzw. legt Mitarbeiter an, Zugang entfernen lässt den Mitarbeiter stehen.
   Listen/Helfer `shared/employees.ts`, Server `server/utils/employees.ts`.
 - Rollen & Rechte: `shared/permissions.ts` (eine Tabelle für Server + UI). Admin (superadmin),
-  Designerin (designer: alles außer Benutzer; Konditionen nur ansehen), Spediteur (driver: nur
+  Designerin (designer: alles außer Mitarbeiter; Rechnungen + Konditionen nur ansehen, auch keine Rechnung aus Angebot), Spediteur (driver: nur
   ansehen, eigene Kalendertermine; keine Angebote/Rechnungen/Konditionen/Newsletter/Blog).
   Server: `server/middleware/admin-permissions.ts`; UI: `usePermissions()`, Menü + Seitenschutz
   im Layout, Bearbeiten-Elemente per `canEdit(area)` bzw. `<fieldset :disabled>`.

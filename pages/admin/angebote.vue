@@ -306,6 +306,10 @@ async function save() {
   }
 }
 
+// Rechnung aus Angebot nur mit Rechnungs-Recht (Designerin: nur ansehen)
+const permsInv = usePermissions()
+const canInvoice = computed(() => permsInv.canEdit('rechnungen'))
+
 async function createInvoice(off: OfferRow) {
   if (!confirm(`Aus Angebot ${off.number} für „${off.customer_name}" eine Rechnung erstellen?\n\nDie Rechnung wird als Entwurf angelegt — du kannst sie danach in den Rechnungen öffnen, prüfen und versenden. Das Angebot wird als angenommen markiert und bleibt unverändert erhalten.`)) return
   error.value = ''
@@ -430,7 +434,7 @@ onMounted(async () => {
             <button class="wf-btn wf-btn--sm" title="Vorschau" @click="openPreview(o)"><WfIcon name="eye" :size="14" /></button>
             <a class="wf-btn wf-btn--sm" title="PDF herunterladen" :href="pdfUrl(o)" :download="`Angebot-${o.number}.pdf`"><WfIcon name="download" :size="14" /></a>
             <button v-if="o.status !== 'abgelehnt'" class="wf-btn wf-btn--sm" @click="openSend(o)"><WfIcon name="mail" :size="13" /> Senden</button>
-            <button v-if="!o.invoice_id && o.status !== 'abgelehnt'" class="wf-btn wf-btn--sm off__invoicebtn" @click="createInvoice(o)">
+            <button v-if="!o.invoice_id && o.status !== 'abgelehnt' && canInvoice" class="wf-btn wf-btn--sm off__invoicebtn" @click="createInvoice(o)">
               <WfIcon name="receipt" :size="13" /> Rechnung erstellen
             </button>
             <button v-if="!o.invoice_id" class="wf-btn wf-btn--sm" title="Bearbeiten" @click="openEdit(o)"><WfIcon name="edit" :size="14" /></button>

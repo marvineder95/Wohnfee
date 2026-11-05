@@ -3,6 +3,9 @@ definePageMeta({ layout: 'admin' })
 
 useHead({ title: 'Rechnungen - WOHNFEE Dashboard' })
 const newParam = useNewParam()
+// Designerin: Rechnungen nur ansehen (shared/permissions.ts) – Bearbeiten-Elemente ausblenden
+const perms = usePermissions()
+const canEditR = computed(() => perms.canEdit('rechnungen'))
 
 interface InvoiceRow {
   id: number
@@ -505,7 +508,7 @@ async function endRecurring(r: RecurringRow) {
 
 onMounted(async () => {
   await Promise.all([load(), loadRecurring()])
-  newParam.consume(openNew)
+  if (canEditR.value) newParam.consume(openNew)
   if (useRoute().query.filter === 'ueberfaellig') listFilter.value = 'ueberfaellig'
 })
 </script>
@@ -520,7 +523,7 @@ onMounted(async () => {
       </div>
       <div class="wf-hero-img">
         <img src="/img/admin-hero-rechnungen.jpg" alt="Schreibtisch mit Dokumenten, Füllfeder und Rechner">
-        <button class="wf-btn wf-btn--primary wf-hero-cta" @click="openNew">
+        <button v-if="canEditR" class="wf-btn wf-btn--primary wf-hero-cta" @click="openNew">
           <WfIcon name="plus" :size="15" /> Neue Rechnung
         </button>
       </div>
@@ -540,7 +543,7 @@ onMounted(async () => {
           <span class="wf-pill" :class="r.active ? '' : 'wf-pill--gray'">
             {{ r.active ? `nächste am ${fmtDate(r.nextDate)}` : 'pausiert' }}<template v-if="r.endDate"> · bis {{ fmtDate(r.endDate) }}</template>
           </span>
-          <span class="inv__recuracts">
+          <span v-if="canEditR" class="inv__recuracts">
             <button class="wf-btn wf-btn--sm" @click="toggleRecurring(r)">{{ r.active ? 'Pausieren' : 'Fortsetzen' }}</button>
             <button class="wf-btn wf-btn--sm wf-btn--danger" @click="endRecurring(r)">Beenden</button>
           </span>
@@ -605,8 +608,9 @@ onMounted(async () => {
           <td class="inv__actions">
             <button class="wf-btn wf-btn--sm" title="Vorschau" @click="openPreview(i)"><WfIcon name="eye" :size="14" /></button>
             <a class="wf-btn wf-btn--sm" title="PDF herunterladen" :href="pdfUrl(i)" :download="`Rechnung-${i.number}.pdf`"><WfIcon name="download" :size="14" /></a>
+            <button class="wf-btn wf-btn--sm" :title="canEditR ? 'Bearbeiten' : 'Details ansehen'" @click="openEdit(i)"><WfIcon :name="canEditR ? 'edit' : 'file'" :size="14" /></button>
+            <template v-if="canEditR">
             <button v-if="i.status !== 'storniert'" class="wf-btn wf-btn--sm" @click="openSend(i)"><WfIcon name="mail" :size="13" /> Senden</button>
-            <button class="wf-btn wf-btn--sm" title="Bearbeiten" @click="openEdit(i)"><WfIcon name="edit" :size="14" /></button>
             <button
               v-if="i.status !== 'storniert' && !i.storno_of"
               class="wf-btn wf-btn--sm"
@@ -618,6 +622,7 @@ onMounted(async () => {
             </button>
             <button v-if="!i.storno_of && i.status !== 'storniert' && !i.recurring_id && !i.active_recurring_id" class="wf-btn wf-btn--sm" title="Jeden Monat automatisch als Entwurf neu erstellen" @click="openRecurring(i)">↻</button>
             <button v-if="i.status === 'entwurf'" class="wf-btn wf-btn--sm wf-btn--danger" title="Entwurf löschen" @click="remove(i)"><WfIcon name="trash" :size="14" /></button>
+            </template>
           </td>
         </tr>
       </tbody>
@@ -636,7 +641,11 @@ onMounted(async () => {
           <button class="inv__edclose" title="Schließen" @click="editOpen = false">×</button>
         </div>
 
-        <div v-if="locked" class="inv__lockbar">
+        <div v-if="!canEditR" class="inv__lockbar">
+          <WfIcon name="eye" :size="16" />
+          <span>Nur zum Ansehen – Rechnungen erstellen, ändern und versenden kann nur der Admin.</span>
+        </div>
+        <div v-else-if="locked" class="inv__lockbar">
           <WfIcon name="lock" :size="16" />
           <span v-if="editing?.status === 'storniert'">Diese Rechnung ist storniert und kann nicht mehr verändert werden.</span>
           <span v-else>Ausgestellte Rechnungen sind gesperrt – Korrekturen bitte über <strong>„Stornieren"</strong> und eine neue Rechnung.</span>
@@ -648,7 +657,7 @@ onMounted(async () => {
             </select>
           </label>
         </div>
-        <fieldset class="inv__lockset" :disabled="locked">
+        <fieldset class="inv__lockset" :disabled="locked || !canEditR">
         <div class="inv__edgrid">
           <!-- Linke Spalte -->
           <div>
@@ -849,11 +858,11 @@ onMounted(async () => {
 
         <p v-if="saveError" class="inv__error" role="alert">{{ saveError }}</p>
         <div class="inv__edfoot">
-          <button class="wf-btn" @click="editOpen = false">Abbrechen</button>
+          <button class="wf-btn" @click="editOpen = false">{{ canEditR ? 'Abbrechen' : 'Schließen' }}</button>
           <div class="inv__edfootright">
             <button v-if="editing" class="wf-btn" @click="openPreview(editing)"><WfIcon name="eye" :size="13" /> PDF ansehen</button>
-            <button v-if="!editing" class="wf-btn" :disabled="saving" @click="saveAsDraft">Als Entwurf speichern</button>
-            <button v-if="editing?.status !== 'storniert'" class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
+            <button v-if="!editing && canEditR" class="wf-btn" :disabled="saving" @click="saveAsDraft">Als Entwurf speichern</button>
+            <button v-if="canEditR && editing?.status !== 'storniert'" class="wf-btn wf-btn--primary" :disabled="saving" @click="save">
               {{ saving ? 'Speichere …' : (locked ? 'Status speichern' : editing ? 'Speichern' : 'Rechnung erstellen →') }}
             </button>
           </div>

@@ -2,7 +2,7 @@
 // (Menü, Buttons). Änderungen nur hier.
 //
 //   Admin       (superadmin) alles
-//   Designerin  (designer)   alles außer Mitarbeiter & Benutzerverwaltung; Konditionen nur ansehen
+//   Designerin  (designer)   alles außer Mitarbeiter & Benutzerverwaltung; Rechnungen + Konditionen nur ansehen
 //   Spediteur   (driver)     nur ansehen; eigene Kalendertermine anlegen/ändern; Abholung erledigt melden;
 //                            keine Angebote, Rechnungen, Konditionen, Newsletter, Blog, Benutzer
 
@@ -15,7 +15,7 @@ export type Area =
 
 export const ROLES: Array<{ value: Role; label: string; text: string }> = [
   { value: 'superadmin', label: 'Admin', text: 'Voller Zugriff inkl. Benutzerverwaltung und Konditionen.' },
-  { value: 'designer', label: 'Designerin', text: 'Kann alles bearbeiten – außer Benutzer verwalten und Konditionen ändern.' },
+  { value: 'designer', label: 'Designerin', text: 'Kann alles bearbeiten – Rechnungen und Konditionen nur ansehen, keine Mitarbeiter-Verwaltung.' },
   { value: 'driver', label: 'Spediteur', text: 'Sieht Anfragen, Projekte, Touren, Inventar und Kontakte; trägt eigene Termine im Kalender ein und meldet erledigte Abholungen. Keine Angebote, Rechnungen oder Konditionen.' }
 ]
 
@@ -29,7 +29,7 @@ const MATRIX: Record<Role, Partial<Record<Area, Access>>> = {
   },
   designer: {
     dashboard: 'edit', anfragen: 'edit', mietanfragen: 'edit', projekte: 'edit', touren: 'edit', kalender: 'edit',
-    inventar: 'edit', kontakte: 'edit', angebote: 'edit', rechnungen: 'edit', artikel: 'edit', newsletter: 'edit',
+    inventar: 'edit', kontakte: 'edit', angebote: 'edit', rechnungen: 'view', artikel: 'edit', newsletter: 'edit',
     konditionen: 'view', users: 'none', immobilien: 'edit', partner: 'edit'
   },
   driver: {
@@ -76,6 +76,8 @@ export function requirementForApi(path: string, method: string): { area: Area; n
   // Abholung erledigt (Möbel zurück ins Lager): darf jeder mit Touren-Zugriff – auch der Spediteur.
   // Wer es gedrückt hat, steht im Projektverlauf.
   if (/^projects\/\d+\/return$/.test(p)) return { area: 'touren', need: 'view' }
+  // Rechnung aus Angebot erzeugen = Rechnungs-Recht (Designerin darf Angebote, aber keine Rechnungen)
+  if (/^offers\/\d+\/invoice$/.test(p)) return { area: 'rechnungen', need: 'edit' }
   // Dokumente eines Kontakts enthalten Rechnungen/Angebote
   if (/^contacts\/\d+\/documents$/.test(p)) return { area: 'rechnungen', need: 'view' }
   // Probe-Berechnung ist reines Ansehen
