@@ -15,7 +15,7 @@ export type Area =
 
 export const ROLES: Array<{ value: Role; label: string; text: string }> = [
   { value: 'superadmin', label: 'Admin', text: 'Voller Zugriff inkl. Benutzerverwaltung und Konditionen.' },
-  { value: 'designer', label: 'Designerin', text: 'Kann alles bearbeiten – Rechnungen und Konditionen nur ansehen, keine Mitarbeiter-Verwaltung.' },
+  { value: 'designer', label: 'Designerin', text: 'Kann alles bearbeiten – Rechnungen und Konditionen nur ansehen, keine Immobilien und keine Mitarbeiter-Verwaltung.' },
   { value: 'driver', label: 'Spediteur', text: 'Sieht Kalender, To-Dos, Touren, Projekte, Inventar und Kontakte (nur ansehen); beantragt Urlaub und meldet Krankenstand. Keine Anfragen, Angebote, Rechnungen, Konditionen oder Immobilien.' }
 ]
 
@@ -30,7 +30,7 @@ const MATRIX: Record<Role, Partial<Record<Area, Access>>> = {
   designer: {
     dashboard: 'edit', anfragen: 'edit', mietanfragen: 'edit', projekte: 'edit', touren: 'edit', kalender: 'edit',
     inventar: 'edit', kontakte: 'edit', angebote: 'edit', rechnungen: 'view', artikel: 'edit', newsletter: 'edit',
-    konditionen: 'view', users: 'none', immobilien: 'edit', partner: 'edit',
+    konditionen: 'view', users: 'none', partner: 'edit',
     aufgaben: 'view' // To-Do: sehen + „erledigt“ melden, anlegen/prüfen nur Admin
   },
   driver: {

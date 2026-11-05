@@ -165,7 +165,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Plugin `server/plugins/absences.ts`, erste Erinnerung auch an den Chef). Nur genehmigte Einträge zählen. Kalender zeigt Abwesenheiten
   allen; Krankenstand sieht das Team nur als „Abwesend“.
 - Rollen & Rechte: `shared/permissions.ts` (eine Tabelle für Server + UI). Admin (superadmin),
-  Designerin (designer: alles außer Mitarbeiter; Rechnungen + Konditionen nur ansehen, auch keine Rechnung aus Angebot), Spediteur (driver: nur
+  Designerin (designer: alles außer Mitarbeiter und Immobilien; Rechnungen + Konditionen nur ansehen, auch keine Rechnung aus Angebot), Spediteur (driver: nur
   ansehen – Übersicht = Kalender + To-Dos + Meine Abwesenheiten; keine Anfragen/Mietanfragen/Angebote/Rechnungen/Konditionen/
   Newsletter/Blog/Immobilien, keine eigenen Termine, kein „Abholung erledigt“).
   Server: `server/middleware/admin-permissions.ts`; UI: `usePermissions()`, Menü + Seitenschutz
