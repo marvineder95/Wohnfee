@@ -112,7 +112,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   3 Tage gültig ab Versand, Reservierung bis Ende des Gültigkeitstags; nach 48 h Erinnerungsmail.
   Kundenseite `/angebot/<token>` (API `/api/offer/:token`): annehmen → Projekt + Möbel + Liefertermin,
   ablehnen → sofort frei. Status im Angebots-Editor auf angenommen/abgelehnt löst dasselbe aus.
-  Mietanfragen: „+3 Tage" / „Freigeben". Möbel kommen erst über Touren → „Abholung erledigt" (auch Spediteur, Name wird im Projekt vermerkt) zurück
+  Mietanfragen: „+3 Tage" / „Freigeben". Möbel kommen erst über Touren → „Abholung erledigt" (nur Admin/Designerin – Spediteur sieht nur; Name wird im Projekt vermerkt) zurück
   (Shop / Reinigung-Reparatur = Status `pflege` / defekt).
   Annahme → `server/utils/offer-invoices.ts`: Entwurf „Monat 1" (Positionen mit Einheit „Mon."),
   Entwurf „Einmalige Leistungen" (Transport, Deko) und Abo für Monat 2…N (Vorlage = Monat 1).

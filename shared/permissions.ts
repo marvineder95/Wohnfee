@@ -74,9 +74,9 @@ export function requirementForApi(path: string, method: string): { area: Area; n
   if (/^(inquiries|rental-inquiries)\/\d+\/offer$/.test(p) || /^projects\/\d+\/extension-offer$/.test(p)) {
     return { area: 'angebote', need: 'edit' }
   }
-  // Abholung erledigt (Möbel zurück ins Lager): darf jeder mit Touren-Zugriff – auch der Spediteur.
+  // Abholung erledigt (Möbel zurück ins Lager): nur wer Touren bearbeiten darf – Spediteur sieht nur.
   // Wer es gedrückt hat, steht im Projektverlauf.
-  if (/^projects\/\d+\/return$/.test(p)) return { area: 'touren', need: 'view' }
+  if (/^projects\/\d+\/return$/.test(p)) return { area: 'touren', need: 'edit' }
   // To-Do: „erledigt“ zurückmelden darf jeder, der die Aufgaben sieht (Zuständigkeit prüft die API)
   if (/^tasks\/\d+\/report$/.test(p)) return { area: 'aufgaben', need: 'view' }
   // Rechnung aus Angebot erzeugen = Rechnungs-Recht (Designerin darf Angebote, aber keine Rechnungen)
