@@ -64,7 +64,7 @@ async function doLogout() {
 }
 
 // Navigation nach Arbeitsbereichen gruppiert (Eingang → Planung → Kunden & Finanzen → Website)
-interface NavItem { to: string; label: string; icon: string; exact: boolean; area?: Area; badge?: 'inquiries' | 'rental' | 'overdue' }
+interface NavItem { to: string; label: string; icon: string; exact: boolean; area?: Area; badge?: 'inquiries' | 'rental' | 'overdue'; also?: string[] }
 const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
   { label: null, items: [
     { to: '/admin/dashboard', label: 'Übersicht', icon: 'home', exact: true, area: 'dashboard' }
@@ -77,9 +77,8 @@ const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
     { to: '/admin/projekte', label: 'Projekte', icon: 'folder', exact: false, area: 'projekte' },
     { to: '/admin/touren', label: 'Touren & Rückgaben', icon: 'truck', exact: false, area: 'touren', badge: 'overdue' },
     { to: '/admin/kalender', label: 'Kalender', icon: 'calendar', exact: false, area: 'kalender' },
-    { to: '/admin/inventar', label: 'Inventar', icon: 'box', exact: false, area: 'inventar' },
-    { to: '/admin/pakete', label: 'Mietpakete', icon: 'bag', exact: false, area: 'inventar' },
-    { to: '/admin/fotos', label: 'Foto-Modus', icon: 'camera', exact: false, area: 'inventar' }
+    // Mietpakete + Foto-Modus sind Reiter im Inventar (components/admin/InventoryTabs.vue)
+    { to: '/admin/inventar', label: 'Inventar', icon: 'box', exact: false, area: 'inventar', also: ['/admin/pakete', '/admin/fotos'] }
   ] },
   { label: 'Kunden & Finanzen', items: [
     { to: '/admin/kontakte', label: 'Kontakte', icon: 'contacts', exact: false, area: 'kontakte' },
@@ -184,8 +183,8 @@ watch([() => route.path, user], () => {
   }
 }, { immediate: true })
 
-const isActive = (item: { to: string; exact: boolean }) =>
-  item.exact ? route.path === item.to : route.path.startsWith(item.to)
+const isActive = (item: NavItem) =>
+  item.exact ? route.path === item.to : route.path.startsWith(item.to) || !!item.also?.some(p => route.path.startsWith(p))
 
 // Globale Suche → Kontakte mit Suchbegriff
 const globalSearch = ref('')

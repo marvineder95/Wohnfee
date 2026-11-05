@@ -146,6 +146,7 @@ async function remove() {
 
 <template>
   <div class="pk">
+    <AdminInventoryTabs />
     <section class="pk__head wf-card">
       <div>
         <p class="wf-eyebrow">Furniture Leasing</p>

@@ -91,6 +91,7 @@ async function onFile(r: Row, e: Event) {
 
 <template>
   <div class="fm">
+    <AdminInventoryTabs />
     <section class="fm__head wf-card">
       <div>
         <p class="wf-eyebrow">Inventar</p>

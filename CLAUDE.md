@@ -64,6 +64,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Warenkorb: runder Button unten rechts (`AppCartFab.vue`, nicht im Checkout/auf /angebot), öffnet seitenweit ohne Weiterleitung (`AppCartDrawer.vue` bzw. Shop-Drawer, Event `wf:open-cart`). Sprache im Header als Dropdown (AppHeader `.langdrop`).
 
 ## Dashboard (/admin)
+- Inventar-Bereich: Reiter Bestand · Mietpakete · Foto-Modus (`components/admin/InventoryTabs.vue`, eigene Seiten
+  /admin/inventar, /admin/pakete, /admin/fotos); im Menü nur „Inventar“ (bleibt aktiv über `also`).
 - Navigation gruppiert in `layouts/admin.vue` (`NAV_GROUPS`): Eingang · Planung ·
   Kunden & Finanzen · Website · Verwaltung. Badges für neue Kontakt-/Mietanfragen (60-s-Refresh).
 - `?new=1` öffnet auf Projekte/Kalender/Angebote/Rechnungen/Kontakte/Inventar direkt den

@@ -395,6 +395,7 @@ onMounted(async () => { await load(); newParam.consume(openNew) })
 
 <template>
   <div class="inv">
+    <AdminInventoryTabs />
     <section class="wf-hero">
       <div class="wf-hero-text">
         <p class="wf-eyebrow">Möbel &amp; Objekte</p>
