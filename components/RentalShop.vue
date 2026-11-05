@@ -130,6 +130,9 @@ const CAT_EN: Record<string, string> = {
 const catalog = useRentalCatalog()
 const shop = useShopStatus()
 onMounted(() => { shop.load() })
+if (import.meta.server) await shop.load()
+// Shop offen → flacher Kopfbereich, Produkte schon ohne Scrollen sichtbar; „Coming Soon“ → großer Hero
+const compactHero = computed(() => shop.open.value)
 const cartStore = useRentalCart()
 const items = computed<RentalItem[]>(() => catalog.items.value as RentalItem[])
 const loading = ref(true)
@@ -473,7 +476,7 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 <template>
   <div ref="flRoot" class="fl">
     <!-- ── HERO ─────────────────────────────────────────── -->
-    <section class="fl__hero">
+    <section class="fl__hero" :class="{ 'fl__hero--compact': compactHero }">
       <img class="fl__herobg" src="/files/wohnfee/bilder/furniture-leasing/Furniture_Leasing_2.jpg"
            :alt="t.heroAlt" loading="eager" fetchpriority="high">
       <div class="fl__heroinside">
@@ -483,7 +486,7 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
         <div class="fl__heroactions">
           <button v-if="!shop.closed.value" type="button" class="fl__cta" @click="scrollToProducts">{{ t.cta }} <span aria-hidden="true">→</span></button>
           <NuxtLink v-else :to="(isEn ? '/en' : '') + '/kontakt.html?thema=leasing'" class="fl__cta">{{ isEn ? 'Request furniture' : 'Möbel anfragen' }} <span aria-hidden="true">→</span></NuxtLink>
-          <button type="button" class="fl__cta fl__cta--ghost" @click="scrollToHowItWorks">{{ t.howItWorks }}</button>
+          <button type="button" class="fl__cta fl__cta--ghost" :class="{ 'fl__cta--link': compactHero }" @click="scrollToHowItWorks">{{ t.howItWorks }}</button>
         </div>
         <ul class="fl__usps">
           <li v-for="u in heroUsps" :key="u.text">
@@ -492,7 +495,7 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
           </li>
         </ul>
       </div>
-      <button v-if="!shop.closed.value" type="button" class="fl__cue" @click="scrollToProducts">
+      <button v-if="!shop.closed.value && !compactHero" type="button" class="fl__cue" @click="scrollToProducts">
         {{ t.toProducts }}
         <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 9 6 6 6-6" /></svg></span>
       </button>
@@ -893,6 +896,28 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
 @keyframes fl-bob { 0%, 100% { transform: translateY(-2px); } 50% { transform: translateY(3px); } }
 @media (prefers-reduced-motion: reduce) { .fl__cue svg { animation: none; } }
 
+/* Kompakter Hero (Shop offen): etwa halbe Höhe, Vorteile in einer Zeile, Produkte direkt darunter */
+.fl__hero--compact { min-height: 0; }
+.fl__hero--compact::after {
+  background:
+    linear-gradient(90deg, rgba(247, 244, 236, .97) 0%, rgba(247, 244, 236, .92) 42%,
+      rgba(247, 244, 236, .5) 62%, rgba(247, 244, 236, 0) 78%),
+    linear-gradient(0deg, var(--cream) 0%, rgba(247, 244, 236, 0) 22%);
+}
+.fl__hero--compact .fl__heroinside { padding: 2.4em 1.5em 2.2em; }
+.fl__hero--compact .fl__heroinside > * { max-width: 40rem; }
+.fl__hero--compact .fl__kicker { margin-bottom: .9em !important; }
+.fl__hero--compact .fl__headline { font-size: clamp(1.9em, 3vw, 2.5em); margin-bottom: .35em; }
+.fl__hero--compact .fl__sub { font-size: 1em; margin-bottom: 1.3em; }
+.fl__hero--compact .fl__heroactions { align-items: center; gap: 1.2em; margin-bottom: 1.5em; }
+.fl__hero--compact .fl__cta { padding: .75em 1.6em; }
+.fl__cta--link { background: none !important; border-color: transparent !important; padding: .4em 0 !important; color: var(--ink); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: rgba(43, 43, 40, .3); }
+.fl__cta--link:hover { color: var(--green) !important; transform: none; }
+.fl__hero--compact .fl__usps { display: flex; flex-wrap: wrap; gap: .5em 1.6em; max-width: none; }
+.fl__hero--compact .fl__usps li { font-size: .84em; gap: .5em; }
+.fl__hero--compact .fl__uspicon { width: 2.1em; height: 2.1em; }
+.fl__hero--compact + .fl__shop { padding-top: 1.2em; }
+
 /* Shop-Layout: Sidebar + Inhalt */
 .fl__previewnote { margin: 0 0 1em; padding: .6em 1em; border-radius: 12px; background: #fdf3df; color: #8a5a12; font-size: .85em; font-weight: 600; }
 .fl__soon { max-width: 1240px; margin: 0 auto; padding: 3.5em 1.5em 4em; }
@@ -1288,6 +1313,14 @@ onUnmounted(() => document.removeEventListener('click', onFlAnchorClick))
     background: linear-gradient(0deg, var(--cream) 0%, rgba(247, 244, 236, .85) 30%, rgba(247, 244, 236, 0) 65%);
   }
   .fl__heroinside { padding: 13em 1em 2.5em; }
+  /* kompakt am Handy: ohne Foto, nur Überschrift + ein Satz + Vorteile, Produkte gleich darunter */
+  .fl__hero--compact .fl__herobg, .fl__hero--compact::after { display: none; }
+  .fl__hero--compact .fl__heroinside { padding: 1.6em 1em 1em; }
+  .fl__hero--compact .fl__headline { font-size: 1.65em; }
+  .fl__hero--compact .fl__sub { font-size: .92em; margin-bottom: 1em; }
+  .fl__hero--compact .fl__heroactions { display: none; }
+  .fl__hero--compact .fl__usps { display: grid; grid-template-columns: 1fr 1fr; gap: .5em .8em; }
+  .fl__hero--compact .fl__usps li { font-size: .78em; }
   .fl__usps { grid-template-columns: 1fr; }
   .fl__cue { display: none; }
   .fl__dgrid { grid-template-columns: 1fr; gap: 1.2em; }

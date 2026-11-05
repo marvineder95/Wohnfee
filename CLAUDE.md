@@ -61,6 +61,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Mietshop öffentlich ja/nein (Setting `shop_public`, Schalter oben unter /admin/konditionen, `server/utils/shop-status.ts`,
   `useShopStatus`): aus = „Coming Soon“-Block statt Produkten, kein Warenkorb-Button, Checkout → Shop-Seite, Menü „✦ Bald“,
   `/api/rental-catalog` leer und Mietanfragen 403 für Besucher. Eingeloggte Admins sehen den Shop als Vorschau.
+  Hero: Shop aus = großer Vollbild-Hero; Shop offen (auch Admin-Vorschau) = kompakter Hero (`fl__hero--compact`), Produkte
+  ohne Scrollen sichtbar. Dafür wird /furniture-leasing.html (+ EN) live gerendert (`prerender: false`), Status am Server geladen.
 - Warenkorb: runder Button unten rechts (`AppCartFab.vue`, nicht im Checkout/auf /angebot), öffnet seitenweit ohne Weiterleitung (`AppCartDrawer.vue` bzw. Shop-Drawer, Event `wf:open-cart`). Sprache im Header als Dropdown (AppHeader `.langdrop`).
 
 ## Dashboard (/admin)

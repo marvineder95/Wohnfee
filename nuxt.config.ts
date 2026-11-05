@@ -101,6 +101,9 @@ export default defineNuxtConfig({
       '/en/immobilien.html': { prerender: false },
       '/immobilien/**': { prerender: false },
       // Partner kommen aus dem Dashboard → immer live (ohne sichtbare Partner: 404)
+      // Furniture Leasing: live, damit Shop offen/„Coming Soon“ (und die Hero-Größe) sofort stimmt
+      '/furniture-leasing.html': { prerender: false },
+      '/en/furniture-leasing.html': { prerender: false },
       '/partner.html': { prerender: false },
       '/en/partners.html': { prerender: false },
       '/angebot/**': { prerender: false, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
