@@ -180,6 +180,22 @@ async function setStatus(item: Inquiry, status: string, reload = true) {
   }
 }
 
+// Endgültig löschen (Test-/Spam-Anfragen). Ungesendeter Angebotsentwurf geht mit, alles andere bleibt.
+async function removeInquiry(item: Inquiry) {
+  const offerHint = item.offerStatus === 'entwurf'
+    ? '\n\nDer dazugehörige Angebotsentwurf wird ebenfalls gelöscht.'
+    : item.offerStatus ? '\n\nDas bereits versendete Angebot bleibt erhalten.' : ''
+  if (!confirm(`Mietanfrage ${item.number} von ${[item.firstName, item.lastName].filter(Boolean).join(" ") || item.company || item.email} endgültig löschen? Eine laufende Reservierung endet, die Möbel sind sofort wieder frei.${offerHint}`)) return
+  actionError.value = ''
+  try {
+    await $fetch(`/api/admin/rental-inquiries/${item.id}`, { method: 'DELETE' })
+    closeDetail()
+    await load()
+  } catch (e: any) {
+    actionError.value = e?.data?.statusMessage || 'Mietanfrage konnte nicht gelöscht werden.'
+  }
+}
+
 // Angebot aus der Anfrage erstellen (oder vorhandenes öffnen)
 const offerBusy = ref(false)
 async function makeOffer(item: Inquiry) {
@@ -392,6 +408,9 @@ onMounted(load)
                       @click="setStatus(openItem, 'archiviert')">Archivieren</button>
               <button v-if="openItem.status === 'archiviert'" class="wf-btn wf-btn--sm"
                       @click="setStatus(openItem, 'neu')">Wiederherstellen</button>
+              <button class="wf-btn wf-btn--sm wf-btn--danger ri__delete" @click="removeInquiry(openItem)">
+                <WfIcon name="trash" :size="13" /> Löschen
+              </button>
               </template>
             </div>
           </template>
@@ -669,4 +688,6 @@ onMounted(load)
 }
 .rental-inquiries__transport { display: flex; flex-direction: column; gap: .25em; margin: 0 0 .9em; padding: .7em .9em; border-radius: 10px; background: var(--wf-green-soft); font-size: .86em; }
 .rental-inquiries__transport strong { display: flex; align-items: center; gap: .4em; color: var(--wf-green); }
+
+.ri__delete { margin-left: auto; }
 </style>
