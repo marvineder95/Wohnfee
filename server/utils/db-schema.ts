@@ -736,6 +736,34 @@ export async function migrateSchema() {
   await addCol('calendar_events', 'reviewed_at', 'ADD COLUMN reviewed_at DATETIME NULL')
   // Jeder Abonnent braucht einen persönlichen Abmelde-Token (für den Link in jeder Mail)
   await db.query("UPDATE newsletter_subscribers SET unsub_token = LOWER(HEX(RANDOM_BYTES(16))) WHERE unsub_token IS NULL")
+  // To-Do-Liste (/admin/aufgaben): Admin legt an, Team meldet erledigt, Admin prüft (Feedback oder entfernen)
+  await db.query(`CREATE TABLE IF NOT EXISTS tasks (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(190) NOT NULL,
+    description TEXT NULL,
+    due_date DATE NULL,
+    priority VARCHAR(8) NOT NULL DEFAULT 'normal',
+    assigned_to INT UNSIGNED NULL,
+    status VARCHAR(12) NOT NULL DEFAULT 'offen',
+    created_by INT UNSIGNED NULL,
+    reported_by INT UNSIGNED NULL,
+    reported_at DATETIME NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    KEY idx_tasks_status (status, due_date),
+    KEY idx_tasks_assigned (assigned_to)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`)
+  await db.query(`CREATE TABLE IF NOT EXISTS task_events (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    task_id INT UNSIGNED NOT NULL,
+    user_id INT UNSIGNED NULL,
+    user_name VARCHAR(128) NULL,
+    kind VARCHAR(16) NOT NULL,
+    text TEXT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_task_events_task (task_id),
+    CONSTRAINT fk_task_events_task FOREIGN KEY (task_id) REFERENCES tasks(id) ON DELETE CASCADE
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`)
   // Mitarbeiter (/admin/mitarbeiter): alle Daten zur Person; Dashboard-Zugang optional über user_id
   await db.query(`CREATE TABLE IF NOT EXISTS employees (
     id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,

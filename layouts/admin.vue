@@ -64,7 +64,7 @@ async function doLogout() {
 }
 
 // Navigation nach Arbeitsbereichen gruppiert (Eingang → Planung → Kunden & Finanzen → Website)
-interface NavItem { to: string; label: string; icon: string; exact: boolean; area?: Area; badge?: 'inquiries' | 'rental' | 'overdue'; also?: string[] }
+interface NavItem { to: string; label: string; icon: string; exact: boolean; area?: Area; badge?: 'inquiries' | 'rental' | 'overdue' | 'tasks'; also?: string[] }
 const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
   { label: null, items: [
     { to: '/admin/dashboard', label: 'Übersicht', icon: 'home', exact: true, area: 'dashboard' }
@@ -74,6 +74,7 @@ const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
     { to: '/admin/mietanfragen', label: 'Mietanfragen', icon: 'bag', exact: false, area: 'mietanfragen', badge: 'rental' }
   ] },
   { label: 'Planung', items: [
+    { to: '/admin/aufgaben', label: 'To-Do', icon: 'check', exact: false, area: 'aufgaben', badge: 'tasks' },
     { to: '/admin/projekte', label: 'Projekte', icon: 'folder', exact: false, area: 'projekte' },
     { to: '/admin/touren', label: 'Touren & Rückgaben', icon: 'truck', exact: false, area: 'touren', badge: 'overdue' },
     { to: '/admin/kalender', label: 'Kalender', icon: 'calendar', exact: false, area: 'kalender' },
@@ -106,6 +107,7 @@ function badgeCount(item: NavItem) {
   if (item.badge === 'inquiries') return newInquiries.value
   if (item.badge === 'rental') return newRentalInquiries.value
   if (item.badge === 'overdue') return overdueReturns.value
+  if (item.badge === 'tasks') return taskCount.value
   return 0
 }
 
@@ -130,6 +132,17 @@ async function loadRentalInquiryCount() {
 }
 
 // Badge: Projekte, deren Leihmöbel überfällig beim Kunden sind
+// Badge To-Do: Admin = gemeldet (zu prüfen), Team = offene Aufgaben
+const taskCount = ref(0)
+async function loadTaskCount() {
+  if (!user.value || !perms.can('aufgaben')) return
+  try {
+    taskCount.value = (await $fetch<{ count: number }>('/api/admin/tasks/count')).count
+  } catch { /* optional */ }
+}
+// Seite meldet Änderungen (Event wf:tasks-changed), damit der Badge sofort stimmt
+if (import.meta.client) window.addEventListener('wf:tasks-changed', () => loadTaskCount())
+
 const overdueReturns = ref(0)
 async function loadOverdueCount() {
   if (!user.value) return
@@ -140,7 +153,7 @@ async function loadOverdueCount() {
 }
 
 async function loadBadges() {
-  await Promise.all([loadInquiryCount(), loadRentalInquiryCount(), loadOverdueCount()])
+  await Promise.all([loadInquiryCount(), loadRentalInquiryCount(), loadOverdueCount(), loadTaskCount()])
   // Zähler am App-Symbol der installierten PWA
   try {
     const n = newInquiries.value + newRentalInquiries.value
