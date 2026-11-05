@@ -11,7 +11,8 @@ interface Inquiry {
   email: string
   phone: string | null
   subject: string | null
-  status: 'neu' | 'gelesen' | 'archiviert'
+  status: 'neu' | 'gelesen' | 'archiviert' | 'spam'
+  spamReason: string | null
   customerType: string | null
   messagePreview: string
   createdAt: string
@@ -22,12 +23,13 @@ interface Detail {
 }
 
 const inquiries = ref<Inquiry[]>([])
-const counts = ref<Record<string, number>>({ neu: 0, gelesen: 0, archiviert: 0 })
+const counts = ref<Record<string, number>>({ neu: 0, gelesen: 0, archiviert: 0, spam: 0 })
 const referrals = ref<{ value: string; n: number }[]>([])
 const referralTotal = computed(() => referrals.value.reduce((s, r) => s + r.n, 0))
 const customerLabel = (v: string | null) => optionLabel(CUSTOMER_TYPES, v)
 const referralLabel = (v: string | null) => optionLabel(REFERRAL_SOURCES, v) || v || ''
-const filter = ref<'alle' | 'neu' | 'gelesen' | 'archiviert'>('alle')
+const filter = ref<'alle' | 'neu' | 'gelesen' | 'archiviert' | 'spam'>('alle')
+const ask = useConfirm()
 const loading = ref(true)
 const error = ref('')
 const detail = ref<Detail | null>(null)
@@ -40,7 +42,8 @@ const tabs = [
   { value: 'alle', label: 'Alle' },
   { value: 'neu', label: 'Neu' },
   { value: 'gelesen', label: 'Gelesen' },
-  { value: 'archiviert', label: 'Archiviert' }
+  { value: 'archiviert', label: 'Archiviert' },
+  { value: 'spam', label: 'Spam' }
 ] as const
 
 async function load() {
@@ -112,7 +115,7 @@ async function setStatus(item: Inquiry, status: string, reload = true) {
 
 async function remove(item: Inquiry) {
   actionError.value = ''
-  if (!confirm(`Anfrage #${item.id} von ${item.name} endgültig löschen?`)) return
+  if (!await ask({ title: 'Anfrage löschen?', message: `#${item.id} von ${item.name} – endgültig löschen?`, confirmText: 'Löschen', danger: true })) return
   try {
     await $fetch(`/api/admin/inquiries/${item.id}`, { method: 'DELETE' })
     if (expandedId.value === item.id) { expandedId.value = null; detail.value = null }
@@ -159,7 +162,7 @@ onMounted(load)
               :class="{ 'is-active': filter === t.value }" role="tab"
               :aria-selected="filter === t.value" @click="filter = t.value">
         {{ t.label }}
-        <span v-if="t.value !== 'alle' && counts[t.value]" class="inquiries__tabcount">
+        <span v-if="t.value !== 'alle' && counts[t.value]" class="inquiries__tabcount" :class="{ 'inquiries__tabcount--all': t.value === 'spam' }">
           {{ counts[t.value] }}
         </span>
         <span v-else-if="t.value === 'alle' && (counts.neu || counts.gelesen || counts.archiviert)"
@@ -184,6 +187,7 @@ onMounted(load)
 
     <div v-else-if="!inquiries.length" class="inquiries__empty">
       <template v-if="filter === 'alle'">Noch keine Kontaktanfragen vorhanden.</template>
+      <template v-else-if="filter === 'spam'">Kein Spam – gut so. Verdächtige Anfragen landen automatisch hier, ohne Mail und ohne Benachrichtigung.</template>
       <template v-else>Keine Anfragen mit dem Status „{{ tabs.find(t => t.value === filter)?.label }}“.</template>
     </div>
 
@@ -191,13 +195,14 @@ onMounted(load)
       <li v-for="item in inquiries" :key="item.id" class="inquiries__item"
           :class="{ 'is-expanded': expandedId === item.id }">
         <button class="inquiries__row" @click="toggleDetail(item)">
-          <span class="wf-pill" :class="item.status === 'neu' ? '' : item.status === 'gelesen' ? 'wf-pill--amber' : 'wf-pill--gray'">{{ tabs.find(t => t.value === item.status)?.label || item.status }}</span>
+          <span class="wf-pill" :class="item.status === 'neu' ? '' : item.status === 'gelesen' ? 'wf-pill--amber' : item.status === 'spam' ? 'wf-pill--red' : 'wf-pill--gray'">{{ tabs.find(t => t.value === item.status)?.label || item.status }}</span>
           <span class="inquiries__main">
             <strong>{{ item.name }}</strong>
             <span class="inquiries__subject">
               {{ item.subject || 'Allgemeine Anfrage' }}<template v-if="item.customerType"> · {{ customerLabel(item.customerType) }}</template>
             </span>
             <span class="inquiries__preview">{{ item.messagePreview }}</span>
+            <span v-if="item.status === 'spam' && item.spamReason" class="inquiries__spam">Als Spam erkannt: {{ item.spamReason }}</span>
           </span>
           <span class="inquiries__meta">
             <span class="inquiries__date">{{ formatDate(item.createdAt) }}</span>
@@ -222,7 +227,7 @@ onMounted(load)
           </template>
 
           <div class="inquiries__actions">
-            <button v-if="detail && perms.canEdit('angebote')" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(item)">
+            <button v-if="detail && item.status !== 'spam' && perms.canEdit('angebote')" class="wf-btn wf-btn--sm wf-btn--primary" :disabled="offerBusy" @click="makeOffer(item)">
               <WfIcon name="file" :size="13" />
               {{ detail.offerId ? `Angebot ${detail.offerNumber || ''} öffnen` : (offerBusy ? 'Erstelle …' : 'Angebot erstellen') }}
             </button>
@@ -230,12 +235,18 @@ onMounted(load)
               <WfIcon name="mail" :size="13" /> Antworten
             </a>
             <template v-if="perms.canEdit('anfragen')">
-              <button v-if="item.status !== 'gelesen'" class="wf-btn wf-btn--sm"
-                      @click="setStatus(item, 'gelesen')">Als gelesen markieren</button>
-              <button v-if="item.status !== 'archiviert'" class="wf-btn wf-btn--sm"
-                      @click="setStatus(item, 'archiviert')">Archivieren</button>
-              <button v-if="item.status === 'archiviert'" class="wf-btn wf-btn--sm"
-                      @click="setStatus(item, 'neu')">Wiederherstellen</button>
+              <template v-if="item.status === 'spam'">
+                <button class="wf-btn wf-btn--sm" @click="setStatus(item, 'neu')"><WfIcon name="check" :size="13" /> Kein Spam</button>
+              </template>
+              <template v-else>
+                <button v-if="item.status !== 'gelesen'" class="wf-btn wf-btn--sm"
+                        @click="setStatus(item, 'gelesen')">Als gelesen markieren</button>
+                <button v-if="item.status !== 'archiviert'" class="wf-btn wf-btn--sm"
+                        @click="setStatus(item, 'archiviert')">Archivieren</button>
+                <button v-if="item.status === 'archiviert'" class="wf-btn wf-btn--sm"
+                        @click="setStatus(item, 'neu')">Wiederherstellen</button>
+                <button class="wf-btn wf-btn--sm" @click="setStatus(item, 'spam')">Spam</button>
+              </template>
               <button class="wf-btn wf-btn--sm wf-btn--danger" @click="remove(item)">Löschen</button>
             </template>
           </div>
@@ -246,6 +257,7 @@ onMounted(load)
 </template>
 
 <style scoped>
+.inquiries__spam { display: block; margin-top: .25em; font-size: .76em; color: var(--wf-red); }
 .inquiries__tabs {
   display: flex;
   gap: .5em;

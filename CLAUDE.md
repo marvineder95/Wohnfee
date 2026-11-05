@@ -170,6 +170,10 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Newsletter/Blog/Immobilien, keine eigenen Termine, kein „Abholung erledigt“).
   Server: `server/middleware/admin-permissions.ts`; UI: `usePermissions()`, Menü + Seitenschutz
   im Layout, Bearbeiten-Elemente per `canEdit(area)` bzw. `<fieldset :disabled>`.
+- Spam-Schutz öffentliche Formulare (Kontakt + Immobilien-Anfrage, `server/utils/spam.ts`, ohne externe Dienste): Honeypot `website`
+  (still verworfen) + Zeit-Token (`/api/form-token`, `useFormToken`, < 4 s oder ohne/gefälscht = Spam) + Inhalt (≥ 2 Links, Link im Namen,
+  Spam-Begriffe, fremde Schrift) → `contact_inquiries.status = 'spam'` + `spam_reason`, keine Mail/Push, Reiter „Spam“ in den Anfragen
+  („Kein Spam“ holt zurück); Spam nach 30 Tagen gelöscht (`server/plugins/spam-cleanup.ts`). Kontakt zusätzlich 1/min + 5/h je IP.
 - Sicherheit: Login max. 10 Fehlversuche/15 min je IP, „Passwort vergessen" 5/h,
   Mietanfragen 5/h (`server/utils/rate-limit.ts`). Reset-Links nie in API-Antworten.
   In Produktion `NUXT_SITE_URL` setzen (Basis für Links in Mails).

@@ -37,6 +37,7 @@ const facts = computed(() => [
 
 // Anfrage
 const form = reactive({ name: '', email: '', phone: '', message: '', viewing: true, privacy: false, website: '' })
+const formToken = useFormToken()
 const busy = ref(false)
 const sent = ref(false)
 const err = ref('')
@@ -44,7 +45,7 @@ async function send() {
   err.value = ''
   busy.value = true
   try {
-    await $fetch(`/api/properties/${p.value.slug}/inquiry`, { method: 'POST', body: { ...form, lang: lang.value } })
+    await $fetch(`/api/properties/${p.value.slug}/inquiry`, { method: 'POST', body: { ...form, formToken: await formToken.get(), lang: lang.value } })
     sent.value = true
   } catch (e: any) {
     err.value = e?.data?.statusMessage || t('Senden fehlgeschlagen – bitte rufen Sie uns an.', 'Sending failed – please give us a call.')

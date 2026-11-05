@@ -4,6 +4,7 @@ import { query, queryOne } from '../../../utils/db'
 import { sendMail } from '../../../utils/mailer'
 import { clientIp, assertNotLimited, countAttempt } from '../../../utils/rate-limit'
 import { publicOrigin } from '../../../utils/site'
+import { spamReason } from '../../../utils/spam'
 
 // POST /api/properties/:slug/inquiry – Besichtigung/Infos anfragen → landet in „Anfragen" (mit Immobilie verknüpft)
 export default defineEventHandler(async (event) => {
@@ -32,9 +33,12 @@ export default defineEventHandler(async (event) => {
   const subject = `Immobilie: ${p.title}${p.ref_no ? ` (${p.ref_no})` : ''}`.slice(0, 190)
   const text = `${wish}.\n\n${message || '–'}`
   const ipHash = createHash('sha256').update(`wf-contact:${clientIp(event)}`).digest('hex')
+  const spam = spamReason(body?.formToken, { name, email, message })
   const res: any = await query(
-    `INSERT INTO contact_inquiries (name, email, phone, subject, message, ip_hash, property_id) VALUES (:name, :email, :phone, :subject, :text, :ip, :pid)`,
-    { name, email, phone: phone || null, subject, text, ip: ipHash, pid: p.id })
+    `INSERT INTO contact_inquiries (name, email, phone, subject, message, ip_hash, property_id, status, spam_reason)
+     VALUES (:name, :email, :phone, :subject, :text, :ip, :pid, :status, :spam)`,
+    { name, email, phone: phone || null, subject, text, ip: ipHash, pid: p.id, status: spam ? 'spam' : 'neu', spam: spam ? spam.slice(0, 255) : null })
+  if (spam) return { ok: true }
 
   const url = `${publicOrigin(event)}/admin/immobilien?open=${p.id}`
   const to = ['office@wohnfee.at', p.contact_email].filter((v, i, a) => v && a.indexOf(v) === i).join(', ')

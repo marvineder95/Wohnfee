@@ -36,7 +36,8 @@ CREATE TABLE IF NOT EXISTS contact_inquiries (
   phone VARCHAR(64) NULL,
   subject VARCHAR(190) NULL,
   message TEXT NOT NULL,
-  status ENUM('neu','gelesen','archiviert') NOT NULL DEFAULT 'neu',
+  status ENUM('neu','gelesen','archiviert','spam') NOT NULL DEFAULT 'neu',
+  spam_reason VARCHAR(255) NULL,
   ip_hash CHAR(64) NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -843,6 +844,19 @@ export async function migrateSchema() {
     )
     if (Number(c?.n) === 0) await db.query(`ALTER TABLE employees ${ddl}`)
   }
+  // Kontaktanfragen: Status „spam“ + Grund (server/utils/spam.ts)
+  const ciStatus = await queryOne<{ t: string }>(
+    `SELECT COLUMN_TYPE AS t FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = :db AND TABLE_NAME = 'contact_inquiries' AND COLUMN_NAME = 'status'`, { db: useRuntimeConfig().dbName }
+  )
+  if (ciStatus && !ciStatus.t.includes("'spam'")) {
+    await db.query("ALTER TABLE contact_inquiries MODIFY status ENUM('neu','gelesen','archiviert','spam') NOT NULL DEFAULT 'neu'")
+  }
+  const ciReason = await queryOne<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = :db AND TABLE_NAME = 'contact_inquiries' AND COLUMN_NAME = 'spam_reason'`, { db: useRuntimeConfig().dbName }
+  )
+  if (Number(ciReason?.n) === 0) await db.query('ALTER TABLE contact_inquiries ADD COLUMN spam_reason VARCHAR(255) NULL AFTER status')
   // Selbst-Meldungen (Urlaubsantrag / Krankenstand) + Krankmeldung als Dokument
   for (const [table, col, ddl] of [
     ['employee_absences', 'status', "ADD COLUMN status VARCHAR(12) NOT NULL DEFAULT 'genehmigt' AFTER note"],

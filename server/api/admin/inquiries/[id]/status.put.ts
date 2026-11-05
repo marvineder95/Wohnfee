@@ -1,7 +1,7 @@
 import { requireAdmin } from '../../../../utils/admin-auth'
 import { query, queryOne } from '../../../../utils/db'
 
-// Status setzen: neu | gelesen | archiviert
+// Status setzen: neu | gelesen | archiviert | spam
 export default defineEventHandler(async (event) => {
   await requireAdmin(event)
   const id = Number(getRouterParam(event, 'id'))
@@ -10,7 +10,7 @@ export default defineEventHandler(async (event) => {
   }
   const body = await readBody(event)
   const status = String(body?.status || '')
-  if (!['neu', 'gelesen', 'archiviert'].includes(status)) {
+  if (!['neu', 'gelesen', 'archiviert', 'spam'].includes(status)) {
     throw createError({ statusCode: 400, statusMessage: 'Ungültiger Status' })
   }
   const existing = await queryOne('SELECT id FROM contact_inquiries WHERE id = :id', { id })

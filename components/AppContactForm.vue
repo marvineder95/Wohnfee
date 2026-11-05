@@ -85,8 +85,9 @@ onMounted(() => {
   if (msg && !form.message) form.message = msg + '\n\n'
 })
 
-// Honeypot — für Menschen unsichtbar
+// Honeypot — für Menschen unsichtbar; dazu Zeit-Token gegen Bots (server/utils/spam.ts)
 const website = ref('')
+const formToken = useFormToken()
 
 const sending = ref(false)
 const success = ref(false)
@@ -119,7 +120,7 @@ async function submit() {
   sending.value = true
   try {
     const body = showObject.value ? { ...form } : { ...form, objectSize: '', objectZip: '', objectDate: '' }
-    await $fetch('/api/contact', { method: 'POST', body: { ...body, website: website.value, lang: props.lang } })
+    await $fetch('/api/contact', { method: 'POST', body: { ...body, website: website.value, formToken: await formToken.get(), lang: props.lang } })
     success.value = true
     form.name = ''; form.email = ''; form.phone = ''
     form.subject = 'allgemein'; form.message = ''; form.privacy = false

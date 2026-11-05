@@ -3,11 +3,13 @@ import site from '../../data/site.json'
 import { query, queryOne } from '../utils/db'
 import { sendMail } from '../utils/mailer'
 import { CUSTOMER_TYPES, REFERRAL_SOURCES, optionLabel } from '../../shared/inquiry-fields'
+import { spamReason } from '../utils/spam'
+import { clientIp, assertNotLimited, countAttempt } from '../utils/rate-limit'
 
 // Öffentlicher Endpunkt für das Kontaktformular auf /kontakt.html
 // - validiert Eingaben
-// - Honeypot gegen Bots
-// - einfaches Rate-Limit: max. 1 Anfrage pro Minute pro IP
+// - Honeypot gegen Bots, Formular-Token + Inhaltsprüfung (server/utils/spam.ts) → Status „spam“ ohne Mail/Push
+// - Rate-Limit: max. 1 Anfrage pro Minute und 5 pro Stunde je IP
 // - speichert die Anfrage + schickt eine Benachrichtigung an office@wohnfee.at
 const SUBJECTS: Record<string, string> = {
   allgemein: 'Allgemeine Anfrage',
@@ -58,6 +60,8 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 400, statusMessage: msg('Bitte bestätigen Sie die Datenschutzerklärung.', 'Please confirm the privacy policy.') })
   }
 
+  const limitKey = `contact:${clientIp(event)}`
+  assertNotLimited(limitKey, 5, 60 * 60 * 1000)
   const ip = getRequestIP(event, { xForwardedFor: true }) || 'unbekannt'
   const ipHash = createHash('sha256').update(`wf-contact:${ip}`).digest('hex')
 
@@ -72,14 +76,19 @@ export default defineEventHandler(async (event) => {
     throw createError({ statusCode: 429, statusMessage: msg('Bitte warten Sie einen Moment, bevor Sie erneut senden.', 'Please wait a moment before sending again.') })
   }
 
+  countAttempt(limitKey, 60 * 60 * 1000)
+  const spam = spamReason(body?.formToken, { name, email, message })
   const subject = SUBJECTS[subjectKey] || SUBJECTS.allgemein
   const result: any = await query(
     `INSERT INTO contact_inquiries (name, email, phone, subject, message, ip_hash,
-       customer_type, object_size, object_zip, object_date, referral)
+       customer_type, object_size, object_zip, object_date, referral, status, spam_reason)
      VALUES (:name, :email, :phone, :subject, :message, :ip,
-       :customerType, :objectSize, :objectZip, :objectDate, :referral)`,
-    { name, email, phone: phone || null, subject, message, ip: ipHash, customerType, objectSize, objectZip, objectDate, referral }
+       :customerType, :objectSize, :objectZip, :objectDate, :referral, :status, :spam)`,
+    { name, email, phone: phone || null, subject, message, ip: ipHash, customerType, objectSize, objectZip, objectDate, referral,
+      status: spam ? 'spam' : 'neu', spam: spam ? spam.slice(0, 255) : null }
   )
+  // Spam: gespeichert (Reiter „Spam“), aber keine Mail und kein Push – Absender sieht trotzdem „gesendet“
+  if (spam) return { ok: true }
 
   // Zusatzangaben für die Mail ans Büro (nur ausgefüllte)
   const extras: [string, string][] = ([
