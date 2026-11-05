@@ -155,6 +155,9 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   `employee_absences` (Urlaub/Krankenstand/ZA, Arbeitstage Mo–Fr automatisch). Dashboard-Zugang = Reiter, `employees.user_id` →
   `admin_users`; Einladung (`users/invite`, `employeeId`) verknüpft bzw. legt Mitarbeiter an, Zugang entfernen lässt den Mitarbeiter stehen.
   Listen/Helfer `shared/employees.ts`, Server `server/utils/employees.ts`.
+  Urlaubskonto (`vacationAccount` in shared/employees.ts): Anspruch je Kalenderjahr aliquot ab Eintritt/bis Austritt (½ Tage aufgerundet),
+  Rest wandert ins Folgejahr (Verbrauch ältester Rest zuerst, verjährt 2 J. nach Urlaubsjahr). Start = Eintrittsjahr, frühestens 2026;
+  davor offener Rest über `vacation_opening_year`/`_days` (Feld „Resturlaub zum 1.1.“).
 - Rollen & Rechte: `shared/permissions.ts` (eine Tabelle für Server + UI). Admin (superadmin),
   Designerin (designer: alles außer Mitarbeiter; Rechnungen + Konditionen nur ansehen, auch keine Rechnung aus Angebot), Spediteur (driver: nur
   ansehen, eigene Kalendertermine; keine Angebote/Rechnungen/Konditionen/Newsletter/Blog).

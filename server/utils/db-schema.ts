@@ -831,6 +831,18 @@ export async function migrateSchema() {
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_employee_absences_emp (employee_id, date_from)
   ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`)
+  // Urlaub-Übertrag zum Stichtag (Resturlaub aus der Zeit vor dem Dashboard)
+  for (const [col, ddl] of [
+    ['vacation_opening_year', 'ADD COLUMN vacation_opening_year SMALLINT UNSIGNED NULL AFTER vacation_days'],
+    ['vacation_opening_days', 'ADD COLUMN vacation_opening_days DECIMAL(5,1) NULL AFTER vacation_opening_year']
+  ]) {
+    const c = await queryOne<{ n: number }>(
+      `SELECT COUNT(*) AS n FROM information_schema.COLUMNS
+       WHERE TABLE_SCHEMA = :db AND TABLE_NAME = 'employees' AND COLUMN_NAME = :col`,
+      { db: useRuntimeConfig().dbName, col }
+    )
+    if (Number(c?.n) === 0) await db.query(`ALTER TABLE employees ${ddl}`)
+  }
   // Bestehende Dashboard-Benutzer bekommen einmalig einen Mitarbeiter-Eintrag
   await db.query(`INSERT INTO employees (user_id, first_name, last_name, email, phone, position, photo_path, vacation_days)
     SELECT u.id,

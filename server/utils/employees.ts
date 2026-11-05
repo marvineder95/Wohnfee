@@ -1,7 +1,7 @@
 import { join } from 'node:path'
 import { query, queryOne } from './db'
 import { todayVienna } from './site'
-import { EMPLOYMENT_TYPES, SALARY_TYPES, isValue } from '../../shared/employees'
+import { EMPLOYMENT_TYPES, SALARY_TYPES, isValue, vacationAccount } from '../../shared/employees'
 
 // Mitarbeiter-Daten (Tabelle employees). Nur Admins (Bereich „users“, shared/permissions.ts).
 // Sensible Daten (SV-Nr., Bank, Gehalt) verlassen das Dashboard nie.
@@ -34,6 +34,11 @@ export function employeeValues(body: any): Record<string, any> {
     const n = raw === '' || raw == null ? NaN : Number(String(raw).replace(',', '.'))
     v[f] = Number.isFinite(n) && n >= 0 ? n : null
   }
+  // Übertrag zum 1.1. eines Jahres (darf negativ sein = Vorgriff)
+  const oy = Number(body?.vacation_opening_year)
+  const od = body?.vacation_opening_days === '' || body?.vacation_opening_days == null ? NaN : Number(String(body.vacation_opening_days).replace(',', '.'))
+  v.vacation_opening_year = Number.isInteger(oy) && oy >= 2000 && oy <= 2100 ? oy : null
+  v.vacation_opening_days = v.vacation_opening_year && Number.isFinite(od) ? Math.max(-999, Math.min(999, od)) : null
   v.employment_type = isValue(EMPLOYMENT_TYPES, body?.employment_type) ? body.employment_type : null
   v.salary_type = isValue(SALARY_TYPES, body?.salary_type) ? body.salary_type : null
   if (!v.first_name && !v.last_name) {
@@ -55,10 +60,8 @@ export async function listEmployees() {
   const year = today.slice(0, 4)
   const rows = await query<any>(
     `SELECT e.id, e.title, e.first_name, e.last_name, e.position, e.photo_path, e.email, e.phone,
-            e.employment_type, e.entry_date, e.exit_date, e.probation_until, e.vacation_days, e.weekly_hours,
+            e.employment_type, e.entry_date, e.exit_date, e.probation_until, e.vacation_days, e.vacation_opening_year, e.vacation_opening_days, e.weekly_hours,
             u.id AS user_id, u.username, u.role, u.status AS user_status, u.avatar_path,
-            (SELECT COALESCE(SUM(a.days), 0) FROM employee_absences a
-              WHERE a.employee_id = e.id AND a.type = 'urlaub' AND YEAR(a.date_from) = :year) AS vacation_used,
             (SELECT a.type FROM employee_absences a
               WHERE a.employee_id = e.id AND :today BETWEEN a.date_from AND a.date_to LIMIT 1) AS absent_today,
             (SELECT COUNT(*) FROM employee_documents d WHERE d.employee_id = e.id) AS doc_count,
@@ -67,8 +70,20 @@ export async function listEmployees() {
      FROM employees e
      LEFT JOIN admin_users u ON u.id = e.user_id
      ORDER BY (e.exit_date IS NOT NULL AND e.exit_date < :today), e.last_name, e.first_name`,
-    { today, year: Number(year) }
+    { today }
   )
+  const used = await query<{ employee_id: number; y: number; days: number }>(
+    `SELECT employee_id, YEAR(date_from) AS y, SUM(days) AS days FROM employee_absences
+     WHERE type = 'urlaub' GROUP BY employee_id, YEAR(date_from)`
+  )
+  for (const e of rows) {
+    const usedByYear: Record<number, number> = {}
+    for (const u of used) if (u.employee_id === e.id) usedByYear[Number(u.y)] = Number(u.days)
+    e.vacation = e.vacation_days == null ? null : vacationAccount({
+      annual: Number(e.vacation_days), entry: e.entry_date, exit: e.exit_date,
+      openingYear: e.vacation_opening_year, openingDays: e.vacation_opening_days, usedByYear, year: Number(year)
+    })
+  }
   return { today, employees: rows }
 }
 

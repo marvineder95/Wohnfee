@@ -2,7 +2,7 @@
 import { ROLES, roleLabel, type Role } from '~~/shared/permissions'
 import {
   EMPLOYMENT_TYPES, SALARY_TYPES, DOC_CATEGORIES, ABSENCE_TYPES,
-  employmentLabel, docCategoryLabel, absenceLabel, workdaysBetween, isFormer, initials
+  employmentLabel, docCategoryLabel, absenceLabel, workdaysBetween, isFormer, initials, vacationAccount
 } from '~~/shared/employees'
 definePageMeta({ layout: 'admin' })
 
@@ -116,7 +116,7 @@ const emptyForm = () => ({
   title: '', first_name: '', last_name: '', position: '', email: '', private_email: '', phone: '',
   street: '', zip: '', city: '', birth_date: '', nationality: '', svnr: '',
   employment_type: '', entry_date: '', exit_date: '', probation_until: '', weekly_hours: '', work_days: '',
-  salary_type: 'monat', salary: '', collective_agreement: '', vacation_days: '25',
+  salary_type: 'monat', salary: '', collective_agreement: '', vacation_days: '25', vacation_opening_year: '', vacation_opening_days: '',
   iban: '', bic: '', account_holder: '',
   emergency_name: '', emergency_relation: '', emergency_phone: '',
   driving_license: '', clothing_size: '', equipment: '', notes: ''
@@ -255,14 +255,22 @@ watch(() => [absForm.value.date_from, absForm.value.date_to], ([from, to]) => {
 })
 const year = computed(() => today.value.slice(0, 4))
 const vacation = computed(() => {
-  const total = Number(emp.value?.vacation_days || 0)
-  const used = (detail.value?.absences || [])
-    .filter(a => a.type === 'urlaub' && String(a.date_from).startsWith(year.value))
-    .reduce((s, a) => s + Number(a.days || 0), 0)
+  const usedByYear: Record<number, number> = {}
+  for (const a of detail.value?.absences || []) {
+    if (a.type !== 'urlaub') continue
+    const y = Number(String(a.date_from).slice(0, 4))
+    usedByYear[y] = (usedByYear[y] || 0) + Number(a.days || 0)
+  }
+  const acc = vacationAccount({
+    annual: Number(emp.value?.vacation_days || 0), entry: emp.value?.entry_date, exit: emp.value?.exit_date,
+    openingYear: emp.value?.vacation_opening_year, openingDays: emp.value?.vacation_opening_days,
+    usedByYear, year: Number(year.value)
+  })
+  const { total, used } = acc
   const sick = (detail.value?.absences || [])
     .filter(a => a.type === 'krankenstand' && String(a.date_from).startsWith(year.value))
     .reduce((s, a) => s + Number(a.days || 0), 0)
-  return { total, used, left: total - used, sick, pct: total ? Math.min(100, (used / total) * 100) : 0 }
+  return { ...acc, annual: Number(emp.value?.vacation_days || 0), sick, pct: total > 0 ? Math.min(100, (used / total) * 100) : 0 }
 })
 async function addAbsence() {
   if (!emp.value) return
@@ -460,8 +468,8 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           </dl>
           <div class="mit__cardfoot">
             <span class="wf-pill" :class="accessPill(e)">{{ accessText(e) }}</span>
-            <span v-if="!former(e) && e.vacation_days != null" class="mit__vac" :title="`Urlaub ${year}: ${fmtNum(e.vacation_used)} von ${fmtNum(e.vacation_days)} Tagen verbraucht`">
-              <WfIcon name="calendar" :size="13" /> {{ fmtNum(Number(e.vacation_days) - Number(e.vacation_used)) }} Tage frei
+            <span v-if="!former(e) && e.vacation" class="mit__vac" :title="`Urlaub ${year}: ${fmtNum(e.vacation.used)} von ${fmtNum(e.vacation.total)} Tagen verbraucht (Anspruch ${fmtNum(e.vacation.entitlement)}${e.vacation.carryover ? ` + Übertrag ${fmtNum(e.vacation.carryover)}` : ''})`">
+              <WfIcon name="calendar" :size="13" /> {{ fmtNum(e.vacation.left) }} Tage frei
             </span>
           </div>
         </button>
@@ -559,9 +567,14 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
           <div class="mit__fields">
             <label class="mit__f mit__f--s"><span class="wf-label">Std. / Woche</span><input v-model="form.weekly_hours" class="wf-input" inputmode="decimal" placeholder="38,5"></label>
             <label class="mit__f"><span class="wf-label">Arbeitstage</span><input v-model="form.work_days" class="wf-input" placeholder="z. B. Mo–Fr oder Di, Do"></label>
-            <label class="mit__f mit__f--s"><span class="wf-label">Urlaub / Jahr (Tage)</span><input v-model="form.vacation_days" class="wf-input" inputmode="decimal"></label>
+            <label class="mit__f mit__f--s"><span class="wf-label" title="Voller Jahresanspruch – im Eintritts- und Austrittsjahr wird automatisch aliquot gerechnet">Urlaub / Jahr (Tage)</span><input v-model="form.vacation_days" class="wf-input" inputmode="decimal"></label>
             <label class="mit__f"><span class="wf-label">Kollektivvertrag / Einstufung</span><input v-model="form.collective_agreement" class="wf-input" placeholder="z. B. KV Handel, Beschäftigungsgruppe C"></label>
           </div>
+          <div class="mit__fields">
+            <label class="mit__f mit__f--s"><span class="wf-label">Resturlaub zum 1.1.</span><input v-model="form.vacation_opening_year" class="wf-input" inputmode="numeric" :placeholder="year"></label>
+            <label class="mit__f mit__f--s"><span class="wf-label">Tage</span><input v-model="form.vacation_opening_days" class="wf-input" inputmode="decimal" placeholder="0"></label>
+          </div>
+          <p class="mit__hint">Urlaub wird ab Eintritt aliquot gerechnet, nicht verbrauchte Tage wandern ins nächste Jahr (verjähren 2 Jahre nach Ende des Urlaubsjahres). „Resturlaub“ nur für offene Tage aus der Zeit vor dem Dashboard eintragen (z. B. 2027 / 3,5) – ab diesem Jahr rechnet das Dashboard selbst weiter.</p>
           <h3 class="mit__h3">Ausstattung &amp; Einsatz</h3>
           <div class="mit__fields">
             <label class="mit__f"><span class="wf-label">Führerschein-Klassen</span><input v-model="form.driving_license" class="wf-input" placeholder="z. B. B, C1"></label>
@@ -632,7 +645,13 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
               <div><strong>{{ fmtNum(vacation.sick) }}</strong><span>Krankenstandstage {{ year }}</span></div>
             </div>
             <div class="mit__vacbar" :aria-label="`${fmtNum(vacation.used)} von ${fmtNum(vacation.total)} Urlaubstagen verbraucht`"><i :style="{ width: vacation.pct + '%' }" /></div>
-            <small v-if="!vacation.total">Urlaubsanspruch im Reiter „Anstellung“ eintragen.</small>
+            <p v-if="vacation.annual" class="mit__vacmath">
+              Anspruch {{ year }}: <strong>{{ fmtNum(vacation.entitlement) }} Tage</strong><template v-if="vacation.aliquot"> (aliquot von {{ fmtNum(vacation.annual) }}<template v-if="emp.entry_date && String(emp.entry_date).slice(0, 4) === year"> ab Eintritt {{ fmtDate(emp.entry_date) }}</template><template v-if="emp.exit_date && String(emp.exit_date).slice(0, 4) === year"> bis Austritt {{ fmtDate(emp.exit_date) }}</template>)</template>
+              <template v-if="vacation.carryover"> · {{ vacation.carryover > 0 ? 'Übertrag aus Vorjahren' : 'Vorgriff aus Vorjahren' }}: <strong>{{ fmtNum(vacation.carryover) }}</strong></template>
+              <template v-if="vacation.left > 0 && !emp.exit_date"> · Rest geht ins Jahr {{ Number(year) + 1 }} mit</template>
+              <template v-if="vacation.expiring > 0"> · <span class="mit__vacwarn">{{ fmtNum(vacation.expiring) }} Tage verjähren Ende {{ year }}</span></template>
+            </p>
+            <small v-else>Urlaubsanspruch im Reiter „Anstellung“ eintragen.</small>
           </div>
           <form class="mit__upload" @submit.prevent="addAbsence">
             <label class="mit__f"><span class="wf-label">Art</span>
@@ -896,6 +915,9 @@ onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 .mit__vacbar { height: 6px; border-radius: 99px; background: rgba(47, 93, 64, .14); margin-top: .9em; overflow: hidden; }
 .mit__vacbar i { display: block; height: 100%; background: var(--wf-green); border-radius: inherit; transition: width .3s; }
 .mit__vacbox small { display: block; margin-top: .6em; color: var(--wf-muted); }
+.mit__vacmath { margin: .7em 0 0; font-size: .82em; color: var(--wf-muted); text-align: left; }
+.mit__vacmath strong { color: var(--wf-text, inherit); font-weight: 600; }
+.mit__vacwarn { color: #a3541b; font-weight: 600; }
 
 /* Zugang */
 .mit__access { display: grid; grid-template-columns: 1fr 1.3fr; gap: 1.5em; align-items: start; }
