@@ -109,6 +109,7 @@ const TABS: Array<{ key: Tab; label: string; icon: string }> = [
 const FORM_TABS: Tab[] = ['person', 'anstellung', 'lohn']
 
 const open = ref(false)
+const ask = useConfirm()
 const tab = ref<Tab>('person')
 const detail = ref<{ employee: any; documents: any[]; absences: any[]; user: any } | null>(null)
 const emptyForm = () => ({
@@ -178,7 +179,7 @@ async function save() {
 async function removeEmployee() {
   if (!emp.value) return
   if (detail.value?.user) { saveError.value = 'Bitte zuerst im Reiter „Dashboard-Zugang“ den Zugang entfernen.'; return }
-  if (!confirm(`${fullName(emp.value)} mit allen Dokumenten und Abwesenheiten endgültig löschen?\n\nTipp: Für ehemalige Mitarbeiter reicht ein Austrittsdatum.`)) return
+  if (!await ask({ title: 'Mitarbeiter löschen?', message: `${fullName(emp.value)} wird mit allen Dokumenten und Abwesenheiten endgültig gelöscht.`, points: ['Tipp: Für ehemalige Mitarbeiter reicht ein Austrittsdatum – dann bleibt alles erhalten.'], confirmText: 'Endgültig löschen', danger: true })) return
   try {
     await $fetch(`/api/admin/employees/${emp.value.id}`, { method: 'DELETE' })
     close(); await load()
@@ -236,7 +237,7 @@ async function uploadDoc() {
   }
 }
 async function removeDoc(d: any) {
-  if (!confirm(`Dokument „${d.title}“ löschen?`)) return
+  if (!await ask({ title: 'Dokument löschen?', message: `„${d.title}“ wird endgültig vom Server gelöscht.`, confirmText: 'Löschen', danger: true })) return
   try {
     applyDetail(await $fetch(`/api/admin/employees/${emp.value.id}/documents/${d.id}`, { method: 'DELETE' }))
     await load()
@@ -276,7 +277,7 @@ async function addAbsence() {
   }
 }
 async function removeAbsence(a: any) {
-  if (!confirm(`${absenceLabel(a.type)} ${fmtDate(a.date_from)} – ${fmtDate(a.date_to)} löschen?`)) return
+  if (!await ask({ title: `${absenceLabel(a.type)} löschen?`, message: `${fmtDate(a.date_from)} – ${fmtDate(a.date_to)} (${fmtNum(a.days)} Tage)`, confirmText: 'Löschen', danger: true })) return
   try {
     applyDetail(await $fetch(`/api/admin/employees/${emp.value.id}/absences/${a.id}`, { method: 'DELETE' }))
     await load()
@@ -327,7 +328,7 @@ async function changeRole(role: string) {
 async function resetPassword() {
   const u = detail.value?.user; if (!u) return
   msg.value = null; devUrl.value = ''
-  if (!confirm(`Passwort-Reset-Link an ${u.email || 'keine E-Mail'} senden?`)) return
+  if (!await ask({ title: 'Passwort zurücksetzen?', message: `Ein Link zum Festlegen eines neuen Passworts geht an ${u.email || 'keine E-Mail'} (2 Stunden gültig).`, confirmText: 'Link senden', icon: 'key' })) return
   try {
     const res = await $fetch<{ sent: boolean; hasEmail: boolean; devResetUrl?: string }>(`/api/admin/users/${u.id}/reset`, { method: 'POST' })
     msg.value = !res.hasEmail
@@ -341,7 +342,7 @@ async function resetPassword() {
 async function toggleAccess() {
   const u = detail.value?.user; if (!u) return
   const target = u.status === 'active' ? 'deactivated' : 'active'
-  if (target === 'deactivated' && !confirm('Zugang sperren? Der Login ist dann nicht mehr möglich, alle Daten bleiben erhalten.')) return
+  if (target === 'deactivated' && !await ask({ title: 'Zugang sperren?', message: 'Der Login ist dann nicht mehr möglich, alle Daten bleiben erhalten. Entsperren geht jederzeit.', confirmText: 'Sperren', danger: true, icon: 'lock' })) return
   msg.value = null
   try {
     await $fetch(`/api/admin/users/${u.id}/status`, { method: 'PUT', body: { status: target } })
@@ -354,7 +355,7 @@ async function toggleAccess() {
 async function removeAccess() {
   const u = detail.value?.user; if (!u) return
   const what = u.status === 'pending' ? 'Einladung zurückziehen' : 'Dashboard-Zugang endgültig entfernen'
-  if (!confirm(`${what}? Die Mitarbeiterdaten bleiben erhalten.`)) return
+  if (!await ask({ title: `${what}?`, message: 'Die Mitarbeiterdaten bleiben erhalten – nur der Login ins Dashboard ist weg.', confirmText: u.status === 'pending' ? 'Zurückziehen' : 'Entfernen', danger: true })) return
   msg.value = null
   try {
     await $fetch(`/api/admin/users/${u.id}`, { method: 'DELETE' })

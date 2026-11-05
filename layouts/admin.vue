@@ -271,6 +271,7 @@ const initials = computed(() => {
         <p v-if="!checked" class="admin-shell__loading">Sitzung wird geprüft …</p>
         <slot v-else-if="user" />
       </main>
+      <AdminConfirmDialog />
     </div>
   </div>
 </template>

@@ -22,6 +22,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Referenz-Link je Objekt (`inventory_items.reference_url`, nur intern, Bild wird nie kopiert); ohne Link zeigt das
   Dashboard „Im Netz suchen“ (Bildersuche, `shared/reference-search.ts`). Geprüfte Links Okt. 2026: SITS-Kollektionen,
   IKEA-Modellsuche. Fremde Produktfotos NICHT in den Shop übernehmen (Urheberrecht) – nur eigene oder lizenzierte.
+- Bestätigungen im Dashboard: `useConfirm()` (`composables/useConfirm.ts`) + `components/admin/ConfirmDialog.vue` (im Admin-Layout)
+  statt `window.confirm()`; bisher Mietanfragen + Mitarbeiter umgestellt, übrige Seiten nutzen noch `confirm()`.
 - Fotos im Dashboard per Klick groß (`components/admin/Lightbox.vue`).
 - Uploads werden beim Hochladen zugeschnitten (`server/utils/image-optimize.ts`, sharp): EXIF-Drehung, Metadaten weg,
   Inventar max. 1200 px/80 %, Pakete 1600 px, Blog/Immobilien 1920 px, Logos 800 px (PNG mit Transparenz bleibt PNG),

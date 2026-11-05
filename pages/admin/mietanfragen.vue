@@ -181,11 +181,19 @@ async function setStatus(item: Inquiry, status: string, reload = true) {
 }
 
 // Endgültig löschen (Test-/Spam-Anfragen). Ungesendeter Angebotsentwurf geht mit, alles andere bleibt.
+const ask = useConfirm()
 async function removeInquiry(item: Inquiry) {
-  const offerHint = item.offerStatus === 'entwurf'
-    ? '\n\nDer dazugehörige Angebotsentwurf wird ebenfalls gelöscht.'
-    : item.offerStatus ? '\n\nDas bereits versendete Angebot bleibt erhalten.' : ''
-  if (!confirm(`Mietanfrage ${item.number} von ${[item.firstName, item.lastName].filter(Boolean).join(" ") || item.company || item.email} endgültig löschen? Eine laufende Reservierung endet, die Möbel sind sofort wieder frei.${offerHint}`)) return
+  const who = [item.firstName, item.lastName].filter(Boolean).join(' ') || item.company || item.email
+  const points = ['Eine laufende Reservierung endet – die Möbel sind sofort wieder frei.']
+  if (item.offerStatus === 'entwurf') points.push('Der dazugehörige Angebotsentwurf wird ebenfalls gelöscht.')
+  else if (item.offerStatus) points.push('Das bereits versendete Angebot bleibt erhalten.')
+  if (item.projectId) points.push('Das Projekt bleibt erhalten.')
+  const ok = await ask({
+    title: 'Mietanfrage löschen?',
+    message: `${item.number} von ${who} wird endgültig gelöscht. Das lässt sich nicht rückgängig machen.`,
+    points, confirmText: 'Endgültig löschen', danger: true
+  })
+  if (!ok) return
   actionError.value = ''
   try {
     await $fetch(`/api/admin/rental-inquiries/${item.id}`, { method: 'DELETE' })
@@ -229,7 +237,7 @@ function reservation(i: Inquiry): { label: string; tone: string } | null {
 }
 const resBusy = ref(false)
 async function changeReservation(item: Inquiry, action: 'extend' | 'release') {
-  if (action === 'release' && !confirm('Reservierung aufheben? Die Möbel sind dann sofort wieder im Shop – auch wenn der Kunde das Angebot noch annehmen möchte.')) return
+  if (action === 'release' && !await ask({ title: 'Reservierung aufheben?', message: 'Die Möbel sind dann sofort wieder im Shop – auch wenn der Kunde das Angebot noch annehmen möchte.', confirmText: 'Aufheben', icon: 'lock' })) return
   resBusy.value = true
   actionError.value = ''
   try {
