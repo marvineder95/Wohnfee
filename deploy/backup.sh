@@ -4,7 +4,9 @@
 # Optional zweiter Ort: BACKUP_REMOTE in .env setzen (rsync-Ziel, z. B. u123@u123.your-storagebox.de:wohnfee)
 set -euo pipefail
 cd "$(dirname "$0")"
-set -a; . ./.env; set +a
+# .env NICHT per „. ./.env“ einlesen: Werte mit Leerzeichen (z. B. REDIRECT_DOMAINS=wohnfee.at, neu.wohnfee.at)
+# brechen sonst das Skript ab (so seit 03.11.2026 passiert). Nur der optionale Zweit-Ort wird gelesen.
+BACKUP_REMOTE=$(sed -n 's/^BACKUP_REMOTE=//p' .env | tail -1 | tr -d '"'"'"'\r')
 DIR=backups; STAMP=$(date +%F_%H%M)
 mkdir -p "$DIR"
 

@@ -3,7 +3,7 @@
 # ACHTUNG: überschreibt die aktuelle Datenbank (und ggf. die Uploads).
 set -euo pipefail
 cd "$(dirname "$0")"
-set -a; . ./.env; set +a
+# .env wird nicht gebraucht – DB-Zugang kommt aus dem Container (siehe backup.sh)
 DB=${1:?Pfad zur db-*.sql.gz angeben}
 read -r -p "Datenbank mit $DB überschreiben? (ja/nein) " ok; [ "$ok" = ja ] || exit 1
 gunzip -c "$DB" | docker compose exec -T db sh -c 'exec mysql -uroot -p"$MYSQL_ROOT_PASSWORD" "$MYSQL_DATABASE"'
