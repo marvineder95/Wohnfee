@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { absenceLabel } from '~~/shared/employees'
+import { absenceLabel, employmentLabel } from '~~/shared/employees'
 import { TIME_TRACKING_START, buildMonth, defaultPause, type TimeAbsence, type TimeDay, type TimeEmployee, type TimeEntry } from '~~/shared/time-tracking'
 
 definePageMeta({ layout: 'admin' })
@@ -7,6 +7,15 @@ useHead({ title: 'Stundenaufzeichnung - WOHNFEE Dashboard', meta: [{ name: 'robo
 
 const { user } = useAdminAuth()
 const isChef = computed(() => user.value?.role === 'superadmin')
+// Admin startet in der Team-Übersicht, Klick auf eine Person öffnet deren Blatt
+const detailOpen = ref(false)
+const teamView = computed(() => isChef.value && !detailOpen.value)
+interface TeamRow {
+  id: number; first_name: string | null; last_name: string | null; employment_type: string | null
+  daily: number; missingDays: number; recordedDays: number
+  totals: { workedMin: number; holidayMin: number; vacationMin: number; sickMin: number; totalMin: number; targetMin: number; saldoMin: number }
+}
+const team = ref<TeamRow[]>([])
 
 interface Emp extends TimeEmployee { id: number; first_name: string | null; last_name: string | null }
 const today = ref(localToday())
@@ -41,6 +50,13 @@ async function load() {
   loading.value = true
   error.value = ''
   try {
+    if (teamView.value) {
+      const r = await $fetch<{ today: string; employees: TeamRow[] }>('/api/admin/time/overview', { query: { month: month.value } })
+      if (run !== loadRun) return
+      today.value = r.today
+      team.value = r.employees
+      return
+    }
     const r = await $fetch<any>('/api/admin/time', { query: { month: month.value, employee: employeeId.value || undefined } })
     if (run !== loadRun) return
     today.value = r.today
@@ -67,11 +83,22 @@ function shiftMonth(delta: number) {
   month.value = d.toISOString().slice(0, 7)
   load()
 }
+async function openSheet(id: number) {
+  employeeId.value = id
+  detailOpen.value = true
+  await load()
+  if (typeof window !== 'undefined') window.scrollTo(0, 0)
+}
+function backToTeam() {
+  detailOpen.value = false
+  load()
+}
 const canGoNext = computed(() => month.value < today.value.slice(0, 7))
 const canGoPrev = computed(() => month.value > TIME_TRACKING_START.slice(0, 7))
 
 onMounted(async () => {
   await load()
+  if (teamView.value) return
   await nextTick()
   document.getElementById(`std-${today.value}`)?.scrollIntoView({ block: 'center' })
 })
@@ -119,12 +146,14 @@ const print = () => window.print()
         <p class="wf-eyebrow">Planung</p>
         <h1 class="wf-title std__title">Stundenaufzeichnung</h1>
         <p class="wf-subtitle std__sub">
-          <template v-if="employee">{{ fullName(employee) }} · {{ monthLabel }}<template v-if="sheet.daily"> · {{ hours(sheet.daily) }} Std. pro Arbeitstag</template></template>
+          <template v-if="teamView">Alle Mitarbeiter · {{ monthLabel }}</template>
+          <template v-else-if="employee">{{ fullName(employee) }} · {{ monthLabel }}<template v-if="sheet.daily"> · {{ hours(sheet.daily) }} Std. pro Arbeitstag</template></template>
           <template v-else>Arbeitszeiten digital erfassen.</template>
         </p>
       </div>
       <div class="std__tools no-print">
-        <select v-if="isChef && employees.length" v-model.number="employeeId" class="wf-input std__who" aria-label="Mitarbeiter" @change="load">
+        <button v-if="isChef && !teamView" type="button" class="wf-btn" @click="backToTeam"><WfIcon name="users" :size="14" /> Alle Mitarbeiter</button>
+        <select v-if="isChef && !teamView && employees.length" v-model.number="employeeId" class="wf-input std__who" aria-label="Mitarbeiter" @change="load">
           <option v-for="e in employees" :key="e.id" :value="e.id">{{ fullName(e) }}</option>
         </select>
         <div class="std__month">
@@ -137,7 +166,32 @@ const print = () => window.print()
     </section>
 
     <p v-if="error" class="std__error" role="alert">{{ error }}</p>
-    <p v-if="loading && !employee" class="std__muted">Stunden werden geladen …</p>
+    <template v-if="teamView">
+      <p v-if="loading && !team.length" class="std__muted">Stunden werden geladen …</p>
+      <div v-else-if="!team.length" class="std__none wf-card">Für diesen Monat gibt es noch keine Mitarbeiter mit Stunden.</div>
+      <section v-else class="stdt wf-card">
+        <div class="stdt__row stdt__row--head" aria-hidden="true">
+          <span>Mitarbeiter</span><span>Gearbeitet</span><span>Feiertage</span><span>Urlaub</span><span>Krank</span><span>Gesamt</span><span>Soll</span><span>Saldo</span>
+        </div>
+        <button v-for="m in team" :key="m.id" type="button" class="stdt__row" @click="openSheet(m.id)">
+          <span class="stdt__who">
+            <strong>{{ fullName(m) }}</strong>
+            <small>{{ [employmentLabel(m.employment_type), m.daily ? `${hours(m.daily)} Std./Tag` : ''].filter(Boolean).join(' · ') || '–' }}</small>
+            <em v-if="m.missingDays" class="wf-pill wf-pill--amber">{{ m.missingDays }} {{ m.missingDays === 1 ? 'Tag fehlt' : 'Tage fehlen' }}</em>
+          </span>
+          <span class="stdt__n"><i>Gearbeitet</i>{{ hours(m.totals.workedMin) }}</span>
+          <span class="stdt__n"><i>Feiertage</i>{{ hours(m.totals.holidayMin) }}</span>
+          <span class="stdt__n"><i>Urlaub</i>{{ hours(m.totals.vacationMin) }}</span>
+          <span class="stdt__n"><i>Krank</i>{{ hours(m.totals.sickMin) }}</span>
+          <span class="stdt__n stdt__n--total"><i>Gesamt</i>{{ hours(m.totals.totalMin) }}</span>
+          <span class="stdt__n"><i>Soll</i>{{ m.daily ? hours(m.totals.targetMin) : '–' }}</span>
+          <span class="stdt__n" :class="m.daily ? (m.totals.saldoMin < 0 ? 'is-minus' : 'is-plus') : ''"><i>Saldo</i>{{ m.daily ? saldo(m.totals.saldoMin) : '–' }}</span>
+        </button>
+      </section>
+      <p class="std__note no-print">Saldo bis heute: Gesamtstunden minus Soll der bereits vergangenen Arbeitstage. „Tage fehlen“ zählt Arbeitstage bis gestern ohne Eintrag. Klick auf eine Person öffnet das Stundenblatt.</p>
+    </template>
+
+    <p v-else-if="loading && !employee" class="std__muted">Stunden werden geladen …</p>
     <div v-else-if="!employee" class="std__none wf-card">
       {{ isChef ? 'Noch keine Mitarbeiter angelegt.' : 'Für deinen Zugang ist noch kein Mitarbeiter hinterlegt – bitte beim Chef melden.' }}
     </div>
@@ -202,7 +256,7 @@ const print = () => window.print()
 .std__title { text-align: left; margin-left: 0; }
 .std__sub { text-align: left; margin-bottom: 0; }
 .std__tools { display: flex; flex-wrap: wrap; align-items: center; gap: .6em; }
-.std__who { width: auto; min-width: 12em; }
+.std__tools .std__who { width: auto; min-width: 12em; max-width: 16em; }
 .std__month { display: flex; align-items: center; gap: .5em; }
 .std__month strong { font-family: var(--wf-serif); font-weight: 400; font-size: 1.1em; min-width: 8.5em; text-align: center; }
 .std__nav { display: grid; place-items: center; width: 2.1em; height: 2.1em; border: 1px solid var(--wf-line); border-radius: 9px; background: #fff; color: var(--wf-ink); cursor: pointer; }
@@ -222,6 +276,30 @@ const print = () => window.print()
 .std__tile--main { background: var(--wf-green-soft) !important; }
 .std__tile--main strong, .std__tile--plus strong { color: var(--wf-green); }
 .std__tile--minus strong { color: var(--wf-red); }
+
+.stdt { padding: .4em 1.1em .6em; }
+.stdt__row { display: grid; grid-template-columns: minmax(0, 1fr) repeat(7, 5.4em); gap: .4em; align-items: center; width: 100%; padding: .75em 0; border: 0; border-bottom: 1px solid #f4efe6; background: none; font: inherit; color: var(--wf-ink); text-align: left; cursor: pointer; }
+.stdt__row:last-child { border-bottom: 0; }
+button.stdt__row:hover { background: #fbf9f4; }
+.stdt__row--head { cursor: default; padding: .6em 0 .5em; }
+.stdt__row--head span { font-size: .72em; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--wf-muted); text-align: right; }
+.stdt__row--head span:first-child { text-align: left; }
+.stdt__who { display: flex; flex-wrap: wrap; align-items: baseline; gap: .1em .6em; min-width: 0; }
+.stdt__who strong { font-size: .95em; }
+.stdt__who small { flex-basis: 100%; font-size: .78em; color: var(--wf-muted); }
+.stdt__who em { font-style: normal; margin-top: .25em; }
+.stdt__n { font-size: .9em; text-align: right; font-variant-numeric: tabular-nums; }
+.stdt__n i { display: none; }
+.stdt__n--total { font-weight: 700; }
+.stdt__n.is-minus { color: var(--wf-red); font-weight: 600; }
+.stdt__n.is-plus { color: var(--wf-green); font-weight: 600; }
+@media (max-width: 1100px) {
+  .stdt__row--head { display: none; }
+  .stdt__row { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .55em .6em; }
+  .stdt__who { grid-column: 1 / -1; }
+  .stdt__n { text-align: left; }
+  .stdt__n i { display: block; font-style: normal; font-size: .72em; color: var(--wf-muted); }
+}
 
 .std__sheet { padding: .4em 1.1em .6em; }
 .std__row { display: grid; grid-template-columns: 7.5em 7.2em 7.2em 6em 4.6em minmax(0, 1fr); gap: .5em; align-items: center; padding: .28em 0; border-bottom: 1px solid #f4efe6; scroll-margin-top: 90px; }
@@ -253,7 +331,7 @@ const print = () => window.print()
 
 @media (max-width: 760px) {
   .std__head { padding: 1.2em; }
-  .std__tools, .std__who { width: 100%; }
+  .std__tools, .std__tools .std__who { width: 100%; max-width: none; }
   .std__month { flex: 1; justify-content: space-between; }
   .std__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .std__tile--main { grid-column: 1 / -1; order: -1; }
@@ -270,6 +348,8 @@ const print = () => window.print()
 }
 @media print {
   .no-print { display: none !important; }
+  .stdt { box-shadow: none; padding: 0; }
+  .stdt__row { padding: .35em 0; font-size: 11px; }
   .std__head, .std__tiles > div, .std__sheet { box-shadow: none; padding: .3em 0; }
   .std__tiles { margin-bottom: .5em; }
   .std__row { padding: 0; font-size: 11px; }

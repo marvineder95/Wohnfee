@@ -165,7 +165,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   Plugin `server/plugins/absences.ts`, erste Erinnerung auch an den Chef). Nur genehmigte Einträge zählen. Kalender zeigt Abwesenheiten
   allen; Krankenstand sieht das Team nur als „Abwesend“.
 - Stundenaufzeichnung (`/admin/stunden`, Bereich `stunden`, API `/api/admin/time`, Tabelle `time_entries`, ein Eintrag je Mitarbeiter + Tag; Rechnung in
-  `shared/time-tracking.ts`): Designerin/Spediteur nur eigene Stunden, Admin wählt den Mitarbeiter. Tagessoll = Wochenstunden / 5 (Mo–Fr, ohne Angabe 8 Std.; geringfügig: kein Tagessoll, keine Gutschrift, kein Saldo).
+  `shared/time-tracking.ts`): Designerin/Spediteur nur eigene Stunden; Admin startet in der Team-Übersicht je Monat (`/api/admin/time/overview`: Summen, Soll, Saldo, fehlende Tage), Klick öffnet das Stundenblatt der Person. Tagessoll = Wochenstunden / 5 (Mo–Fr, ohne Angabe 8 Std.; geringfügig: kein Tagessoll, keine Gutschrift, kein Saldo).
   Gesetzliche AT-Feiertage (§ 7 ARG, Mo–Fr) und genehmigter Urlaub/Krankenstand zählen automatisch mit dem Tagessoll und sind gesperrt; Zeitausgleich wird nicht
   gutgeschrieben. Aufzeichnung beginnt am 01.11.2026 (`TIME_TRACKING_START`). Keine Einträge in der Zukunft oder außerhalb Ein-/Austritt. Speichert je Zeile automatisch, druckbar mit Unterschriftszeilen.
 - Rollen & Rechte: `shared/permissions.ts` (eine Tabelle für Server + UI). Admin (superadmin),

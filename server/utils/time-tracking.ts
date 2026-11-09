@@ -1,4 +1,5 @@
 import { query, queryOne } from './db'
+import { TIME_TRACKING_START } from '../../shared/time-tracking'
 
 // Stundenaufzeichnung: Mitarbeiter sehen und ändern nur ihre eigenen Stunden, der Admin die aller.
 const EMP_FIELDS = 'id, first_name, last_name, weekly_hours, employment_type, entry_date, exit_date, user_id'
@@ -16,6 +17,15 @@ export async function timeEmployee(me: { id: number; role: string }, requested: 
     return queryOne<any>(`SELECT ${EMP_FIELDS} FROM employees ORDER BY (exit_date IS NOT NULL AND exit_date < CURDATE()), user_id <=> :uid, last_name, first_name LIMIT 1`, { uid: me.id })
   }
   return queryOne<any>(`SELECT ${EMP_FIELDS} FROM employees WHERE user_id = :uid`, { uid: me.id })
+}
+
+/** Monat aus der URL (Standard: aktueller, frühestens Aufzeichnungsbeginn) + letzter Tag. */
+export function timeMonth(value: unknown, today: string) {
+  const firstMonth = TIME_TRACKING_START.slice(0, 7)
+  const wanted = /^\d{4}-(0[1-9]|1[0-2])$/.test(String(value)) ? String(value) : today.slice(0, 7)
+  const month = wanted < firstMonth ? firstMonth : wanted
+  const [y, m] = month.split('-').map(Number)
+  return { month, from: `${month}-01`, to: `${month}-${String(new Date(Date.UTC(y, m, 0)).getUTCDate()).padStart(2, '0')}` }
 }
 
 export function timeAbsences(employeeId: number, from: string, to: string) {
