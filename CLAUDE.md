@@ -167,7 +167,7 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Stundenaufzeichnung (`/admin/stunden`, Bereich `stunden`, API `/api/admin/time`, Tabelle `time_entries`, ein Eintrag je Mitarbeiter + Tag; Rechnung in
   `shared/time-tracking.ts`): Designerin/Spediteur nur eigene Stunden, Admin wählt den Mitarbeiter. Tagessoll = Wochenstunden / 5 (Mo–Fr, ohne Angabe 8 Std.).
   Gesetzliche AT-Feiertage (§ 7 ARG, Mo–Fr) und genehmigter Urlaub/Krankenstand zählen automatisch mit dem Tagessoll und sind gesperrt; Zeitausgleich wird nicht
-  gutgeschrieben. Keine Einträge in der Zukunft oder außerhalb Ein-/Austritt. Speichert je Zeile automatisch, druckbar mit Unterschriftszeilen.
+  gutgeschrieben. Aufzeichnung beginnt am 01.11.2026 (`TIME_TRACKING_START`). Keine Einträge in der Zukunft oder außerhalb Ein-/Austritt. Speichert je Zeile automatisch, druckbar mit Unterschriftszeilen.
 - Rollen & Rechte: `shared/permissions.ts` (eine Tabelle für Server + UI). Admin (superadmin),
   Designerin (designer: alles außer Mitarbeiter und Immobilien; Rechnungen + Konditionen nur ansehen, auch keine Rechnung aus Angebot), Spediteur (driver: nur
   ansehen – Übersicht = Kalender + To-Dos + Meine Abwesenheiten; keine Anfragen/Mietanfragen/Angebote/Rechnungen/Konditionen/

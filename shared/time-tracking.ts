@@ -1,6 +1,9 @@
 // Stundenaufzeichnung (/admin/stunden): Feiertage, Soll/Ist je Tag – eine Rechnung für Server und Oberfläche.
 // Tagessoll = Wochenstunden / 5 (40 Std. → 8, 30 Std. → 6), Arbeitstage Mo–Fr.
 
+/** Ab diesem Tag wird aufgezeichnet – davor gibt es weder Einträge noch Soll. */
+export const TIME_TRACKING_START = '2026-11-01'
+
 const iso = (d: Date) => d.toISOString().slice(0, 10)
 const addDays = (d: Date, n: number) => new Date(d.getTime() + n * 86400000)
 
@@ -55,9 +58,13 @@ export interface TimeEntry { work_date: string; start_time: string; end_time: st
 export interface TimeAbsence { type: string; date_from: string; date_to: string }
 export interface TimeEmployee { weekly_hours?: number | string | null; entry_date?: string | null; exit_date?: string | null }
 
+const inService = (date: string, emp: TimeEmployee) =>
+  date >= TIME_TRACKING_START && !(emp.entry_date && date < emp.entry_date) && !(emp.exit_date && date > emp.exit_date)
+
 /** Warum an diesem Tag keine Stunden eingetragen werden können (null = möglich). */
 export function dayLock(date: string, today: string, emp: TimeEmployee, absences: TimeAbsence[]): string | null {
-  if ((emp.entry_date && date < emp.entry_date) || (emp.exit_date && date > emp.exit_date)) return 'Nicht im Dienst'
+  if (date < TIME_TRACKING_START) return 'Die Aufzeichnung beginnt am 01.11.2026'
+  if (!inService(date, emp)) return 'Nicht im Dienst'
   if (holidayName(date)) return 'Feiertag – an gesetzlichen Feiertagen ist immer frei'
   if (creditedAbsence(date, absences)) return 'An diesem Tag ist Urlaub oder Krankenstand eingetragen'
   if (date > today) return 'Stunden können erst am jeweiligen Tag eingetragen werden'
@@ -83,16 +90,16 @@ export function buildMonth(month: string, today: string, emp: TimeEmployee, entr
   for (let d = 1; d <= last; d++) {
     const date = `${month}-${String(d).padStart(2, '0')}`
     const weekend = !isWeekday(date)
-    const inService = !((emp.entry_date && date < emp.entry_date) || (emp.exit_date && date > emp.exit_date))
+    const active = inService(date, emp)
     const holiday = holidayName(date)
-    const absence = inService && !holiday ? creditedAbsence(date, absences) : null
-    const otherAbsence = inService && !holiday ? absences.find(a => a.date_from <= date && a.date_to >= date) : null
+    const absence = active && !holiday ? creditedAbsence(date, absences) : null
+    const otherAbsence = active && !holiday ? absences.find(a => a.date_from <= date && a.date_to >= date) : null
     const locked = dayLock(date, today, emp, absences)
-    const targetMin = inService && !weekend ? daily : 0
-    const creditMin = inService && !weekend && (holiday || absence) ? daily : 0
-    const entry = holiday || absence || !inService ? null : byDate.get(date) || null
+    const targetMin = active && !weekend ? daily : 0
+    const creditMin = active && !weekend && (holiday || absence) ? daily : 0
+    const entry = holiday || absence || !active ? null : byDate.get(date) || null
     const workedMin = entry ? workedMinutes(entry.start_time, entry.end_time, entry.break_minutes) : 0
-    days.push({ date, holiday, absenceType: otherAbsence?.type || null, weekend, inService, future: date > today, locked, entry, targetMin, workedMin, creditMin })
+    days.push({ date, holiday, absenceType: otherAbsence?.type || null, weekend, inService: active, future: date > today, locked, entry, targetMin, workedMin, creditMin })
     totals.workedMin += workedMin
     if (holiday) totals.holidayMin += creditMin
     else if (absence?.type === 'urlaub') totals.vacationMin += creditMin

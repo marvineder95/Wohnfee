@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { absenceLabel } from '~~/shared/employees'
-import { buildMonth, defaultPause, type TimeAbsence, type TimeDay, type TimeEmployee, type TimeEntry } from '~~/shared/time-tracking'
+import { TIME_TRACKING_START, buildMonth, defaultPause, type TimeAbsence, type TimeDay, type TimeEmployee, type TimeEntry } from '~~/shared/time-tracking'
 
 definePageMeta({ layout: 'admin' })
 useHead({ title: 'Stundenaufzeichnung - WOHNFEE Dashboard', meta: [{ name: 'robots', content: 'noindex,nofollow' }] })
@@ -68,6 +68,7 @@ function shiftMonth(delta: number) {
   load()
 }
 const canGoNext = computed(() => month.value < today.value.slice(0, 7))
+const canGoPrev = computed(() => month.value > TIME_TRACKING_START.slice(0, 7))
 
 onMounted(async () => {
   await load()
@@ -127,7 +128,7 @@ const print = () => window.print()
           <option v-for="e in employees" :key="e.id" :value="e.id">{{ fullName(e) }}</option>
         </select>
         <div class="std__month">
-          <button type="button" class="std__nav" aria-label="Vorheriger Monat" @click="shiftMonth(-1)"><WfIcon name="chevron" :size="15" class="std__flip" /></button>
+          <button type="button" class="std__nav" aria-label="Vorheriger Monat" :disabled="!canGoPrev" @click="shiftMonth(-1)"><WfIcon name="chevron" :size="15" class="std__flip" /></button>
           <strong>{{ monthLabel }}</strong>
           <button type="button" class="std__nav" aria-label="Nächster Monat" :disabled="!canGoNext" @click="shiftMonth(1)"><WfIcon name="chevron" :size="15" /></button>
         </div>
