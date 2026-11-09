@@ -15,6 +15,7 @@ export default defineEventHandler(async (event) => {
   }
   await query('DELETE FROM employee_documents WHERE employee_id = :id', { id })
   await query('DELETE FROM employee_absences WHERE employee_id = :id', { id })
+  await query('DELETE FROM time_entries WHERE employee_id = :id', { id })
   await query('DELETE FROM employees WHERE id = :id', { id })
   await rm(join(EMPLOYEE_FILES_ROOT, String(id)), { recursive: true, force: true })
   if (emp.photo_path?.startsWith('/uploads/employees/')) {

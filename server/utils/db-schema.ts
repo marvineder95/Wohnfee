@@ -873,6 +873,19 @@ export async function migrateSchema() {
     )
     if (Number(c?.n) === 0) await db.query(`ALTER TABLE ${table} ${ddl}`)
   }
+  // Stundenaufzeichnung: ein Eintrag je Mitarbeiter und Tag (Feiertage/Urlaub rechnet shared/time-tracking.ts dazu)
+  await db.query(`CREATE TABLE IF NOT EXISTS time_entries (
+    id INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    employee_id INT UNSIGNED NOT NULL,
+    work_date DATE NOT NULL,
+    start_time TIME NOT NULL,
+    end_time TIME NOT NULL,
+    break_minutes SMALLINT UNSIGNED NOT NULL DEFAULT 0,
+    note VARCHAR(255) NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY uq_time_entries_day (employee_id, work_date)
+  ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci`)
   // Bestehende Dashboard-Benutzer bekommen einmalig einen Mitarbeiter-Eintrag
   await db.query(`INSERT INTO employees (user_id, first_name, last_name, email, phone, position, photo_path, vacation_days)
     SELECT u.id,

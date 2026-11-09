@@ -78,6 +78,7 @@ const NAV_GROUPS: Array<{ label: string | null; items: NavItem[] }> = [
     { to: '/admin/projekte', label: 'Projekte', icon: 'folder', exact: false, area: 'projekte' },
     { to: '/admin/touren', label: 'Touren & Rückgaben', icon: 'truck', exact: false, area: 'touren', badge: 'overdue' },
     { to: '/admin/kalender', label: 'Kalender', icon: 'calendar', exact: false, area: 'kalender' },
+    { to: '/admin/stunden', label: 'Stundenaufzeichnung', icon: 'clock', exact: false, area: 'stunden' },
     // Mietpakete + Foto-Modus sind Reiter im Inventar (components/admin/InventoryTabs.vue)
     { to: '/admin/inventar', label: 'Inventar', icon: 'box', exact: false, area: 'inventar', also: ['/admin/pakete', '/admin/fotos'] }
   ] },

@@ -164,6 +164,10 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
   verlängern + weitere Krankmeldung über `/me/absences/:id/files`. Ohne Krankmeldung Erinnerung nach 3 Tagen (dann alle 3 Tage,
   Plugin `server/plugins/absences.ts`, erste Erinnerung auch an den Chef). Nur genehmigte Einträge zählen. Kalender zeigt Abwesenheiten
   allen; Krankenstand sieht das Team nur als „Abwesend“.
+- Stundenaufzeichnung (`/admin/stunden`, Bereich `stunden`, API `/api/admin/time`, Tabelle `time_entries`, ein Eintrag je Mitarbeiter + Tag; Rechnung in
+  `shared/time-tracking.ts`): Designerin/Spediteur nur eigene Stunden, Admin wählt den Mitarbeiter. Tagessoll = Wochenstunden / 5 (Mo–Fr, ohne Angabe 8 Std.).
+  Gesetzliche AT-Feiertage (§ 7 ARG, Mo–Fr) und genehmigter Urlaub/Krankenstand zählen automatisch mit dem Tagessoll und sind gesperrt; Zeitausgleich wird nicht
+  gutgeschrieben. Keine Einträge in der Zukunft oder außerhalb Ein-/Austritt. Speichert je Zeile automatisch, druckbar mit Unterschriftszeilen.
 - Rollen & Rechte: `shared/permissions.ts` (eine Tabelle für Server + UI). Admin (superadmin),
   Designerin (designer: alles außer Mitarbeiter und Immobilien; Rechnungen + Konditionen nur ansehen, auch keine Rechnung aus Angebot), Spediteur (driver: nur
   ansehen – Übersicht = Kalender + To-Dos + Meine Abwesenheiten; keine Anfragen/Mietanfragen/Angebote/Rechnungen/Konditionen/

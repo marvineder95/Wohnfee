@@ -3,15 +3,15 @@
 //
 //   Admin       (superadmin) alles
 //   Designerin  (designer)   alles außer Mitarbeiter & Benutzerverwaltung; Rechnungen + Konditionen nur ansehen
-//   Spediteur   (driver)     nur ansehen; eigene Kalendertermine anlegen/ändern; Abholung erledigt melden;
-//                            keine Angebote, Rechnungen, Konditionen, Newsletter, Blog, Benutzer
+//   Spediteur   (driver)     nur ansehen; Urlaub/Krankenstand melden, eigene Stunden aufzeichnen;
+//                            keine Anfragen, Angebote, Rechnungen, Konditionen, Newsletter, Blog, Benutzer
 
 export type Role = 'superadmin' | 'designer' | 'driver'
 export type Access = 'none' | 'view' | 'edit'
 
 export type Area =
   | 'dashboard' | 'anfragen' | 'mietanfragen' | 'projekte' | 'touren' | 'kalender' | 'inventar'
-  | 'kontakte' | 'angebote' | 'rechnungen' | 'artikel' | 'newsletter' | 'konditionen' | 'users' | 'immobilien' | 'partner' | 'aufgaben'
+  | 'kontakte' | 'angebote' | 'rechnungen' | 'artikel' | 'newsletter' | 'konditionen' | 'users' | 'immobilien' | 'partner' | 'aufgaben' | 'stunden'
 
 export const ROLES: Array<{ value: Role; label: string; text: string }> = [
   { value: 'superadmin', label: 'Admin', text: 'Voller Zugriff inkl. Benutzerverwaltung und Konditionen.' },
@@ -25,18 +25,20 @@ const MATRIX: Record<Role, Partial<Record<Area, Access>>> = {
   superadmin: {
     dashboard: 'edit', anfragen: 'edit', mietanfragen: 'edit', projekte: 'edit', touren: 'edit', kalender: 'edit',
     inventar: 'edit', kontakte: 'edit', angebote: 'edit', rechnungen: 'edit', artikel: 'edit', newsletter: 'edit',
-    konditionen: 'edit', users: 'edit', immobilien: 'edit', partner: 'edit', aufgaben: 'edit'
+    konditionen: 'edit', users: 'edit', immobilien: 'edit', partner: 'edit', aufgaben: 'edit', stunden: 'edit'
   },
   designer: {
     dashboard: 'edit', anfragen: 'edit', mietanfragen: 'edit', projekte: 'edit', touren: 'edit', kalender: 'edit',
     inventar: 'edit', kontakte: 'edit', angebote: 'edit', rechnungen: 'view', artikel: 'edit', newsletter: 'edit',
     konditionen: 'view', users: 'none', partner: 'edit',
-    aufgaben: 'view' // To-Do: sehen + „erledigt“ melden, anlegen/prüfen nur Admin
+    aufgaben: 'view', // To-Do: sehen + „erledigt“ melden, anlegen/prüfen nur Admin
+    stunden: 'edit' // nur die eigenen – prüft die API
   },
   driver: {
     // Übersicht zeigt nur Kalender + To-Dos; Urlaub/Krankenstand meldet er über /api/admin/me/absences
     dashboard: 'view', projekte: 'view', touren: 'view', kalender: 'view',
-    inventar: 'view', kontakte: 'view', aufgaben: 'view'
+    inventar: 'view', kontakte: 'view', aufgaben: 'view',
+    stunden: 'edit' // nur die eigenen – prüft die API
   }
 }
 
@@ -56,7 +58,7 @@ export function areaForPath(path: string): Area | null {
     dashboard: 'dashboard', anfragen: 'anfragen', mietanfragen: 'mietanfragen', projekte: 'projekte',
     touren: 'touren', packliste: 'touren', kalender: 'kalender', inventar: 'inventar', kontakte: 'kontakte',
     angebote: 'angebote', rechnungen: 'rechnungen', artikel: 'artikel', newsletter: 'newsletter',
-    konditionen: 'konditionen', users: 'users', mitarbeiter: 'users', aufgaben: 'aufgaben', immobilien: 'immobilien', partner: 'partner', pakete: 'inventar', inhalte: 'partner', fotos: 'inventar'
+    konditionen: 'konditionen', users: 'users', mitarbeiter: 'users', aufgaben: 'aufgaben', stunden: 'stunden', immobilien: 'immobilien', partner: 'partner', pakete: 'inventar', inhalte: 'partner', fotos: 'inventar'
   }
   return map[p] || null // profil, passwort, einladung … sind für alle offen
 }
@@ -89,7 +91,7 @@ export function requirementForApi(path: string, method: string): { area: Area; n
     dashboard: 'dashboard', inquiries: 'anfragen', 'rental-inquiries': 'mietanfragen', projects: 'projekte',
     logistics: 'touren', calendar: 'kalender', inventory: 'inventar', contacts: 'kontakte', offers: 'angebote', documents: 'rechnungen', 'shop-status': 'konditionen',
     invoices: 'rechnungen', recurring: 'rechnungen', blog: 'artikel', newsletter: 'newsletter',
-    transport: 'konditionen', users: 'users', employees: 'users', tasks: 'aufgaben', properties: 'immobilien', partners: 'partner',
+    transport: 'konditionen', users: 'users', employees: 'users', tasks: 'aufgaben', time: 'stunden', properties: 'immobilien', partners: 'partner',
     'rental-pricing': 'konditionen', packages: 'inventar', testimonials: 'partner', 'site-content': 'partner'
   }
   const area = map[seg[0]]
