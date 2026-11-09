@@ -119,7 +119,7 @@ const print = () => window.print()
         <p class="wf-eyebrow">Planung</p>
         <h1 class="wf-title std__title">Stundenaufzeichnung</h1>
         <p class="wf-subtitle std__sub">
-          <template v-if="employee">{{ fullName(employee) }} · {{ monthLabel }} · {{ hours(sheet.daily) }} Std. pro Arbeitstag</template>
+          <template v-if="employee">{{ fullName(employee) }} · {{ monthLabel }}<template v-if="sheet.daily"> · {{ hours(sheet.daily) }} Std. pro Arbeitstag</template></template>
           <template v-else>Arbeitszeiten digital erfassen.</template>
         </p>
       </div>
@@ -143,17 +143,17 @@ const print = () => window.print()
     </div>
 
     <template v-else>
-      <p v-if="isChef && !employee.weekly_hours" class="std__hint no-print">
+      <p v-if="isChef && sheet.daily && !employee.weekly_hours" class="std__hint no-print">
         Bei {{ fullName(employee) }} sind keine Wochenstunden hinterlegt – gerechnet wird mit 8 Stunden pro Tag.
         <NuxtLink :to="`/admin/mitarbeiter?open=${employee.id}&tab=anstellung`">Jetzt eintragen</NuxtLink>
       </p>
 
-      <section class="std__tiles">
+      <section class="std__tiles" :class="{ 'std__tiles--four': !sheet.daily }">
         <div class="wf-card"><strong>{{ hours(totals.workedMin) }}</strong><span>Gearbeitet</span></div>
         <div class="wf-card"><strong>{{ hours(totals.holidayMin) }}</strong><span>Feiertage</span></div>
         <div class="wf-card"><strong>{{ hours(totals.vacationMin + totals.sickMin) }}</strong><span>Urlaub &amp; Krankenstand</span></div>
-        <div class="wf-card std__tile--main"><strong>{{ hours(totals.totalMin) }}</strong><span>Gesamt von {{ hours(totals.targetMin) }} Soll</span></div>
-        <div class="wf-card" :class="totals.saldoMin < 0 ? 'std__tile--minus' : 'std__tile--plus'"><strong>{{ saldo(totals.saldoMin) }}</strong><span>Saldo bis heute</span></div>
+        <div class="wf-card std__tile--main"><strong>{{ hours(totals.totalMin) }}</strong><span>{{ sheet.daily ? `Gesamt von ${hours(totals.targetMin)} Soll` : 'Gesamt' }}</span></div>
+        <div v-if="sheet.daily" class="wf-card" :class="totals.saldoMin < 0 ? 'std__tile--minus' : 'std__tile--plus'"><strong>{{ saldo(totals.saldoMin) }}</strong><span>Saldo bis heute</span></div>
       </section>
 
       <section class="std__sheet wf-card">
@@ -187,7 +187,7 @@ const print = () => window.print()
         </div>
       </section>
 
-      <p class="std__note no-print">Gesetzliche Feiertage sind automatisch frei und zählen wie Urlaub und Krankenstand mit den Stunden eines normalen Arbeitstags. Über 6 Stunden Arbeit trägt das System 30 Minuten Pause vor – du kannst sie ändern.</p>
+      <p class="std__note no-print"><template v-if="sheet.daily">Gesetzliche Feiertage sind automatisch frei und zählen wie Urlaub und Krankenstand mit den Stunden eines normalen Arbeitstags. </template>Über 6 Stunden Arbeit trägt das System 30 Minuten Pause vor – du kannst sie ändern.</p>
 
       <div class="std__sign">
         <span>Datum, Unterschrift Mitarbeiter</span>
@@ -218,6 +218,7 @@ const print = () => window.print()
 .std__tiles > div { padding: .9em 1.1em; display: flex; flex-direction: column; }
 .std__tiles strong { font-family: var(--wf-serif); font-weight: 400; font-size: 1.55em; line-height: 1.15; color: var(--wf-ink); font-variant-numeric: tabular-nums; }
 .std__tiles span { font-size: .78em; color: var(--wf-muted); }
+.std__tiles--four { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 .std__tile--main { background: var(--wf-green-soft) !important; }
 .std__tile--main strong, .std__tile--plus strong { color: var(--wf-green); }
 .std__tile--minus strong { color: var(--wf-red); }

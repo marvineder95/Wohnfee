@@ -1,7 +1,7 @@
 import { query, queryOne } from './db'
 
 // Stundenaufzeichnung: Mitarbeiter sehen und ändern nur ihre eigenen Stunden, der Admin die aller.
-const EMP_FIELDS = 'id, first_name, last_name, weekly_hours, entry_date, exit_date, user_id'
+const EMP_FIELDS = 'id, first_name, last_name, weekly_hours, employment_type, entry_date, exit_date, user_id'
 
 /** Mitarbeiter, dessen Stunden angezeigt/geändert werden (null = für diesen Zugang keiner hinterlegt). */
 export async function timeEmployee(me: { id: number; role: string }, requested: unknown) {

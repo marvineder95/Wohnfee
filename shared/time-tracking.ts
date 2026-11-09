@@ -1,5 +1,5 @@
 // Stundenaufzeichnung (/admin/stunden): Feiertage, Soll/Ist je Tag – eine Rechnung für Server und Oberfläche.
-// Tagessoll = Wochenstunden / 5 (40 Std. → 8, 30 Std. → 6), Arbeitstage Mo–Fr.
+// Tagessoll = Wochenstunden / 5 (40 Std. → 8, 30 Std. → 6), Arbeitstage Mo–Fr. Geringfügig: kein Tagessoll.
 
 /** Ab diesem Tag wird aufgezeichnet – davor gibt es weder Einträge noch Soll. */
 export const TIME_TRACKING_START = '2026-11-01'
@@ -42,8 +42,9 @@ export const isWeekday = (date: string) => {
   return wd !== 0 && wd !== 6
 }
 
-/** Tagessoll in Minuten; ohne hinterlegte Wochenstunden 8 Stunden. */
-export const dailyMinutes = (weeklyHours?: number | string | null) => {
+/** Tagessoll in Minuten; ohne hinterlegte Wochenstunden 8 Stunden, geringfügig Beschäftigte haben keines. */
+export const dailyMinutes = (weeklyHours?: number | string | null, employmentType?: string | null) => {
+  if (employmentType === 'geringfuegig') return 0
   const w = Number(weeklyHours)
   return w > 0 ? Math.round((w / 5) * 60) : 480
 }
@@ -56,7 +57,7 @@ export const defaultPause = (start: string, end: string) => toMinutes(end) - toM
 
 export interface TimeEntry { work_date: string; start_time: string; end_time: string; break_minutes: number; note: string | null }
 export interface TimeAbsence { type: string; date_from: string; date_to: string }
-export interface TimeEmployee { weekly_hours?: number | string | null; entry_date?: string | null; exit_date?: string | null }
+export interface TimeEmployee { weekly_hours?: number | string | null; employment_type?: string | null; entry_date?: string | null; exit_date?: string | null }
 
 const inService = (date: string, emp: TimeEmployee) =>
   date >= TIME_TRACKING_START && !(emp.entry_date && date < emp.entry_date) && !(emp.exit_date && date > emp.exit_date)
@@ -83,7 +84,7 @@ export interface TimeDay {
 export function buildMonth(month: string, today: string, emp: TimeEmployee, entries: TimeEntry[], absences: TimeAbsence[]) {
   const [y, m] = month.split('-').map(Number)
   const last = new Date(Date.UTC(y, m, 0)).getUTCDate()
-  const daily = dailyMinutes(emp.weekly_hours)
+  const daily = dailyMinutes(emp.weekly_hours, emp.employment_type)
   const byDate = new Map(entries.map(e => [e.work_date, e]))
   const days: TimeDay[] = []
   const totals = { workedMin: 0, holidayMin: 0, vacationMin: 0, sickMin: 0, totalMin: 0, targetMin: 0, saldoMin: 0 }
