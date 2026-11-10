@@ -9,7 +9,8 @@ useHead({
 
 const route = useRoute()
 const router = useRouter()
-const token = String(route.query.token || '')
+// Token erst im Browser lesen: bei vorgerenderten Seiten fehlt die Query beim Hydrieren
+let token = String(route.query.token || '')
 
 const checking = ref(true)
 const valid = ref(false)
@@ -25,6 +26,7 @@ const error = ref('')
 const done = ref(false)
 
 onMounted(async () => {
+  token = token || new URLSearchParams(window.location.search).get('token') || ''
   if (!token) {
     checking.value = false
     invalidReason.value = 'ungültig'
