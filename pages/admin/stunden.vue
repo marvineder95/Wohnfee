@@ -136,6 +136,21 @@ function lockText(d: TimeDay) {
   return ''
 }
 const rowHours = (d: TimeDay) => d.workedMin + d.creditMin
+
+// Handy: nur ein Tag ist zum Bearbeiten aufgeklappt (Standard heute), die anderen zeigen eine Zeile Zusammenfassung
+const openDate = ref(localToday())
+const editable = (d: TimeDay) => !lockText(d) && !!drafts[d.date] && !d.future
+function toggleDay(d: TimeDay) {
+  if (editable(d)) openDate.value = openDate.value === d.date ? '' : d.date
+}
+function summary(d: TimeDay) {
+  if (d.entry) {
+    const e = d.entry
+    return [`${e.start_time}–${e.end_time}`, e.break_minutes ? `${e.break_minutes} Min. Pause` : '', e.note || ''].filter(Boolean).join(' · ')
+  }
+  if (d.future) return ''
+  return d.targetMin ? 'Noch nicht eingetragen' : ''
+}
 const print = () => window.print()
 </script>
 
@@ -215,21 +230,26 @@ const print = () => window.print()
           <span>Tag</span><span>Beginn</span><span>Ende</span><span>Pause (Min.)</span><span>Stunden</span><span>Tätigkeit / Notiz</span>
         </div>
         <div v-for="d in days" :id="`std-${d.date}`" :key="d.date" class="std__row"
-             :class="{ 'is-weekend': d.weekend, 'is-holiday': d.holiday, 'is-absent': lockText(d) && !d.holiday, 'is-today': d.date === today, 'is-future': d.future }">
+             :class="{ 'is-weekend': d.weekend, 'is-holiday': d.holiday, 'is-absent': lockText(d) && !d.holiday, 'is-today': d.date === today, 'is-future': d.future, 'is-open': openDate === d.date, 'is-editable': editable(d) }">
           <span class="std__day"><b>{{ weekday(d.date) }}</b> {{ shortDate(d.date) }}<em v-if="d.date === today">Heute</em></span>
+          <button v-if="editable(d)" type="button" class="std__sum" :class="{ 'is-missing': !d.entry && d.targetMin }" :aria-expanded="openDate === d.date" @click="toggleDay(d)">
+            <span>{{ summary(d) || 'Stunden eintragen' }}</span>
+            <WfIcon name="edit" :size="13" />
+          </button>
 
           <span v-if="lockText(d)" class="std__locked">{{ lockText(d) }}</span>
           <template v-else-if="drafts[d.date] && !d.future">
             <label class="std__cell"><i>Beginn</i><input v-model="drafts[d.date].start" type="time" class="wf-input" :aria-label="`Beginn ${shortDate(d.date)}`" @change="saveRow(d)"></label>
             <label class="std__cell"><i>Ende</i><input v-model="drafts[d.date].end" type="time" class="wf-input" :aria-label="`Ende ${shortDate(d.date)}`" @change="saveRow(d)"></label>
-            <label class="std__cell"><i>Pause</i><input v-model="drafts[d.date].pause" type="number" min="0" step="5" inputmode="numeric" class="wf-input" :aria-label="`Pause ${shortDate(d.date)} in Minuten`" @change="saveRow(d)"></label>
+            <label class="std__cell"><i>Pause (Min.)</i><input v-model="drafts[d.date].pause" type="number" min="0" step="5" inputmode="numeric" class="wf-input" :aria-label="`Pause ${shortDate(d.date)} in Minuten`" @change="saveRow(d)"></label>
           </template>
           <span v-else class="std__locked std__locked--future" />
 
           <span class="std__hours">{{ rowHours(d) ? hours(rowHours(d)) : '–' }}</span>
 
           <span v-if="!lockText(d) && drafts[d.date] && !d.future" class="std__cell std__cell--note">
-            <input v-model="drafts[d.date].note" type="text" maxlength="255" class="wf-input" :placeholder="d.date === today ? 'z. B. Aufbau Sievering' : ''" :aria-label="`Notiz ${shortDate(d.date)}`" @change="saveRow(d)">
+            <i>Tätigkeit</i>
+            <input v-model="drafts[d.date].note" type="text" maxlength="255" class="wf-input" :placeholder="d.date === today || openDate === d.date ? 'z. B. Aufbau Sievering' : ''" :aria-label="`Notiz ${shortDate(d.date)}`" @change="saveRow(d)">
             <small v-if="rowState[d.date]?.error" class="std__rowerr">{{ rowState[d.date].error }}</small>
             <small v-else-if="rowState[d.date]?.saving" class="std__rowok">Speichert …</small>
             <small v-else-if="rowState[d.date]?.saved" class="std__rowok">Gespeichert ✓</small>
@@ -310,6 +330,7 @@ button.stdt__row:hover { background: #fbf9f4; }
 .std__day b { display: inline-block; width: 1.9em; font-weight: 700; }
 .std__day em { margin-left: .4em; font-style: normal; font-size: .76em; font-weight: 700; color: var(--wf-green); }
 .std__cell { display: block; min-width: 0; }
+.std__sum { display: none; }
 .std__cell i { display: none; }
 .std__cell .wf-input { padding: .36em .5em; font-size: .88em; width: 100%; box-sizing: border-box; }
 .std__hours { font-size: .9em; font-weight: 600; text-align: right; padding-right: .7em; font-variant-numeric: tabular-nums; }
@@ -333,17 +354,41 @@ button.stdt__row:hover { background: #fbf9f4; }
   .std__head { padding: 1.2em; }
   .std__tools, .std__tools .std__who { width: 100%; max-width: none; }
   .std__month { flex: 1; justify-content: space-between; }
-  .std__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  /* Kennzahlen kompakt: Gesamt groß, Rest klein in zwei Spalten */
+  .std__tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .5em; }
+  .std__tiles > div { padding: .6em .8em; }
+  .std__tiles strong { font-size: 1.2em; }
   .std__tile--main { grid-column: 1 / -1; order: -1; }
+  .std__tile--main strong { font-size: 1.5em; }
+
+  .std__sheet { padding: .2em .9em .4em; }
   .std__row--head { display: none; }
-  .std__row { grid-template-columns: repeat(3, minmax(0, 1fr)); padding: .6em 0; }
-  .std__day { grid-column: 1 / 3; grid-row: 1; font-size: .94em; }
-  .std__hours { grid-column: 3; grid-row: 1; padding-right: 0; }
-  .std__cell i { display: block; font-style: normal; font-size: .7em; color: var(--wf-muted); margin-bottom: .1em; }
-  .std__cell .wf-input { font-size: 16px; }
-  .std__cell--note { grid-column: 1 / -1; display: block; }
+  .std__row { grid-template-columns: 4.6em minmax(0, 1fr) auto; gap: .2em .6em; padding: .55em 0; }
+  .std__row.is-holiday, .std__row.is-absent, .std__row.is-today { margin: 0 -.9em; padding-left: .9em; padding-right: .9em; }
+  .std__day { grid-column: 1; grid-row: 1; font-size: .9em; white-space: normal; line-height: 1.25; }
+  .std__day b { display: block; width: auto; }
+  .std__day em { display: block; margin: 0; }
+  .std__hours { grid-column: 3; grid-row: 1; padding-right: 0; align-self: center; }
+  .std__locked { grid-column: 2; grid-row: 1; padding: 0; }
   .std__cell--empty, .std__locked--future { display: none; }
-  .std__locked { grid-column: 1 / -1; padding: 0; }
+
+  /* Zugeklappt: eine Zeile mit Zeiten bzw. Hinweis, Tippen öffnet die Felder */
+  .std__sum { display: flex; align-items: center; gap: .4em; grid-column: 2; grid-row: 1; min-width: 0; padding: .45em .6em; border: 1px solid var(--wf-line); border-radius: 10px; background: #fff; font: inherit; font-size: .84em; color: var(--wf-ink); text-align: left; cursor: pointer; }
+  .std__sum span { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .std__sum svg { flex-shrink: 0; color: var(--wf-muted); }
+  .std__sum.is-missing { border-style: dashed; color: var(--wf-amber); }
+  .std__row:not(.is-open) .std__cell { display: none; }
+  .std__row.is-open .std__sum { display: none; }
+
+  /* Aufgeklappt: Beginn / Ende / Pause nebeneinander, Tätigkeit darunter */
+  .std__row.is-open { grid-template-columns: repeat(3, minmax(0, 1fr)); background: #fbf9f4; margin: 0 -.9em; padding: .7em .9em .8em; }
+  .std__row.is-open .std__day { grid-column: 1 / 3; display: flex; align-items: baseline; gap: .45em; }
+  .std__row.is-open .std__day b, .std__row.is-open .std__day em { display: inline; }
+  .std__row.is-open .std__hours { grid-column: 3; text-align: right; }
+  .std__cell i { display: block; font-style: normal; font-size: .72em; color: var(--wf-muted); margin: .35em 0 .2em; }
+  .std__cell .wf-input { -webkit-appearance: none; appearance: none; display: block; width: 100%; min-width: 0; height: 2.75em; padding: 0 .55em; font-size: 16px; line-height: 2.75em; background: #fff; }
+  .std__cell input[type="time"]::-webkit-date-and-time-value { text-align: left; }
+  .std__cell--note { grid-column: 1 / -1; display: block; }
   .std__row--sum { grid-template-columns: 1fr auto; }
 }
 @media print {
