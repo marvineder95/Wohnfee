@@ -1,4 +1,5 @@
 import PDFDocument from 'pdfkit'
+import { countryLine } from '../../shared/countries'
 
 const GREEN = '#317046'
 const DARK = '#2b2b2b'
@@ -157,7 +158,7 @@ export async function buildInvoicePdf(invoice: any, items: any[], logoPng: Buffe
   let cy = y + doc.heightOfString(String(invoice.customer_name), { width: custW }) + 2
   doc.font(font()).fontSize(10).fillColor(DARK)
   const addrLines = [invoice.customer_street, [invoice.customer_zip, invoice.customer_city].filter(Boolean).join(' '),
-    invoice.customer_country, invoice.customer_uid].filter(Boolean)
+    countryLine(invoice.customer_country, lang), invoice.customer_uid].filter(Boolean)
     .flatMap((l: any) => String(l).split(/\r?\n/)).filter((l: string) => l.trim()) // z. B. „z. H. …“ als eigene Zeile
   for (const l of addrLines) {
     doc.text(String(l), M, cy, { width: custW })

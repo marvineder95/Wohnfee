@@ -11,7 +11,7 @@ const go = (d: number) => {
   emit('update:index', (props.index + d + props.images.length) % props.images.length)
 }
 const onKey = (e: KeyboardEvent) => {
-  if (e.key === 'Escape') emit('close')
+  if (e.key === 'Escape') { e.stopImmediatePropagation(); emit('close') }
   else if (e.key === 'ArrowRight') go(1)
   else if (e.key === 'ArrowLeft') go(-1)
 }
@@ -21,8 +21,8 @@ const onTouchEnd = (e: TouchEvent) => {
   const dx = e.changedTouches[0].clientX - touchX
   if (Math.abs(dx) > 50) go(dx < 0 ? 1 : -1)
 }
-onMounted(() => { window.addEventListener('keydown', onKey); document.body.style.overflow = 'hidden' })
-onBeforeUnmount(() => { window.removeEventListener('keydown', onKey); document.body.style.overflow = '' })
+onMounted(() => { window.addEventListener('keydown', onKey, true); document.body.style.overflow = 'hidden' })
+onBeforeUnmount(() => { window.removeEventListener('keydown', onKey, true); document.body.style.overflow = '' })
 </script>
 
 <template>

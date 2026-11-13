@@ -136,9 +136,6 @@ function closeDetail() {
   detail.value = null
   items.value = []
 }
-function onKey(e: KeyboardEvent) { if (e.key === 'Escape' && expandedId.value !== null) closeDetail() }
-onMounted(() => document.addEventListener('keydown', onKey))
-onBeforeUnmount(() => document.removeEventListener('keydown', onKey))
 
 async function toggleDetail(item: Inquiry) {
   actionError.value = ''

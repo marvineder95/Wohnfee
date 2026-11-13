@@ -179,17 +179,10 @@ async function focusFromQuery() {
 }
 watch(() => route.query.task, focusFromQuery)
 
-function onKey(e: KeyboardEvent) {
-  if (e.key !== 'Escape') return
-  if (textOpen.value) textOpen.value = null
-  else if (formOpen.value) formOpen.value = false
-}
 onMounted(async () => {
-  window.addEventListener('keydown', onKey)
   await load()
   focusFromQuery()
 })
-onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <template>

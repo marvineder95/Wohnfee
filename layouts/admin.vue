@@ -168,13 +168,24 @@ watch(user, (u) => { if (u) loadBadges() }, { immediate: true })
 // Zähler aktuell halten: jede Minute und beim Zurückkehren in den Tab
 let badgeTimer: ReturnType<typeof setInterval> | null = null
 const onVisible = () => { if (document.visibilityState === 'visible') loadBadges() }
+// Esc schließt das oberste Popup – gleicher Weg wie der Klick daneben (@click.self auf .wf-modal-overlay)
+const onEscape = (e: KeyboardEvent) => {
+  if (e.key !== 'Escape' || e.defaultPrevented) return
+  const overlays = document.querySelectorAll<HTMLElement>('.wf-modal-overlay')
+  const top = overlays[overlays.length - 1]
+  if (!top) return
+  e.preventDefault()
+  top.click()
+}
 onMounted(() => {
   badgeTimer = setInterval(loadBadges, 60_000)
   document.addEventListener('visibilitychange', onVisible)
+  window.addEventListener('keydown', onEscape)
 })
 onBeforeUnmount(() => {
   if (badgeTimer) clearInterval(badgeTimer)
   document.removeEventListener('visibilitychange', onVisible)
+  window.removeEventListener('keydown', onEscape)
 })
 // Handy: Menü als ausklappbare Leiste (Hamburger in der Kopfzeile)
 const navOpen = ref(false)

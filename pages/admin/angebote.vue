@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { DEFAULT_COUNTRY } from '~~/shared/countries'
 definePageMeta({ layout: 'admin' })
 
 useHead({ title: 'Angebote - WOHNFEE Dashboard' })
@@ -65,7 +66,7 @@ const form = reactive({
   customer_street: '',
   customer_zip: '',
   customer_city: '',
-  customer_country: '',
+  customer_country: DEFAULT_COUNTRY,
   customer_uid: '',
   doc_date: localToday(),
   valid_until: '',
@@ -121,7 +122,7 @@ function openNew() {
   Object.assign(form, {
     contact_id: null,
     customer_name: '', customer_street: '', customer_zip: '', customer_city: '',
-    customer_country: '', customer_uid: '',
+    customer_country: DEFAULT_COUNTRY, customer_uid: '',
     doc_date: localToday(),
     valid_until: '', subject: '',
     lang: 'de', vat_free: false, vat_rate: 20, vat_note: '',
@@ -211,7 +212,7 @@ async function pickCustomer(id: number) {
     form.customer_street = c.street || ''
     form.customer_zip = c.zip || ''
     form.customer_city = c.city || ''
-    form.customer_country = c.country || ''
+    form.customer_country = c.country || DEFAULT_COUNTRY
     if (c.uid) form.customer_uid = c.uid
     custSearch.value = ''
     custResults.value = []
@@ -268,7 +269,7 @@ const custInitials = computed(() => {
 function clearCustomer() {
   Object.assign(form, {
     contact_id: null, customer_name: '', customer_street: '',
-    customer_zip: '', customer_city: '', customer_country: '', customer_uid: ''
+    customer_zip: '', customer_city: '', customer_country: DEFAULT_COUNTRY, customer_uid: ''
   })
 }
 // „Kunde bearbeiten": Auswahl aufheben, Adresse bleibt stehen

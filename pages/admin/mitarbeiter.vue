@@ -387,13 +387,7 @@ async function removeAccess() {
   await refreshDetail()
 }
 
-function onKey(e: KeyboardEvent) {
-  if (e.key !== 'Escape') return
-  if (docPreview.value) docPreview.value = null
-  else if (open.value) close()
-}
 onMounted(() => {
-  window.addEventListener('keydown', onKey)
   if (user.value?.role !== 'superadmin') { error.value = 'Nur für Admins sichtbar.'; list.value = []; return }
   load()
   // Link aus Kalender/Benachrichtigung: ?open=<Mitarbeiter-ID>&tab=abwesenheit
@@ -401,7 +395,6 @@ onMounted(() => {
   const openId = Number(q.open)
   if (openId) openEmployee(openId, (TABS.some(t => t.key === q.tab) ? q.tab : 'person') as Tab)
 })
-onBeforeUnmount(() => window.removeEventListener('keydown', onKey))
 </script>
 
 <template>

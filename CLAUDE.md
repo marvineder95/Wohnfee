@@ -25,6 +25,8 @@ Kontakt auf der Website: office@wohnfee.at, +43 676 9202236.
 - Bestätigungen im Dashboard: `useConfirm()` (`composables/useConfirm.ts`) + `components/admin/ConfirmDialog.vue` (im Admin-Layout)
   statt `window.confirm()`; bisher Mietanfragen + Mitarbeiter umgestellt, übrige Seiten nutzen noch `confirm()`.
 - Fotos im Dashboard per Klick groß (`components/admin/Lightbox.vue`).
+- Esc schließt im Dashboard immer das oberste Popup (`.wf-modal-overlay`, Handler im Admin-Layout klickt das Overlay → `@click.self`).
+- Rechnungen/Angebote: Land standardmäßig Österreich (`shared/countries.ts`); im PDF wird AT nicht gedruckt, andere Länder ausgeschrieben.
 - Uploads werden beim Hochladen zugeschnitten (`server/utils/image-optimize.ts`, sharp): EXIF-Drehung, Metadaten weg,
   Inventar max. 1200 px/80 %, Pakete 1600 px, Blog/Immobilien 1920 px, Logos 800 px (PNG mit Transparenz bleibt PNG),
   Avatare 400 px. ASOL-Fotos (Okt. 2026: 581 Stück, `item-<id>-asol.jpg`) wurden einmalig übernommen und verkleinert.
